@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0](https://github.com/dforsber/isecure-ts-client/compare/isecure-ts-client-v1.1.0...isecure-ts-client-v1.2.0) (2026-06-23)
+
+### Features
+
+* **totp:** Google Authenticator (TOTP) MFA support ([#18](https://github.com/dforsber/isecure-ts-client/issues/18)) ([5f854ea](https://github.com/dforsber/isecure-ts-client/commit/5f854ea122ac05b4251079036eaaae48b3f1f120))
+
 ## [1.1.0](https://github.com/dforsber/isecure-ts-client/compare/isecure-ts-client-v1.0.2...isecure-ts-client-v1.1.0) (2026-06-22)
 
 ### Features
