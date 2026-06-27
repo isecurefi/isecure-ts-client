@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.0](https://github.com/dforsber/isecure-ts-client/compare/isecure-ts-client-v1.2.0...isecure-ts-client-v1.3.0) (2026-06-27)
+
+### Features
+
+* **mfa:** add login-time MFA factor selection (SELECT_MFA_TYPE) ([#20](https://github.com/dforsber/isecure-ts-client/issues/20)) ([f6eaa74](https://github.com/dforsber/isecure-ts-client/commit/f6eaa74a12bdb2f9313d5656afafe11ebc60cc63))
+
 ## [1.2.0](https://github.com/dforsber/isecure-ts-client/compare/isecure-ts-client-v1.1.0...isecure-ts-client-v1.2.0) (2026-06-23)
 
 ### Features
