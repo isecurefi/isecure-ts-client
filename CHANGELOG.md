@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v1.3.1...isecure-ts-client-v1.3.2) (2026-08-05)
+
+### Bug Fixes
+
+* **metadata:** point package to canonical repository ([#37](https://github.com/isecurefi/isecure-ts-client/issues/37)) ([cf52639](https://github.com/isecurefi/isecure-ts-client/commit/cf5263974e3bf1b89eaeecba8ee5bf68d8619ae1))
+
 ## [1.3.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v1.3.0...isecure-ts-client-v1.3.1) (2026-08-05)
 
 ### Bug Fixes
