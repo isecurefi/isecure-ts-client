@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v1.3.0...isecure-ts-client-v1.3.1) (2026-08-05)
+
+### Bug Fixes
+
+* **deps:** refresh dependencies and resolve audit alerts ([#34](https://github.com/isecurefi/isecure-ts-client/issues/34)) ([5ec76e6](https://github.com/isecurefi/isecure-ts-client/commit/5ec76e65a5d48f28c6d81fe2848b26b5a42a3408))
+
 ## [1.3.0](https://github.com/dforsber/isecure-ts-client/compare/isecure-ts-client-v1.2.0...isecure-ts-client-v1.3.0) (2026-06-27)
 
 ### Features
