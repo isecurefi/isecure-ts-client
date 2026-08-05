@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v1.3.2...isecure-ts-client-v2.0.0) (2026-08-05)
+
+### ⚠ BREAKING CHANGES
+
+* Node.js 22 is no longer supported. Consumers must use Node.js 24 or newer.
+
+### Features
+
+* require Node.js 24 or newer ([#39](https://github.com/isecurefi/isecure-ts-client/issues/39)) ([7311e51](https://github.com/isecurefi/isecure-ts-client/commit/7311e51bbdf168cf32f9f300cd692568726cc5bd))
+
 ## [1.3.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v1.3.1...isecure-ts-client-v1.3.2) (2026-08-05)
 
 ### Bug Fixes
