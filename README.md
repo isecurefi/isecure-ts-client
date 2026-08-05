@@ -6,6 +6,8 @@ The checked-in OpenAPI contract is [`wsapi_v2.json`](wsapi_v2.json). The live so
 
 ## Install
 
+Requires Node.js 24 or later.
+
 ```sh
 npm install isecure-ts-client
 ```
