@@ -8,12 +8,12 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dforsber/isecure-ts-client.git"
+    "url": "git+https://github.com/isecurefi/isecure-ts-client.git"
   },
   "bugs": {
-    "url": "https://github.com/dforsber/isecure-ts-client/issues"
+    "url": "https://github.com/isecurefi/isecure-ts-client/issues"
   },
-  "homepage": "https://github.com/dforsber/isecure-ts-client#readme",
+  "homepage": "https://github.com/isecurefi/isecure-ts-client#readme",
   "keywords": [
     "isecure",
     "ws-channel",
