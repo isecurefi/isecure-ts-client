@@ -238,6 +238,52 @@ Browser applications also need the ISECure WS API endpoint to allow the applicat
 
 The runnable terminal implementation lives in [`examples/full-workflow/full-workflow.ts`](examples/full-workflow/full-workflow.ts).
 
+## Experimental ISO 20022 Observations
+
+The separate `isecure-ts-client/iso20022` entry point exposes the platform's generated, read-only
+balance, entry, statement, transaction, and validation observation operations. It does not change
+the permanent WS Channel/File Exchange client above.
+
+```ts
+import { createIso20022Client, Iso20022HttpTransport, Iso20022HttpError } from "isecure-ts-client/iso20022";
+
+const iso20022 = createIso20022Client(
+  new Iso20022HttpTransport({
+    baseUrl: "https://customer-selected-processing-api.example/",
+    accessToken: async () => obtainShortLivedAccessToken(),
+  }),
+);
+
+try {
+  const page = await iso20022.statements.list({
+    bank_account_id: "00000000-0000-4000-8000-000000000001",
+    page_size: 50,
+  });
+  console.log(page.statements);
+} catch (error) {
+  if (error instanceof Iso20022HttpError) {
+    // error.body is the generated, server-supplied issue envelope.
+    console.error(error.status);
+  }
+}
+```
+
+This surface is an experimental adapter over the digest-pinned platform contract, not an ISO
+standard implementation or a support claim. Exact ISO syntax and validation remain upstream and
+server-side. The SDK adds no bank profile, qualification, financial validation, policy, workflow,
+retry, or authority semantics. Every call sends the operation's explicit generated contract
+version; request URLs, response bytes, and duration are bounded, and responses must be JSON. The
+HTTP adapter never retries a request and rejects plaintext non-loopback endpoints.
+
+The source pin and artifact hashes are recorded in `platform-contracts.lock.json`. With a compatible
+`bankfiles-platform` checkout next to this repository, maintainers update and verify the generated
+surface using:
+
+```sh
+npm run sync:platform-contracts
+npm run check:platform-contracts
+```
+
 ## Supported Operations
 
 Generated request and response types are built from `wsapi_v2.json` with `swagger2openapi` and `openapi-typescript`.
@@ -288,6 +334,8 @@ yarn pack:check
 Important gates:
 
 - `yarn generate:types` converts Swagger 2.0 to OpenAPI 3.0 and generates TypeScript types.
+- `npm run check:platform-contracts` verifies the experimental ISO observation surface against its
+  pinned platform contracts when the platform checkout is available.
 - `yarn audit` checks dependency advisories.
 - `yarn format:check` checks Prettier formatting.
 - `yarn lint` runs ESLint with type-aware rules.

@@ -1,0 +1,3221 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "repository": "isecurefi/bankfiles-platform",
+    "revision": "2c286b40a77d33e608a797dedf21c427eb62be5b",
+    "model": "Bankfiles@0.66.0",
+    "sourceDigest": "sha256:0576509d1d8bd4123999416ecbb73681fb567357871e096d15070ead51b335b9",
+    "fixedClock": "2040-01-02T03:04:05.000Z",
+    "safety": {
+      "syntheticOnly": true,
+      "tenantAuthority": false,
+      "customerData": false,
+      "productionCredentials": false,
+      "genericTools": [],
+      "filesystemAccess": false,
+      "networkAccess": false,
+      "financialSideEffects": false
+    }
+  },
+  "operations": [
+    {
+      "operationId": "balances.explain",
+      "version": 1,
+      "contractDigest": "sha256:9a23cd4786bbcccd7d5847a536ae1ec4a64974eb14672ba05a4614c4a62a9734",
+      "eventClosureDigest": "sha256:f9d7657f6658c1b9ef18e5f87fdc8d33e459bcdaa4e4fd00f8351eec85eead0a",
+      "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+      "resultContract": "isecure.bankfiles.observations.ExplanationResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/balances/{resource_id}/explanation",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "balances.explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "balances explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "balances_explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "balances-explain",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "balances.explain.success",
+          "operationId": "balances.explain",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ExplanationResult",
+          "input": {
+            "resource_id": "a504616e-bdaf-44f0-87c1-416db454c424"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "e4c977cf-78bd-485b-9bc8-1dbbed5cd734",
+                "operation_id": "balances.explain",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "fe21b3f8-c2c6-4790-9fa9-7b160dd07e12",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "subject_reference": {
+                "resource_type": "balance",
+                "resource_id": "cdd4778e-a662-4a22-a130-2c15e688bb53"
+              },
+              "facts": [
+                {
+                  "fact_code": "balances.explain-result-facts-1-",
+                  "safe_summary": "balances.explain-result-facts-1-",
+                  "evidence_references": [
+                    {
+                      "resource_type": "balances.explain-result-facts-1-",
+                      "resource_id": "35788f9a-de3e-4c4a-ae04-490e6eb88c82"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.explain.invalid_request",
+          "operationId": "balances.explain",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.explain.unauthorized",
+          "operationId": "balances.explain",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "a504616e-bdaf-44f0-87c1-416db454c424"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.explain.not_found",
+          "operationId": "balances.explain",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "a504616e-bdaf-44f0-87c1-416db454c424"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.explain.retryable",
+          "operationId": "balances.explain",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "a504616e-bdaf-44f0-87c1-416db454c424"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "balances.get",
+      "version": 1,
+      "contractDigest": "sha256:213e3f72f29fbf60192e0f6be6eaa85f9386ae6ccf78a996b7ee573d1f1eb979",
+      "eventClosureDigest": "sha256:45c7b90719aecea33dcebcafda6f3be3a0e90194f65866317eefe2cfdaa475cb",
+      "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+      "resultContract": "isecure.bankfiles.observations.BalanceGetResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/balances/{resource_id}",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "balances.get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "balances get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "balances_get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "balances-get",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "balances.get.success",
+          "operationId": "balances.get",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.BalanceGetResult",
+          "input": {
+            "resource_id": "2252764c-51eb-4a41-b6cb-a16079a3b40d"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "7736ec54-1e95-488e-a82a-d36cf9d627f2",
+                "operation_id": "balances.get",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "5f3184cd-787f-43f5-84f5-994e4e7fbb89",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "balance": {
+                "balance_id": "cdd4778e-a662-4a22-a130-2c15e688bb53",
+                "balance_type_code": "balances.get-result-balance-bala",
+                "money": {
+                  "amount": "1",
+                  "currency": "EUR"
+                },
+                "temporal_precision": "date",
+                "boundary": "opening"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.get.invalid_request",
+          "operationId": "balances.get",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.get.unauthorized",
+          "operationId": "balances.get",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "2252764c-51eb-4a41-b6cb-a16079a3b40d"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.get.not_found",
+          "operationId": "balances.get",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "2252764c-51eb-4a41-b6cb-a16079a3b40d"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.get.retryable",
+          "operationId": "balances.get",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "2252764c-51eb-4a41-b6cb-a16079a3b40d"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "balances.list",
+      "version": 2,
+      "contractDigest": "sha256:9c35b653028dcc468bc88101df2fd639e05bc2f08cc957bada60e5ed58a733d8",
+      "eventClosureDigest": "sha256:10e95bae3ad1514159d82e5b9df79347482cc70672ee076ef7a597af6661dbaf",
+      "inputContract": "isecure.bankfiles.observations.BalanceListInput",
+      "resultContract": "isecure.bankfiles.observations.BalanceListResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/balances",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "balances.list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "balances list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "balances_list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "balances-list",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "balances.list.success",
+          "operationId": "balances.list",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.BalanceListInput",
+          "outcomeContract": "isecure.bankfiles.observations.BalanceListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "8126e1df-5afc-4468-a6f4-8ca5381452e1",
+                "operation_id": "balances.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "ddb5eeca-ae34-444b-bc03-56ecd076f4c6",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "balances": [
+                {
+                  "balance_id": "cdd4778e-a662-4a22-a130-2c15e688bb53",
+                  "balance_type_code": "balances.list-result-balances-1-",
+                  "money": {
+                    "amount": "1",
+                    "currency": "EUR"
+                  },
+                  "temporal_precision": "date",
+                  "boundary": "opening"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "ded84e74-c8d5-441f-847c-37d54e410ee2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.list.empty",
+          "operationId": "balances.list",
+          "scenario": "empty",
+          "inputContract": "isecure.bankfiles.observations.BalanceListInput",
+          "outcomeContract": "isecure.bankfiles.observations.BalanceListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "8126e1df-5afc-4468-a6f4-8ca5381452e1",
+                "operation_id": "balances.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "ddb5eeca-ae34-444b-bc03-56ecd076f4c6",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "balances": [],
+              "page": {
+                "snapshot_reference": "ded84e74-c8d5-441f-847c-37d54e410ee2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.list.pagination",
+          "operationId": "balances.list",
+          "scenario": "pagination",
+          "inputContract": "isecure.bankfiles.observations.BalanceListInput",
+          "outcomeContract": "isecure.bankfiles.observations.BalanceListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "8126e1df-5afc-4468-a6f4-8ca5381452e1",
+                "operation_id": "balances.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "ddb5eeca-ae34-444b-bc03-56ecd076f4c6",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "balances": [
+                {
+                  "balance_id": "cdd4778e-a662-4a22-a130-2c15e688bb53",
+                  "balance_type_code": "balances.list-result-balances-1-",
+                  "money": {
+                    "amount": "1",
+                    "currency": "EUR"
+                  },
+                  "temporal_precision": "date",
+                  "boundary": "opening"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "ded84e74-c8d5-441f-847c-37d54e410ee2",
+                "next_cursor": "mock.cursor.balances.list.page-2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.list.invalid_request",
+          "operationId": "balances.list",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.BalanceListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.list.unauthorized",
+          "operationId": "balances.list",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.BalanceListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.list.retryable",
+          "operationId": "balances.list",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.BalanceListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "balances.list.stale_cursor",
+          "operationId": "balances.list",
+          "scenario": "stale_cursor",
+          "inputContract": "isecure.bankfiles.observations.BalanceListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1,
+            "cursor": "mock.cursor.stale.v1"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_CURSOR",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
+                  "retryable": false,
+                  "field_path": "cursor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "entries.explain",
+      "version": 1,
+      "contractDigest": "sha256:0b3180437372f28691a9c90465c2fdbcb59e85039178881c1b20eb6e534b4da8",
+      "eventClosureDigest": "sha256:09bd9245e8a7857b93394627bdedd0df864b4f1623cc782a383b6d1404c4a191",
+      "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+      "resultContract": "isecure.bankfiles.observations.ExplanationResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/entries/{resource_id}/explanation",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "entries.explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "entries explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "entries_explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "entries-explain",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "entries.explain.success",
+          "operationId": "entries.explain",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ExplanationResult",
+          "input": {
+            "resource_id": "91313350-1e15-463a-a009-f92ca43f00c1"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "35c50ab2-88c9-4cda-a935-8258b45d266b",
+                "operation_id": "entries.explain",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "58abc848-9325-43fd-85b8-f6feec564c9f",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "subject_reference": {
+                "resource_type": "entry",
+                "resource_id": "f1c1cbc2-b5b3-40a0-ad7d-8b7f125abd7f"
+              },
+              "facts": [
+                {
+                  "fact_code": "entries.explain-result-facts-1-f",
+                  "safe_summary": "entries.explain-result-facts-1-s",
+                  "evidence_references": [
+                    {
+                      "resource_type": "entries.explain-result-facts-1-e",
+                      "resource_id": "0c7775e0-c60c-4d73-a825-1e646e37a73f"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.explain.invalid_request",
+          "operationId": "entries.explain",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.explain.unauthorized",
+          "operationId": "entries.explain",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "91313350-1e15-463a-a009-f92ca43f00c1"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.explain.not_found",
+          "operationId": "entries.explain",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "91313350-1e15-463a-a009-f92ca43f00c1"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.explain.retryable",
+          "operationId": "entries.explain",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "91313350-1e15-463a-a009-f92ca43f00c1"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "entries.get",
+      "version": 1,
+      "contractDigest": "sha256:e243bcce2460b84de79f7914a9dcd0957728a95dcf59ac7e324ad6b461112708",
+      "eventClosureDigest": "sha256:f57751ad30a1afd600c93784e60029108702556bbfc866b646cf02c443de34d5",
+      "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+      "resultContract": "isecure.bankfiles.observations.EntryGetResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/entries/{resource_id}",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "entries.get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "entries get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "entries_get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "entries-get",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "entries.get.success",
+          "operationId": "entries.get",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.EntryGetResult",
+          "input": {
+            "resource_id": "c9252df3-d543-4697-9033-2b5d02215a27"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "e196a06c-1e78-4e24-9f1b-f2f8247bbf14",
+                "operation_id": "entries.get",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "d93eb092-5384-41a2-92b6-711675c05d7d",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "entry": {
+                "entry_id": "f1c1cbc2-b5b3-40a0-ad7d-8b7f125abd7f",
+                "money": {
+                  "amount": "1",
+                  "currency": "EUR"
+                },
+                "status_code": "entries.get-result-entry-status_"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.get.invalid_request",
+          "operationId": "entries.get",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.get.unauthorized",
+          "operationId": "entries.get",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "c9252df3-d543-4697-9033-2b5d02215a27"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.get.not_found",
+          "operationId": "entries.get",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "c9252df3-d543-4697-9033-2b5d02215a27"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.get.retryable",
+          "operationId": "entries.get",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "c9252df3-d543-4697-9033-2b5d02215a27"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "entries.list",
+      "version": 2,
+      "contractDigest": "sha256:e68cd3da6a753203a161d240ff659872c8d7a3416d281fb4ae93c03b24b55203",
+      "eventClosureDigest": "sha256:88e6f9536d1b7a907629be0c853dadf95011096692d26905964f39ada12c8358",
+      "inputContract": "isecure.bankfiles.observations.EntryListInput",
+      "resultContract": "isecure.bankfiles.observations.EntryListResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/entries",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "entries.list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "entries list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "entries_list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "entries-list",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "entries.list.success",
+          "operationId": "entries.list",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.EntryListInput",
+          "outcomeContract": "isecure.bankfiles.observations.EntryListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "0b45088c-3ff3-4d45-860e-fde555a30ab6",
+                "operation_id": "entries.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "b256c370-5b2b-4848-91ff-cff6aa46e4e3",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "entries": [
+                {
+                  "entry_id": "f1c1cbc2-b5b3-40a0-ad7d-8b7f125abd7f",
+                  "money": {
+                    "amount": "1",
+                    "currency": "EUR"
+                  },
+                  "status_code": "entries.list-result-entries-1-st"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "1570fa00-9f8c-40d6-8553-5c33fd86c852"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.list.empty",
+          "operationId": "entries.list",
+          "scenario": "empty",
+          "inputContract": "isecure.bankfiles.observations.EntryListInput",
+          "outcomeContract": "isecure.bankfiles.observations.EntryListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "0b45088c-3ff3-4d45-860e-fde555a30ab6",
+                "operation_id": "entries.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "b256c370-5b2b-4848-91ff-cff6aa46e4e3",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "entries": [],
+              "page": {
+                "snapshot_reference": "1570fa00-9f8c-40d6-8553-5c33fd86c852"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.list.pagination",
+          "operationId": "entries.list",
+          "scenario": "pagination",
+          "inputContract": "isecure.bankfiles.observations.EntryListInput",
+          "outcomeContract": "isecure.bankfiles.observations.EntryListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "0b45088c-3ff3-4d45-860e-fde555a30ab6",
+                "operation_id": "entries.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "b256c370-5b2b-4848-91ff-cff6aa46e4e3",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "entries": [
+                {
+                  "entry_id": "f1c1cbc2-b5b3-40a0-ad7d-8b7f125abd7f",
+                  "money": {
+                    "amount": "1",
+                    "currency": "EUR"
+                  },
+                  "status_code": "entries.list-result-entries-1-st"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "1570fa00-9f8c-40d6-8553-5c33fd86c852",
+                "next_cursor": "mock.cursor.entries.list.page-2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.list.invalid_request",
+          "operationId": "entries.list",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.EntryListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.list.unauthorized",
+          "operationId": "entries.list",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.EntryListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.list.retryable",
+          "operationId": "entries.list",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.EntryListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "entries.list.stale_cursor",
+          "operationId": "entries.list",
+          "scenario": "stale_cursor",
+          "inputContract": "isecure.bankfiles.observations.EntryListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1,
+            "cursor": "mock.cursor.stale.v1"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_CURSOR",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
+                  "retryable": false,
+                  "field_path": "cursor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "statements.explain",
+      "version": 1,
+      "contractDigest": "sha256:8634f3bf634e612ec48c6f02d41382914114226236767f60926766cb4ab0bdc2",
+      "eventClosureDigest": "sha256:640f2b098023ab8f467655641bce222903fe37d690835fcae103a87fb73cfb80",
+      "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+      "resultContract": "isecure.bankfiles.observations.ExplanationResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/statements/{resource_id}/explanation",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "statements.explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "statements explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "statements_explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "statements-explain",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "statements.explain.success",
+          "operationId": "statements.explain",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ExplanationResult",
+          "input": {
+            "resource_id": "6de41afa-c289-48b5-bb09-2f21c1882883"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "f038fa30-f561-45ba-aa27-c352811340ac",
+                "operation_id": "statements.explain",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "75be8c82-2d26-449d-94c4-3062f4b5e10b",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "subject_reference": {
+                "resource_type": "statement",
+                "resource_id": "6cc674e6-d11e-4ebf-a00f-7976c01dd2bd"
+              },
+              "facts": [
+                {
+                  "fact_code": "statements.explain-result-facts-",
+                  "safe_summary": "statements.explain-result-facts-",
+                  "evidence_references": [
+                    {
+                      "resource_type": "statements.explain-result-facts-",
+                      "resource_id": "15b2bcfb-0f0e-4a84-bc98-34f321cf4f22"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.explain.invalid_request",
+          "operationId": "statements.explain",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.explain.unauthorized",
+          "operationId": "statements.explain",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "6de41afa-c289-48b5-bb09-2f21c1882883"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.explain.not_found",
+          "operationId": "statements.explain",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "6de41afa-c289-48b5-bb09-2f21c1882883"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.explain.retryable",
+          "operationId": "statements.explain",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "6de41afa-c289-48b5-bb09-2f21c1882883"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "statements.get",
+      "version": 1,
+      "contractDigest": "sha256:cd1e305749c6edc8790468ff3a55deffee411c50f43e1f16aa915dc7ce20197e",
+      "eventClosureDigest": "sha256:b8ea882797a96cbea6435024a5979d6622392c528b32aed56a903bb99b9ed2da",
+      "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+      "resultContract": "isecure.bankfiles.observations.StatementGetResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/statements/{resource_id}",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "statements.get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "statements get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "statements_get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "statements-get",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "statements.get.success",
+          "operationId": "statements.get",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.StatementGetResult",
+          "input": {
+            "resource_id": "46ffec45-2388-4d70-88e4-2afa3b1a7517"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "71a650b5-53c9-402e-8ed2-5a5e958529a2",
+                "operation_id": "statements.get",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "7f5615fd-539e-458c-a91a-67326474d405",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "statement": {
+                "statement_id": "6cc674e6-d11e-4ebf-a00f-7976c01dd2bd",
+                "bank_account_id": "7001f796-b5d1-4bac-9d1d-126a40c1b92d",
+                "report_kind": "camt_052",
+                "bank_report_id": "statements.get-result-statement-",
+                "observed_at": "2040-01-02T03:04:05.000Z"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.get.invalid_request",
+          "operationId": "statements.get",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.get.unauthorized",
+          "operationId": "statements.get",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "46ffec45-2388-4d70-88e4-2afa3b1a7517"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.get.not_found",
+          "operationId": "statements.get",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "46ffec45-2388-4d70-88e4-2afa3b1a7517"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.get.retryable",
+          "operationId": "statements.get",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "46ffec45-2388-4d70-88e4-2afa3b1a7517"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "statements.list",
+      "version": 1,
+      "contractDigest": "sha256:ea7b9634ff6c58dcc8179f0918b8ba03e97580ad41003a8180241094f95ec2c8",
+      "eventClosureDigest": "sha256:ce92a06c7e11ca9b03ec229f707ef15568af6d7efa0af3fb34f419c9cae786ae",
+      "inputContract": "isecure.bankfiles.observations.StatementListInput",
+      "resultContract": "isecure.bankfiles.observations.StatementListResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/statements",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "statements.list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "statements list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "statements_list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "statements-list",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "statements.list.success",
+          "operationId": "statements.list",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.StatementListInput",
+          "outcomeContract": "isecure.bankfiles.observations.StatementListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "d896301c-7e50-4274-94e3-5b6e68eb5219",
+                "operation_id": "statements.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "dc049958-007c-46ea-8fc5-9127ea54e543",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "statements": [
+                {
+                  "statement_id": "6cc674e6-d11e-4ebf-a00f-7976c01dd2bd",
+                  "bank_account_id": "75491b85-6696-467a-a5dd-9bf896e40efe",
+                  "report_kind": "camt_052",
+                  "bank_report_id": "statements.list-result-statement",
+                  "observed_at": "2040-01-02T03:04:05.000Z"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "e7175b23-7894-437a-a1c9-4dc8cef3479f"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.list.empty",
+          "operationId": "statements.list",
+          "scenario": "empty",
+          "inputContract": "isecure.bankfiles.observations.StatementListInput",
+          "outcomeContract": "isecure.bankfiles.observations.StatementListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "d896301c-7e50-4274-94e3-5b6e68eb5219",
+                "operation_id": "statements.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "dc049958-007c-46ea-8fc5-9127ea54e543",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "statements": [],
+              "page": {
+                "snapshot_reference": "e7175b23-7894-437a-a1c9-4dc8cef3479f"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.list.pagination",
+          "operationId": "statements.list",
+          "scenario": "pagination",
+          "inputContract": "isecure.bankfiles.observations.StatementListInput",
+          "outcomeContract": "isecure.bankfiles.observations.StatementListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "d896301c-7e50-4274-94e3-5b6e68eb5219",
+                "operation_id": "statements.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "dc049958-007c-46ea-8fc5-9127ea54e543",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "statements": [
+                {
+                  "statement_id": "6cc674e6-d11e-4ebf-a00f-7976c01dd2bd",
+                  "bank_account_id": "75491b85-6696-467a-a5dd-9bf896e40efe",
+                  "report_kind": "camt_052",
+                  "bank_report_id": "statements.list-result-statement",
+                  "observed_at": "2040-01-02T03:04:05.000Z"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "e7175b23-7894-437a-a1c9-4dc8cef3479f",
+                "next_cursor": "mock.cursor.statements.list.page-2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.list.invalid_request",
+          "operationId": "statements.list",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.StatementListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.list.unauthorized",
+          "operationId": "statements.list",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.StatementListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.list.retryable",
+          "operationId": "statements.list",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.StatementListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "statements.list.stale_cursor",
+          "operationId": "statements.list",
+          "scenario": "stale_cursor",
+          "inputContract": "isecure.bankfiles.observations.StatementListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1,
+            "cursor": "mock.cursor.stale.v1"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_CURSOR",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
+                  "retryable": false,
+                  "field_path": "cursor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "transactions.explain",
+      "version": 1,
+      "contractDigest": "sha256:1ac123ec35f79340a86bf8a8fa6bd3033e4efd5b12dd18f498f869d8da5f1123",
+      "eventClosureDigest": "sha256:6fdba88f8bda6b429fe9f1c657a04f47a6402c0a08664640581c688e957bc7de",
+      "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+      "resultContract": "isecure.bankfiles.observations.ExplanationResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/transactions/{resource_id}/explanation",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "transactions.explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "transactions explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "transactions_explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "transactions-explain",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "transactions.explain.success",
+          "operationId": "transactions.explain",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ExplanationResult",
+          "input": {
+            "resource_id": "a09836d0-98e2-454a-bcc7-55a4598b12d6"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "63d245c5-a7b0-4fca-843c-c1303f6077b5",
+                "operation_id": "transactions.explain",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "4fa5b45d-3bc4-4840-a9e3-db65c07020b6",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "subject_reference": {
+                "resource_type": "transaction",
+                "resource_id": "83b11813-b56a-4100-97ca-76a534ad1a46"
+              },
+              "facts": [
+                {
+                  "fact_code": "transactions.explain-result-fact",
+                  "safe_summary": "transactions.explain-result-fact",
+                  "evidence_references": [
+                    {
+                      "resource_type": "transactions.explain-result-fact",
+                      "resource_id": "543af367-a097-4fab-a2c0-954b94138952"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.explain.invalid_request",
+          "operationId": "transactions.explain",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.explain.unauthorized",
+          "operationId": "transactions.explain",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "a09836d0-98e2-454a-bcc7-55a4598b12d6"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.explain.not_found",
+          "operationId": "transactions.explain",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "a09836d0-98e2-454a-bcc7-55a4598b12d6"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.explain.retryable",
+          "operationId": "transactions.explain",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "a09836d0-98e2-454a-bcc7-55a4598b12d6"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "transactions.get",
+      "version": 1,
+      "contractDigest": "sha256:2d7e9781bb688c6a4a89542ab09cd9f80933a9eab6f38b2287d618434b0c44ae",
+      "eventClosureDigest": "sha256:b44886c51c571e8693673e396aa0b1d12193d9c3216ce1e2eb0a56b231c37fb7",
+      "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+      "resultContract": "isecure.bankfiles.observations.TransactionGetResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/transactions/{resource_id}",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "transactions.get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "transactions get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "transactions_get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "transactions-get",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "transactions.get.success",
+          "operationId": "transactions.get",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.TransactionGetResult",
+          "input": {
+            "resource_id": "641b11ce-a34d-47a5-8776-f70494afb4de"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "939961d5-7369-41a7-91f6-b6193a6d0b37",
+                "operation_id": "transactions.get",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "16dcf57c-ec09-42f2-944d-00f5fd5a5565",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "transaction": {
+                "transaction_id": "83b11813-b56a-4100-97ca-76a534ad1a46"
+              },
+              "amounts": [
+                {
+                  "transaction_amount_id": "305693db-f3fc-4c89-9b21-271d01d35664",
+                  "amount_role": "transactions.get-result-amounts-",
+                  "money": {
+                    "amount": "1",
+                    "currency": "EUR"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.get.invalid_request",
+          "operationId": "transactions.get",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.get.unauthorized",
+          "operationId": "transactions.get",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "641b11ce-a34d-47a5-8776-f70494afb4de"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.get.not_found",
+          "operationId": "transactions.get",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "641b11ce-a34d-47a5-8776-f70494afb4de"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.get.retryable",
+          "operationId": "transactions.get",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "641b11ce-a34d-47a5-8776-f70494afb4de"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "transactions.list",
+      "version": 2,
+      "contractDigest": "sha256:0a79f8c673b89f35529e6bdf7a32ab35c4c81e537a32ab67d6694ee6ffb15fc2",
+      "eventClosureDigest": "sha256:855d8f957b593c86865be4de1f126691ae5f399d613efd57b740760031dfd99c",
+      "inputContract": "isecure.bankfiles.observations.TransactionListInput",
+      "resultContract": "isecure.bankfiles.observations.TransactionListResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/transactions",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "transactions.list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "transactions list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "transactions_list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "transactions-list",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "transactions.list.success",
+          "operationId": "transactions.list",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.TransactionListInput",
+          "outcomeContract": "isecure.bankfiles.observations.TransactionListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "20667a2c-917d-4e8f-b428-d4b5309269a4",
+                "operation_id": "transactions.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "0365a572-89c7-4a48-befe-ddcb004a5965",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "transactions": [
+                {
+                  "transaction_id": "83b11813-b56a-4100-97ca-76a534ad1a46"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "8ac5618c-04c1-4c3e-b18f-f3fb0b49c1d4"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.list.empty",
+          "operationId": "transactions.list",
+          "scenario": "empty",
+          "inputContract": "isecure.bankfiles.observations.TransactionListInput",
+          "outcomeContract": "isecure.bankfiles.observations.TransactionListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "20667a2c-917d-4e8f-b428-d4b5309269a4",
+                "operation_id": "transactions.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "0365a572-89c7-4a48-befe-ddcb004a5965",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "transactions": [],
+              "page": {
+                "snapshot_reference": "8ac5618c-04c1-4c3e-b18f-f3fb0b49c1d4"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.list.pagination",
+          "operationId": "transactions.list",
+          "scenario": "pagination",
+          "inputContract": "isecure.bankfiles.observations.TransactionListInput",
+          "outcomeContract": "isecure.bankfiles.observations.TransactionListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "20667a2c-917d-4e8f-b428-d4b5309269a4",
+                "operation_id": "transactions.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "0365a572-89c7-4a48-befe-ddcb004a5965",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "transactions": [
+                {
+                  "transaction_id": "83b11813-b56a-4100-97ca-76a534ad1a46"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "8ac5618c-04c1-4c3e-b18f-f3fb0b49c1d4",
+                "next_cursor": "mock.cursor.transactions.list.page-2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.list.invalid_request",
+          "operationId": "transactions.list",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.TransactionListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.list.unauthorized",
+          "operationId": "transactions.list",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.TransactionListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.list.retryable",
+          "operationId": "transactions.list",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.TransactionListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "transactions.list.stale_cursor",
+          "operationId": "transactions.list",
+          "scenario": "stale_cursor",
+          "inputContract": "isecure.bankfiles.observations.TransactionListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1,
+            "cursor": "mock.cursor.stale.v1"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_CURSOR",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
+                  "retryable": false,
+                  "field_path": "cursor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "validations.explain",
+      "version": 1,
+      "contractDigest": "sha256:22d55330cfba44ff7a3b5b8fed9a2a5799945c33c6f93132ba89ca7897a2e40a",
+      "eventClosureDigest": "sha256:16e9b2e244014df88852936c97f77b3b0eb1f5b8d6789320b8776a12866c3749",
+      "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+      "resultContract": "isecure.bankfiles.observations.ExplanationResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/validations/{resource_id}/explanation",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "validations.explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "validations explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "validations_explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "validations-explain",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "validations.explain.success",
+          "operationId": "validations.explain",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ExplanationResult",
+          "input": {
+            "resource_id": "d3f2fb7b-f7bd-483c-bcb7-f4697cf42244"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "2ed5e8d2-74d8-4736-a404-baabb4291cbf",
+                "operation_id": "validations.explain",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "02f0cf2e-5267-44c5-bebb-0cb620868081",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "subject_reference": {
+                "resource_type": "validation",
+                "resource_id": "15baabf6-588c-43cc-84f5-265d5c2e895f"
+              },
+              "facts": [
+                {
+                  "fact_code": "validations.explain-result-facts",
+                  "safe_summary": "validations.explain-result-facts",
+                  "evidence_references": [
+                    {
+                      "resource_type": "validations.explain-result-facts",
+                      "resource_id": "b003e9ce-40f0-4a75-99fc-2f9c4832a423"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.explain.invalid_request",
+          "operationId": "validations.explain",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.explain.unauthorized",
+          "operationId": "validations.explain",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "d3f2fb7b-f7bd-483c-bcb7-f4697cf42244"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.explain.not_found",
+          "operationId": "validations.explain",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "d3f2fb7b-f7bd-483c-bcb7-f4697cf42244"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.explain.retryable",
+          "operationId": "validations.explain",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ObservationExplainInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "d3f2fb7b-f7bd-483c-bcb7-f4697cf42244"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "validations.get",
+      "version": 1,
+      "contractDigest": "sha256:a206e8d12a5b6cf9c17cfcc4840865d22390139ee5f018e6050f8890c4b688c1",
+      "eventClosureDigest": "sha256:c0053c227280fa28544af3a59a74014b7dfc4ba078432c16548f121824862e66",
+      "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+      "resultContract": "isecure.bankfiles.observations.ValidationGetResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/validations/{resource_id}",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "validations.get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "validations get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "validations_get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "validations-get",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "validations.get.success",
+          "operationId": "validations.get",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ValidationGetResult",
+          "input": {
+            "resource_id": "49252e6d-1508-4145-93e3-feddd28823b9"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "5a939d95-b898-43fb-a6ca-b4ff437e822c",
+                "operation_id": "validations.get",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "57d2e069-c454-47a3-8e93-00d422fb27a5",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "validation": {
+                "validation_id": "15baabf6-588c-43cc-84f5-265d5c2e895f",
+                "run_kind": "detect",
+                "outcome": "succeeded"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.get.invalid_request",
+          "operationId": "validations.get",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.get.unauthorized",
+          "operationId": "validations.get",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "49252e6d-1508-4145-93e3-feddd28823b9"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.get.not_found",
+          "operationId": "validations.get",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "49252e6d-1508-4145-93e3-feddd28823b9"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.get.retryable",
+          "operationId": "validations.get",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ObservationGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "resource_id": "49252e6d-1508-4145-93e3-feddd28823b9"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "validations.list",
+      "version": 1,
+      "contractDigest": "sha256:e0322ef33c1b7f47fd627295df16b91074e4d257a96ac2a699ab2c7ad8787d40",
+      "eventClosureDigest": "sha256:0f0a81fba037ae5ced00da7822ab7027fea6a84e4f80aac4a6d1943aa2a569f7",
+      "inputContract": "isecure.bankfiles.observations.ValidationListInput",
+      "resultContract": "isecure.bankfiles.observations.ValidationListResult",
+      "issueContract": "isecure.bankfiles.observations.ObservationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/validations",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "validations.list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "validations list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "validations_list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "validations-list",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "validations.list.success",
+          "operationId": "validations.list",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.observations.ValidationListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ValidationListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "d4653e23-3e06-477a-9fe7-d84e5bb8fb9d",
+                "operation_id": "validations.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "4400c271-4ff7-40ab-a070-707a519d4925",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "validations": [
+                {
+                  "validation_id": "15baabf6-588c-43cc-84f5-265d5c2e895f",
+                  "run_kind": "detect",
+                  "outcome": "succeeded"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "b1e19a82-f11c-4962-8ffb-c8b019599913"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.list.empty",
+          "operationId": "validations.list",
+          "scenario": "empty",
+          "inputContract": "isecure.bankfiles.observations.ValidationListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ValidationListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "d4653e23-3e06-477a-9fe7-d84e5bb8fb9d",
+                "operation_id": "validations.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "4400c271-4ff7-40ab-a070-707a519d4925",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "validations": [],
+              "page": {
+                "snapshot_reference": "b1e19a82-f11c-4962-8ffb-c8b019599913"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.list.pagination",
+          "operationId": "validations.list",
+          "scenario": "pagination",
+          "inputContract": "isecure.bankfiles.observations.ValidationListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ValidationListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "d4653e23-3e06-477a-9fe7-d84e5bb8fb9d",
+                "operation_id": "validations.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "4400c271-4ff7-40ab-a070-707a519d4925",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "validations": [
+                {
+                  "validation_id": "15baabf6-588c-43cc-84f5-265d5c2e895f",
+                  "run_kind": "detect",
+                  "outcome": "succeeded"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "b1e19a82-f11c-4962-8ffb-c8b019599913",
+                "next_cursor": "mock.cursor.validations.list.page-2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.list.invalid_request",
+          "operationId": "validations.list",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.observations.ValidationListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.list.unauthorized",
+          "operationId": "validations.list",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.observations.ValidationListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.list.retryable",
+          "operationId": "validations.list",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.observations.ValidationListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "validations.list.stale_cursor",
+          "operationId": "validations.list",
+          "scenario": "stale_cursor",
+          "inputContract": "isecure.bankfiles.observations.ValidationListInput",
+          "outcomeContract": "isecure.bankfiles.observations.ObservationIssues",
+          "input": {
+            "page_size": 1,
+            "cursor": "mock.cursor.stale.v1"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_CURSOR",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
+                  "retryable": false,
+                  "field_path": "cursor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

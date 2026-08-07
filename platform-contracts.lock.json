@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "repository": "isecurefi/bankfiles-platform",
+    "revision": "2c286b40a77d33e608a797dedf21c427eb62be5b",
+    "processingClientSha256": "a3eadfdf9a86fd99cdf130fd5d17a6b393d546846b6867fd95cf169c898d1fd4",
+    "processingOpenApiSha256": "54c22d1864d205dce475eefeb4e7f9d5f75e9efbe26630979b848f915768f444",
+    "processingMockSha256": "3e488a2c21ca316f4813471398d367a452f8088103ddb80dcd9f89c595a06603"
+  },
+  "generated": {
+    "path": "src/generated/iso20022-observations.ts",
+    "sha256": "61f9b6397bf16e1800ab47fa43e94a84eb1d0f3531041fb36e1385c649ac6973",
+    "operationIds": [
+      "balances.explain",
+      "balances.get",
+      "balances.list",
+      "entries.explain",
+      "entries.get",
+      "entries.list",
+      "statements.explain",
+      "statements.get",
+      "statements.list",
+      "transactions.explain",
+      "transactions.get",
+      "transactions.list",
+      "validations.explain",
+      "validations.get",
+      "validations.list"
+    ]
+  },
+  "generatedMock": {
+    "path": "test-data/generated/iso20022-observation-scenarios.json",
+    "sha256": "500b77950e7d8e8f9e56b0a472522e389478ddd3f4b63a1108d233ceb562240d"
+  }
+}

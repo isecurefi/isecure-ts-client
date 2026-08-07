@@ -6,6 +6,7 @@ dist-examples/
 .chrome-wsapi-playwright/
 node_modules/
 src/generated/
+test-data/generated/
 wsapi_v2.json
 yarn.lock
 docs-api/

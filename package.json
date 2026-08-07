@@ -35,6 +35,11 @@
       "types": "./dist/generated/wsapi-v2.d.ts",
       "browser": "./dist/generated/wsapi-v2.js",
       "import": "./dist/generated/wsapi-v2.js"
+    },
+    "./iso20022": {
+      "types": "./dist/iso20022/index.d.ts",
+      "browser": "./dist/iso20022/index.js",
+      "import": "./dist/iso20022/index.js"
     }
   },
   "files": [
@@ -54,6 +59,8 @@
     "clean": "rm -rf dist dist-examples coverage .generated .browser-check docs-api",
     "docs": "yarn generate:types && npx -y typedoc",
     "generate:types": "mkdir -p .generated src/generated && swagger2openapi wsapi_v2.json -o .generated/wsapi_v2.openapi.json && openapi-typescript .generated/wsapi_v2.openapi.json -o src/generated/wsapi-v2.ts",
+    "sync:platform-contracts": "node scripts/sync-platform-contracts.mjs --write",
+    "check:platform-contracts": "node scripts/sync-platform-contracts.mjs --check",
     "build": "rm -rf dist && yarn generate:types && tsc -p tsconfig.json",
     "build:examples": "rm -rf dist-examples && tsc -p tsconfig.examples.json",
     "lint": "eslint .",

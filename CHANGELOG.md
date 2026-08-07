@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added an isolated experimental `./iso20022` entry point for the platform's generated read-only
+  balance, entry, statement, transaction, and validation operations. The digest-pinned surface uses
+  an explicit no-retry HTTP adapter with bounded JSON responses and leaves the existing WS
+  Channel/File Exchange API unchanged.
 - Extracted WS API endpoint construction into a pure, separately tested `UrlBuilder`, shrinking the `WSChannel` class and making URL behavior unit-testable in isolation.
 - Fixed stale-token classification bugs: a lingering access token from the email-verification stage no longer re-triggers email verification, and a prior session's id token/API key no longer misclassifies a refresh (re-login) MFA-stage response as already authenticated. Classification now keys both on the tokens carried by the current response. (The first was surfaced by a new end-to-end onboarding test.)
 - Raised the toolchain bar: ESLint now uses `strict-type-checked` + `stylistic-type-checked`, and `tsconfig` adds `noImplicitOverride`, `noFallthroughCasesInSwitch`, `noImplicitReturns`, `noUnusedLocals`, and `noUnusedParameters`.
