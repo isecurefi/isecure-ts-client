@@ -6,10 +6,10 @@
 
 The supported surface is everything exported from the package root (`isecure-ts-client`) and the
 `./wsapi-types` subpath. The separate `./iso20022` subpath is public but explicitly experimental: it
-is versioned with the package, while its generated operation and data contracts can change when the
-digest-pinned platform contract changes. Anything not exported from those entry points—including
-files under `src/lib/` imported by deep path and other files under `src/generated/`—is internal and
-may change at any time.
+is versioned with the package, while its generated observation, payment, and data contracts can
+change when the digest-pinned platform contract changes. Anything not exported from those entry
+points—including files under `src/lib/` imported by deep path and other files under
+`src/generated/`—is internal and may change at any time.
 
 ## What each release type means
 

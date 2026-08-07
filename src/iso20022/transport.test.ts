@@ -56,6 +56,43 @@ describe("ISO 20022 HTTP transport", () => {
     expect(init).not.toHaveProperty("body");
   });
 
+  it("serializes generated JSON, idempotency, and expected-version bindings", async () => {
+    const fetch = vi.fn(async () => jsonResponse({ accepted: true }));
+    const client = createIso20022Client(transport({ fetch }));
+    const input = { payment_order_id: RESOURCE_ID, draft: { synthetic: true } } as never;
+
+    await client.paymentOrders.reviseDraft(input, {
+      idempotencyKey: "synthetic-revise-key",
+      expectedResourceVersion: '"7"',
+    });
+
+    const [url, init] = fetch.mock.calls[0] ?? [];
+    expect(String(url)).toBe("https://api.example.test/processing/v1/payment-orders:revise-draft");
+    expect(init).toMatchObject({
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        Authorization: "Bearer synthetic-token",
+        "Content-Type": "application/json",
+        "Idempotency-Key": "synthetic-revise-key",
+        "If-Match": '"7"',
+        "ISECure-Contract-Version": "1",
+      },
+    });
+    expect(JSON.parse(String(init?.body))).toEqual(input);
+  });
+
+  it("serializes generated OpenAPI deep-object query parameters", async () => {
+    const fetch = vi.fn(async () => jsonResponse({ capabilities: [], page: {} }));
+    const client = createIso20022Client(transport({ fetch }));
+
+    await client.paymentCapabilities.list({ page: { page_size: 25, cursor: "synthetic cursor" } });
+
+    expect(String(fetch.mock.calls[0]?.[0])).toBe(
+      "https://api.example.test/processing/v1/payment-capabilities?page%5Bpage_size%5D=25&page%5Bcursor%5D=synthetic+cursor",
+    );
+  });
+
   it("uses the runtime fetch implementation and preserves an already normalized base path", async () => {
     const runtimeFetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse({ ok: true }));
     const adapter = new Iso20022HttpTransport({
@@ -122,13 +159,59 @@ describe("ISO 20022 HTTP transport", () => {
     expect(new Set(results.map((result) => (result as unknown as { url: string }).url)).size).toBe(32);
   });
 
+  it("performs concurrent payment commands without sharing idempotency metadata", async () => {
+    const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      expect(input).toBeDefined();
+      expect(init).toBeDefined();
+      return jsonResponse({ accepted: true });
+    });
+    const client = createIso20022Client(transport({ fetch }));
+
+    await Promise.all(
+      Array.from({ length: 16 }, async (_, index) =>
+        client.paymentOrders.createDraft({ synthetic_index: index } as never, {
+          idempotencyKey: `synthetic-${String(index)}`,
+        }),
+      ),
+    );
+
+    expect(fetch).toHaveBeenCalledTimes(16);
+    expect(new Set(fetch.mock.calls.map((call) => new Headers(call[1]?.headers).get("Idempotency-Key"))).size).toBe(16);
+  });
+
   it("does not retry a network failure", async () => {
     const failure = new Error("synthetic network failure");
     const fetch = vi.fn(async () => Promise.reject(failure));
     const client = createIso20022Client(transport({ fetch }));
 
-    await expect(client.validations.list({})).rejects.toBe(failure);
+    const error = await client.validations.list({}).catch((cause: unknown) => cause);
+
+    expect(error).toMatchObject({
+      name: "Iso20022TransportError",
+      code: "request_failed",
+      message: "The Processing API request failed",
+    });
+    expect(error).not.toHaveProperty("cause");
+    expect((error as Error).message).not.toContain(failure.message);
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not expose access-token provider failures", async () => {
+    const client = createIso20022Client(
+      transport({
+        accessToken: vi.fn(async () => Promise.reject(new Error("synthetic credential detail"))),
+      }),
+    );
+
+    const error = await client.validations.list({}).catch((cause: unknown) => cause);
+
+    expect(error).toMatchObject({
+      name: "Iso20022TransportError",
+      code: "request_failed",
+      message: "The bearer credential could not be resolved",
+    });
+    expect(error).not.toHaveProperty("cause");
+    expect((error as Error).message).not.toContain("credential detail");
   });
 
   it("aborts a request at the configured timeout without retrying", async () => {
@@ -152,7 +235,11 @@ describe("ISO 20022 HTTP transport", () => {
       const request = client.validations.list({}).catch((error: unknown) => error);
       await vi.advanceTimersByTimeAsync(25);
 
-      await expect(request).resolves.toMatchObject({ name: "AbortError" });
+      await expect(request).resolves.toMatchObject({
+        name: "Iso20022TransportError",
+        code: "request_failed",
+        message: "The Processing API request timed out",
+      });
       expect(fetch).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
@@ -182,7 +269,11 @@ describe("ISO 20022 HTTP transport", () => {
       const request = client.validations.list({}).catch((error: unknown) => error);
       await vi.advanceTimersByTimeAsync(25);
 
-      await expect(request).resolves.toMatchObject({ name: "AbortError" });
+      await expect(request).resolves.toMatchObject({
+        name: "Iso20022TransportError",
+        code: "request_failed",
+        message: "The Processing API request timed out",
+      });
       expect(fetch).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
@@ -201,10 +292,14 @@ describe("ISO 20022 HTTP transport", () => {
   ])("rejects a malformed %s response", async (_label, response) => {
     const client = createIso20022Client(transport({ fetch: vi.fn(async () => response) }));
 
-    await expect(client.balances.list({})).rejects.toMatchObject({
+    const error = await client.balances.list({}).catch((cause: unknown) => cause);
+
+    expect(error).toMatchObject({
       name: "Iso20022TransportError",
       code: "malformed_response",
     });
+    expect(error).not.toHaveProperty("cause");
+    expect((error as Error).message).not.toContain("{");
   });
 
   it("accepts registered +json response media types", async () => {
@@ -264,6 +359,9 @@ describe("ISO 20022 HTTP transport", () => {
     ["zero response limit", { maxResponseBytes: 0 }],
     ["fractional response limit", { maxResponseBytes: 1.5 }],
     ["excessive response limit", { maxResponseBytes: 16 * 1024 * 1024 + 1 }],
+    ["zero request limit", { maxRequestBytes: 0 }],
+    ["fractional request limit", { maxRequestBytes: 1.5 }],
+    ["excessive request limit", { maxRequestBytes: 16 * 1024 * 1024 + 1 }],
     ["invalid fetch", { fetch: 1 as never }],
     ["zero timeout", { timeoutMs: 0 }],
     ["fractional timeout", { timeoutMs: 1.5 }],
@@ -307,6 +405,77 @@ describe("ISO 20022 HTTP transport", () => {
     await expect(adapter.invoke("payments.execute" as never, {}, { contractVersion: 1 })).rejects.toMatchObject({
       code: "unsupported_operation",
     });
+    await expect(
+      adapter.invoke("payment_capabilities.list", {} as never, { contractVersion: 1 }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+    await expect(
+      adapter.invoke("payment_capabilities.list", { page: { unknown: true } } as never, { contractVersion: 1 }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+    await expect(
+      adapter.invoke("payment_capabilities.list", { page: [] } as never, { contractVersion: 1 }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+  });
+
+  it("enforces generated idempotency and expected-version header contracts", async () => {
+    const adapter = transport();
+    const revisionInput = { payment_order_id: RESOURCE_ID };
+
+    await expect(adapter.invoke("payment_orders.create_draft", {}, { contractVersion: 1 })).rejects.toMatchObject({
+      code: "serialization_failed",
+    });
+    for (const idempotencyKey of [" leading", "space key", "line\nfeed", "trailing\n", "ümlaut", "x".repeat(257)]) {
+      await expect(
+        adapter.invoke("payment_orders.create_draft", {}, { contractVersion: 1, idempotencyKey }),
+      ).rejects.toMatchObject({ code: "serialization_failed" });
+    }
+    await expect(
+      adapter.invoke("payment_orders.create_draft", {}, { contractVersion: 1, idempotencyKey: "x".repeat(256) }),
+    ).resolves.toEqual({ ok: true });
+    await expect(
+      adapter.invoke("payment_orders.execute", revisionInput, {
+        contractVersion: 1,
+        idempotencyKey: "synthetic",
+      }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+    await expect(
+      adapter.invoke("payment_orders.execute", revisionInput, {
+        contractVersion: 1,
+        idempotencyKey: "synthetic",
+        expectedResourceVersion: "1",
+      }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+    await expect(
+      adapter.invoke("balances.list", {}, { contractVersion: 2, idempotencyKey: "unexpected" }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+    await expect(
+      adapter.invoke("balances.list", {}, { contractVersion: 2, expectedResourceVersion: '"1"' }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+  });
+
+  it("rejects non-JSON and oversized request bodies before fetching", async () => {
+    const fetch = vi.fn(async () => jsonResponse({}));
+    const adapter = transport({ fetch, maxRequestBytes: 32 });
+    const cyclic: Record<string, unknown> = {};
+    cyclic.self = cyclic;
+
+    await expect(
+      adapter.invoke("payment_capabilities.resolve", { value: 1n } as never, { contractVersion: 1 }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+    await expect(
+      adapter.invoke("payment_capabilities.resolve", { value: Number.NaN } as never, { contractVersion: 1 }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+    await expect(
+      adapter.invoke("payment_capabilities.resolve", cyclic as never, { contractVersion: 1 }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+    await expect(
+      adapter.invoke("payment_capabilities.resolve", { toJSON: () => "not-an-object" } as never, {
+        contractVersion: 1,
+      }),
+    ).rejects.toMatchObject({ code: "serialization_failed" });
+    await expect(
+      adapter.invoke("payment_capabilities.resolve", { value: "x".repeat(64) } as never, { contractVersion: 1 }),
+    ).rejects.toMatchObject({ code: "request_too_large" });
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it("serializes every supported query scalar without applying business validation", async () => {

@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { iso20022ObservationOperations } from "../generated/iso20022-observations.js";
+import { iso20022Operations, type Iso20022OperationId } from "../generated/iso20022-contracts.js";
 import { createIso20022Client } from "./client.js";
 import type { Iso20022Transport } from "./transport.js";
 
 class RecordingTransport implements Iso20022Transport {
   readonly calls: { operationId: string; input: unknown; metadata: unknown }[] = [];
 
-  invoke<Input, Result>(operationId: never, input: Input, metadata: unknown): Promise<Result> {
+  invoke<Input, Result>(operationId: Iso20022OperationId, input: Input, metadata: unknown): Promise<Result> {
     this.calls.push({ operationId, input, metadata });
     return Promise.resolve({ operationId } as Result);
   }
 }
 
-describe("experimental ISO 20022 observation client", () => {
-  it("projects every generated observation operation with its exact contract version", async () => {
+describe("experimental ISO 20022 client", () => {
+  it("projects every selected generated operation with its exact request metadata", async () => {
     const transport = new RecordingTransport();
     const client = createIso20022Client(transport);
     const resource = { resource_id: "00000000-0000-4000-8000-000000000001" };
@@ -25,6 +25,36 @@ describe("experimental ISO 20022 observation client", () => {
       client.entries.explain(resource),
       client.entries.get(resource),
       client.entries.list({ status_code: "BOOK" }),
+      client.paymentCapabilities.explain({ account_capability_id: resource.resource_id }),
+      client.paymentCapabilities.get({ account_capability_id: resource.resource_id }),
+      client.paymentCapabilities.list({ page: {} }),
+      client.paymentCapabilities.resolve({
+        connected_account_id: resource.resource_id,
+        business_type: "credit_transfer",
+        required_option_kinds: [],
+      }),
+      client.paymentOrders.cancelDraft(
+        { payment_order_id: resource.resource_id },
+        { idempotencyKey: "synthetic-cancel", expectedResourceVersion: '"1"' },
+      ),
+      client.paymentOrders.createDraft({} as never, { idempotencyKey: "synthetic-create" }),
+      client.paymentOrders.execute(
+        { payment_order_id: resource.resource_id },
+        { idempotencyKey: "synthetic-execute", expectedResourceVersion: '"1"' },
+      ),
+      client.paymentOrders.explain({ payment_order_id: resource.resource_id }),
+      client.paymentOrders.get({ payment_order_id: resource.resource_id }),
+      client.paymentOrders.list({ page: {} }),
+      client.paymentOrders.reviseDraft({} as never, {
+        idempotencyKey: "synthetic-revise",
+        expectedResourceVersion: '"1"',
+      }),
+      client.paymentOrders.simulate({ payment_order_id: resource.resource_id, revision_id: resource.resource_id }),
+      client.paymentOrders.submitForReview(
+        { payment_order_id: resource.resource_id },
+        { idempotencyKey: "synthetic-submit", expectedResourceVersion: '"1"' },
+      ),
+      client.paymentOrders.validate({ payment_order_id: resource.resource_id, revision_id: resource.resource_id }),
       client.statements.explain(resource),
       client.statements.get(resource),
       client.statements.list({ page_size: 25 }),
@@ -36,11 +66,13 @@ describe("experimental ISO 20022 observation client", () => {
       client.validations.list({ run_kind: "validate" }),
     ]);
 
-    expect(transport.calls).toHaveLength(15);
-    expect(transport.calls.map((call) => call.operationId)).toEqual(Object.keys(iso20022ObservationOperations));
+    expect(transport.calls).toHaveLength(29);
+    expect(transport.calls.map((call) => call.operationId)).toEqual(Object.keys(iso20022Operations));
     for (const call of transport.calls) {
-      const operation = iso20022ObservationOperations[call.operationId as keyof typeof iso20022ObservationOperations];
-      expect(call.metadata).toEqual({ contractVersion: operation.version });
+      const operation = iso20022Operations[call.operationId as keyof typeof iso20022Operations];
+      expect(call.metadata).toMatchObject({ contractVersion: operation.version });
+      expect("idempotencyKey" in (call.metadata as object)).toBe(operation.idempotency === "required");
+      expect("expectedResourceVersion" in (call.metadata as object)).toBe(operation.expectedVersion === "required");
     }
   });
 
@@ -55,6 +87,21 @@ describe("experimental ISO 20022 observation client", () => {
     expect(transport.calls).toEqual([
       { operationId: "statements.get", input, metadata: { contractVersion: 1 } },
       { operationId: "statements.get", input, metadata: { contractVersion: 1 } },
+    ]);
+  });
+
+  it("passes replay keys through without adding local deduplication or retry", async () => {
+    const transport = new RecordingTransport();
+    const client = createIso20022Client(transport);
+    const input = {} as never;
+    const options = { idempotencyKey: "synthetic-replay" };
+
+    await client.paymentOrders.createDraft(input, options);
+    await client.paymentOrders.createDraft(input, options);
+
+    expect(transport.calls).toEqual([
+      { operationId: "payment_orders.create_draft", input, metadata: { contractVersion: 1, ...options } },
+      { operationId: "payment_orders.create_draft", input, metadata: { contractVersion: 1, ...options } },
     ]);
   });
 });

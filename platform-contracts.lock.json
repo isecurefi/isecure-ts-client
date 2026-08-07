@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "2c286b40a77d33e608a797dedf21c427eb62be5b",
+    "revision": "356496d220e508fb9c7d6faf0bf875410726ba0c",
     "processingClientSha256": "a3eadfdf9a86fd99cdf130fd5d17a6b393d546846b6867fd95cf169c898d1fd4",
-    "processingOpenApiSha256": "54c22d1864d205dce475eefeb4e7f9d5f75e9efbe26630979b848f915768f444",
+    "processingOpenApiSha256": "423016795f3388fb600f4be4156592d0f30145a0f269145f2bef76b6c66f3fb6",
     "processingMockSha256": "3e488a2c21ca316f4813471398d367a452f8088103ddb80dcd9f89c595a06603"
   },
   "generated": {
-    "path": "src/generated/iso20022-observations.ts",
-    "sha256": "61f9b6397bf16e1800ab47fa43e94a84eb1d0f3531041fb36e1385c649ac6973",
+    "path": "src/generated/iso20022-contracts.ts",
+    "sha256": "404ef3892e438084e5b180ae48abe700948691dda27d83ced104d1a5b7eff1a1",
     "operationIds": [
       "balances.explain",
       "balances.get",
@@ -17,6 +17,20 @@
       "entries.explain",
       "entries.get",
       "entries.list",
+      "payment_capabilities.explain",
+      "payment_capabilities.get",
+      "payment_capabilities.list",
+      "payment_capabilities.resolve",
+      "payment_orders.cancel_draft",
+      "payment_orders.create_draft",
+      "payment_orders.execute",
+      "payment_orders.explain",
+      "payment_orders.get",
+      "payment_orders.list",
+      "payment_orders.revise_draft",
+      "payment_orders.simulate",
+      "payment_orders.submit_for_review",
+      "payment_orders.validate",
       "statements.explain",
       "statements.get",
       "statements.list",
@@ -29,7 +43,7 @@
     ]
   },
   "generatedMock": {
-    "path": "test-data/generated/iso20022-observation-scenarios.json",
-    "sha256": "500b77950e7d8e8f9e56b0a472522e389478ddd3f4b63a1108d233ceb562240d"
+    "path": "test-data/generated/iso20022-scenarios.json",
+    "sha256": "5c42eb08e53560d1b12d0c93db0aa340aca490f254636c5ca0fa37c946901582"
   }
 }
