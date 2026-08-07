@@ -238,11 +238,12 @@ Browser applications also need the ISECure WS API endpoint to allow the applicat
 
 The runnable terminal implementation lives in [`examples/full-workflow/full-workflow.ts`](examples/full-workflow/full-workflow.ts).
 
-## Experimental ISO 20022 Observations
+## Experimental ISO 20022 Processing Client
 
 The separate `isecure-ts-client/iso20022` entry point exposes the platform's generated, read-only
-balance, entry, statement, transaction, and validation observation operations. It does not change
-the permanent WS Channel/File Exchange client above.
+balance, entry, statement, transaction, and validation observation operations plus the generated
+payment-capability and `PaymentOrder` families. It does not change the permanent WS Channel/File
+Exchange client above.
 
 ```ts
 import { createIso20022Client, Iso20022HttpTransport, Iso20022HttpError } from "isecure-ts-client/iso20022";
@@ -260,6 +261,12 @@ try {
     page_size: 50,
   });
   console.log(page.statements);
+
+  const capabilities = await iso20022.paymentCapabilities.list({
+    connected_account_id: "00000000-0000-4000-8000-000000000002",
+    page: { page_size: 50 },
+  });
+  console.log(capabilities.capabilities);
 } catch (error) {
   if (error instanceof Iso20022HttpError) {
     // error.body is the generated, server-supplied issue envelope.
@@ -271,9 +278,17 @@ try {
 This surface is an experimental adapter over the digest-pinned platform contract, not an ISO
 standard implementation or a support claim. Exact ISO syntax and validation remain upstream and
 server-side. The SDK adds no bank profile, qualification, financial validation, policy, workflow,
-retry, or authority semantics. Every call sends the operation's explicit generated contract
-version; request URLs, response bytes, and duration are bounded, and responses must be JSON. The
-HTTP adapter never retries a request and rejects plaintext non-loopback endpoints.
+retry, approval, execution, or authority semantics. Generated command methods require the exact
+idempotency and expected-resource-version options declared by their operation; the client forwards
+them and performs no local replay or state transition. Every call sends the operation's explicit
+generated contract version; request URLs, JSON request/response bytes, and duration are bounded,
+and responses must be JSON. The HTTP adapter never retries a request and rejects plaintext
+non-loopback endpoints.
+
+The `paymentOrders.execute` method mirrors a generated contract-only operation. Its presence is not
+evidence of a deployed execution handler, bank connection, payment authority, or qualified payment
+support. The server remains responsible for authentication, authorization, exact revision,
+approval, policy, rendering, channel transfer, and indeterminate-outcome handling.
 
 The source pin and artifact hashes are recorded in `platform-contracts.lock.json`. With a compatible
 `bankfiles-platform` checkout next to this repository, maintainers update and verify the generated

@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const generatedPath = resolve(repositoryRoot, "src/generated/iso20022-observations.ts");
-const generatedMockPath = resolve(repositoryRoot, "test-data/generated/iso20022-observation-scenarios.json");
+const generatedPath = resolve(repositoryRoot, "src/generated/iso20022-contracts.ts");
+const generatedMockPath = resolve(repositoryRoot, "test-data/generated/iso20022-scenarios.json");
 const lockPath = resolve(repositoryRoot, "platform-contracts.lock.json");
 const sourcePaths = {
   client: "generated/typescript/processing-client.ts",
@@ -24,6 +24,20 @@ const operationIds = [
   "entries.explain",
   "entries.get",
   "entries.list",
+  "payment_capabilities.explain",
+  "payment_capabilities.get",
+  "payment_capabilities.list",
+  "payment_capabilities.resolve",
+  "payment_orders.cancel_draft",
+  "payment_orders.create_draft",
+  "payment_orders.execute",
+  "payment_orders.explain",
+  "payment_orders.get",
+  "payment_orders.list",
+  "payment_orders.revise_draft",
+  "payment_orders.simulate",
+  "payment_orders.submit_for_review",
+  "payment_orders.validate",
   "statements.explain",
   "statements.get",
   "statements.list",
@@ -67,7 +81,7 @@ if (mode === "write") {
     writeFile(generatedMockPath, generatedMock, "utf8"),
     writeFile(lockPath, `${JSON.stringify(lock, undefined, 2)}\n`, "utf8"),
   ]);
-  console.log(`Synchronized ${operationIds.length} observation operations from ${sourceRevision}.`);
+  console.log(`Synchronized ${operationIds.length} ISO client operations from ${sourceRevision}.`);
 } else {
   const [actualGenerated, actualMock, actualLock] = await Promise.all([
     readFile(generatedPath, "utf8"),
@@ -81,7 +95,7 @@ if (mode === "write") {
   ) {
     throw new Error("platform contract snapshot drifted; run npm run sync:platform-contracts");
   }
-  console.log(`Verified ${operationIds.length} observation operations against ${sourceRevision}.`);
+  console.log(`Verified ${operationIds.length} ISO client operations against ${sourceRevision}.`);
 }
 
 function requireArgument(values, index) {
@@ -118,25 +132,26 @@ function createLock(sourceClient, sourceOpenApi, sourceMock, revision, generated
       processingMockSha256: sha256(sourceMock),
     },
     generated: {
-      path: "src/generated/iso20022-observations.ts",
+      path: "src/generated/iso20022-contracts.ts",
       sha256: sha256(generated),
       operationIds,
     },
     generatedMock: {
-      path: "test-data/generated/iso20022-observation-scenarios.json",
+      path: "test-data/generated/iso20022-scenarios.json",
       sha256: sha256(generatedMock),
     },
   };
 }
 
 function generateMock(sourceMock, revision) {
+  requireSyntheticMockSafety(sourceMock.safety);
   const operations = sourceMock.operations?.filter((operation) => operationIds.includes(operation.operationId));
   if (!Array.isArray(operations) || operations.length !== operationIds.length) {
-    throw new Error("generated processing mock does not contain every observation operation exactly once");
+    throw new Error("generated processing mock does not contain every selected client operation exactly once");
   }
   const actualOperationIds = operations.map((operation) => operation.operationId);
   if (JSON.stringify(actualOperationIds) !== JSON.stringify(operationIds)) {
-    throw new Error("generated processing mock observation order drifted from the client surface");
+    throw new Error("generated processing mock order drifted from the client surface");
   }
   return `${JSON.stringify(
     {
@@ -170,7 +185,7 @@ function generateContract(sourceText, openApi, revision) {
     }
   }
 
-  const roots = new Set(["ProcessingRequestMetadata"]);
+  const roots = new Set(["ProcessingCommandOptions", "ProcessingRequestMetadata", "ProcessingRevisionCommandOptions"]);
   const operations = {};
   for (const operationId of operationIds) {
     const binding = findOperation(openApi, operationId);
@@ -183,12 +198,22 @@ function generateContract(sourceText, openApi, revision) {
     }
     const parameters = (binding.operation.parameters ?? [])
       .filter((parameter) => parameter.in === "path" || parameter.in === "query")
-      .map((parameter) => ({
-        name: parameter.name,
-        location: parameter.in,
-        inputField: requireInputField(parameter["x-isecure-contract-field"], operationId),
-        required: parameter.required === true,
-      }));
+      .map((parameter) => generateParameter(openApi, parameter, operationId));
+    const headerParameters = (binding.operation.parameters ?? []).filter((parameter) => parameter.in === "header");
+    requireContractVersionHeader(operationId, contract.version, headerParameters);
+    const idempotencyKeySchema = requireHeaderSchema(
+      operationId,
+      contract.idempotency,
+      "Idempotency-Key",
+      headerParameters,
+    );
+    const expectedResourceVersionSchema = requireHeaderSchema(
+      operationId,
+      contract.expectedVersion,
+      "If-Match",
+      headerParameters,
+    );
+    const requestBody = requireRequestBodyParity(openApi, binding, contract.input, operationId);
     const placeholders = [...binding.path.matchAll(/\{([^}]+)\}/gu)].map((match) => match[1]);
     const pathParameters = parameters
       .filter((parameter) => parameter.location === "path")
@@ -204,6 +229,11 @@ function generateContract(sourceText, openApi, revision) {
       input: contract.input,
       result: contract.result,
       issues: contract.issues,
+      idempotency: contract.idempotency,
+      expectedVersion: contract.expectedVersion,
+      idempotencyKeySchema,
+      expectedResourceVersionSchema,
+      requestBody,
       parameters,
     };
   }
@@ -216,7 +246,148 @@ function generateContract(sourceText, openApi, revision) {
   const model = requireHeader(sourceText, /^\/\/ model: (.+)$/mu, "model");
   const sourceDigest = requireHeader(sourceText, /^\/\/ source-digest: (.+)$/mu, "source digest");
 
-  return `// GENERATED FILE: DO NOT EDIT.\n// source: isecurefi/bankfiles-platform@${revision}\n// model: ${model}\n// source-digest: ${sourceDigest}\n// Exact decimals and 64-bit integers are JSON decimal strings.\n\n${declarationText}\n\nexport const iso20022ObservationOperations = ${JSON.stringify(operations, undefined, 2)} as const;\n\nexport type Iso20022ObservationOperationId = keyof typeof iso20022ObservationOperations;\n`;
+  return `// GENERATED FILE: DO NOT EDIT.\n// source: isecurefi/bankfiles-platform@${revision}\n// model: ${model}\n// source-digest: ${sourceDigest}\n// Exact decimals and 64-bit integers are JSON decimal strings.\n\n${declarationText}\n\nexport const iso20022Operations = ${JSON.stringify(operations, undefined, 2)} as const;\n\nexport type Iso20022OperationId = keyof typeof iso20022Operations;\n`;
+}
+
+function generateParameter(openApi, parameter, operationId) {
+  const style = parameter.style ?? (parameter.in === "query" ? "form" : "simple");
+  const objectFields = style === "deepObject" ? requireObjectFields(openApi, parameter.schema, operationId) : [];
+  return {
+    name: parameter.name,
+    location: parameter.in,
+    inputField: requireInputField(parameter["x-isecure-contract-field"], operationId),
+    required: parameter.required === true,
+    style,
+    objectFields,
+  };
+}
+
+function requireObjectFields(openApi, schemaReference, operationId) {
+  const schema = resolveSchema(openApi, schemaReference, operationId);
+  if (schema.type !== "object" || schema.additionalProperties !== false || schema.properties === undefined) {
+    throw new Error(`${operationId} deep-object parameter must reference a closed object schema`);
+  }
+  const fields = Object.keys(schema.properties);
+  if (fields.length === 0) throw new Error(`${operationId} deep-object parameter has no fields`);
+  return fields;
+}
+
+function resolveSchema(openApi, schemaReference, operationId) {
+  const reference = schemaReference?.$ref;
+  const prefix = "#/components/schemas/";
+  if (typeof reference !== "string" || !reference.startsWith(prefix)) {
+    throw new Error(`${operationId} parameter schema must be a component reference`);
+  }
+  const schema = openApi.components?.schemas?.[reference.slice(prefix.length)];
+  if (schema === undefined) throw new Error(`${operationId} parameter schema does not resolve`);
+  return schema;
+}
+
+function requireHeaderSchema(operationId, mode, headerName, headerParameters) {
+  if (mode !== "none" && mode !== "required") throw new Error(`${operationId} has unsupported ${headerName} mode`);
+  const matches = headerParameters.filter((parameter) => parameter.name === headerName);
+  if (matches.length !== (mode === "required" ? 1 : 0)) {
+    throw new Error(`${operationId} ${headerName} binding disagrees with its operation contract`);
+  }
+  if (mode === "none") return null;
+  const parameter = matches[0];
+  if (parameter.required !== true) throw new Error(`${operationId} ${headerName} must be required`);
+  const schema = parameter.schema;
+  if (schema?.type !== "string") throw new Error(`${operationId} ${headerName} must have an inline string schema`);
+  const supportedFields = new Set(["type", "minLength", "maxLength", "pattern"]);
+  if (Object.keys(schema).some((field) => !supportedFields.has(field))) {
+    throw new Error(`${operationId} ${headerName} has an unsupported schema constraint`);
+  }
+  const minLength = requireOptionalLength(schema.minLength, operationId, headerName, "minLength");
+  const maxLength = requireOptionalLength(schema.maxLength, operationId, headerName, "maxLength");
+  if (minLength !== null && maxLength !== null && minLength > maxLength) {
+    throw new Error(`${operationId} ${headerName} has an invalid length range`);
+  }
+  const pattern = schema.pattern ?? null;
+  if (pattern !== null) {
+    if (typeof pattern !== "string" || pattern.length === 0) {
+      throw new Error(`${operationId} ${headerName} pattern must be a non-empty string`);
+    }
+    try {
+      new RegExp(pattern, "u");
+    } catch {
+      throw new Error(`${operationId} ${headerName} pattern is not a valid regular expression`);
+    }
+  }
+  return { type: "string", minLength, maxLength, pattern };
+}
+
+function requireContractVersionHeader(operationId, version, headerParameters) {
+  const expectedNames = [
+    "ISECure-Contract-Version",
+    ...(headerParameters.some((parameter) => parameter.name === "Idempotency-Key") ? ["Idempotency-Key"] : []),
+    ...(headerParameters.some((parameter) => parameter.name === "If-Match") ? ["If-Match"] : []),
+  ];
+  const actualNames = headerParameters.map((parameter) => parameter.name);
+  if (JSON.stringify(actualNames) !== JSON.stringify(expectedNames)) {
+    throw new Error(`${operationId} has an unsupported or misordered header binding`);
+  }
+  const parameter = headerParameters[0];
+  if (
+    parameter?.name !== "ISECure-Contract-Version" ||
+    parameter.required !== true ||
+    parameter.schema?.type !== "integer" ||
+    parameter.schema.const !== version ||
+    JSON.stringify(Object.keys(parameter.schema).sort()) !== JSON.stringify(["const", "type"])
+  ) {
+    throw new Error(`${operationId} contract-version header disagrees with its operation contract`);
+  }
+}
+
+function requireOptionalLength(value, operationId, headerName, field) {
+  if (value === undefined) return null;
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(`${operationId} ${headerName} ${field} must be a non-negative integer`);
+  }
+  return value;
+}
+
+function requireSyntheticMockSafety(value) {
+  const expected = {
+    syntheticOnly: true,
+    tenantAuthority: false,
+    customerData: false,
+    productionCredentials: false,
+    genericTools: [],
+    filesystemAccess: false,
+    networkAccess: false,
+    financialSideEffects: false,
+  };
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    JSON.stringify(Object.keys(value).sort()) !== JSON.stringify(Object.keys(expected).sort()) ||
+    Object.entries(expected).some(
+      ([field, expectedValue]) => JSON.stringify(value[field]) !== JSON.stringify(expectedValue),
+    )
+  ) {
+    throw new Error("generated processing mock does not satisfy the client safety boundary");
+  }
+}
+
+function requireRequestBodyParity(openApi, binding, inputContract, operationId) {
+  const schema = binding.operation.requestBody?.content?.["application/json"]?.schema;
+  const hasBody = schema !== undefined;
+  if (binding.method === "get" && hasBody) throw new Error(`${operationId} GET binding cannot have a request body`);
+  if (binding.method === "post" && !hasBody) throw new Error(`${operationId} POST binding must have a request body`);
+  if (binding.method !== "get" && binding.method !== "post") {
+    throw new Error(`${operationId} uses an unsupported HTTP method`);
+  }
+  if (hasBody) {
+    if (binding.operation.requestBody.required !== true) {
+      throw new Error(`${operationId} JSON request body must be required`);
+    }
+    resolveSchema(openApi, schema, operationId);
+    if (schema.$ref !== `#/components/schemas/${inputContract}`) {
+      throw new Error(`${operationId} request body disagrees with its input contract`);
+    }
+  }
+  return hasBody;
 }
 
 function findOperation(openApi, operationId) {
