@@ -4,7 +4,12 @@
 
 ## What the public API is
 
-The supported surface is everything exported from the package root (`isecure-ts-client`) and the `./wsapi-types` subpath. Anything not exported from those entry points — including files under `src/lib/` imported by deep path, and the generated `src/generated/` types beyond the published `./wsapi-types` — is internal and may change at any time.
+The supported surface is everything exported from the package root (`isecure-ts-client`) and the
+`./wsapi-types` subpath. The separate `./iso20022` subpath is public but explicitly experimental: it
+is versioned with the package, while its generated operation and data contracts can change when the
+digest-pinned platform contract changes. Anything not exported from those entry points—including
+files under `src/lib/` imported by deep path and other files under `src/generated/`—is internal and
+may change at any time.
 
 ## What each release type means
 
@@ -19,6 +24,9 @@ Adding a new `status` to `AuthState`, a new `AuthErrorReason`, or a new error su
 ## Errors
 
 The error hierarchy (`ISecureError` and subclasses) is part of the public API. New subclasses may be added in minor releases; existing classes and their documented fields are stable within a major version.
+
+`Iso20022TransportError` and `Iso20022HttpError` belong only to the experimental `./iso20022`
+surface. They do not replace or change the permanent WS Channel error hierarchy.
 
 ## Runtime support
 
