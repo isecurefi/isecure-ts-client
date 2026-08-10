@@ -41,6 +41,8 @@ export {
   UNSUPPORTED_OPERATIONS,
   type ApiErrorResponse,
   type ApiResponse,
+  type BankConnectionCertificateDescriptor,
+  type BankConnectionDescriptor,
   type ConfigCertsRequest,
   type ConfigCertsResponse,
   type DeleteFileResponse,
