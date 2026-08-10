@@ -22,6 +22,20 @@
 - Added `parseMode` / `parseLogLevel` (and `isMode` / `isLogLevel`) input guards so untrusted values such as environment variables are validated instead of unchecked-cast.
 - Tightened the `classifyErrorReason` "unconfirmed" heuristic to avoid matching unrelated responses that merely contain the word "confirm".
 
+## [2.1.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.0.0...isecure-ts-client-v2.1.0) (2026-08-10)
+
+
+### Features
+
+* add experimental ISO observation client ([f2a6dc5](https://github.com/isecurefi/isecure-ts-client/commit/f2a6dc591388cee6411f4cc39a062fd0a4a858e6))
+* add payment operations to ISO client ([0dc71ec](https://github.com/isecurefi/isecure-ts-client/commit/0dc71ec49386236c2bd4e57945df4eae2c8566ec))
+* type effective bank connections ([0273aaa](https://github.com/isecurefi/isecure-ts-client/commit/0273aaa2261ce085e412bb006e585ed8d518ffb6))
+
+
+### Bug Fixes
+
+* resolve js-yaml audit advisory ([1e594ba](https://github.com/isecurefi/isecure-ts-client/commit/1e594ba5c38195d481061fac78bb072eb572b6a9))
+
 ## [2.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v1.3.2...isecure-ts-client-v2.0.0) (2026-08-05)
 
 
