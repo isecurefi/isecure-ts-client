@@ -13,79 +13,19 @@ export interface paths {
         };
         /**
          * InitRegister
-         * @description Before register (or login), client must fetch `challenge` from the API. Then on register (or login), the challenge must be passed along to the API (as response to the challenge). The challenge is always fresh for some period of time and the API validates it when passed with register (or login). The challenge has form of `base64-string|timestamp|uuid`. For example:
-         *
-         *     ```ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e```
-         *
-         *     **NOTE:** The call must contain the same email as used for registration itself.
+         * @description Before register (or login), client must fetch `challenge` from the API. Then on register (or login), the challenge must be passed along to the API (as response to the challenge). The challenge is always fresh for some period of time and the API validates it when passed with register (or login). The challenge has form of `base64-string|timestamp|uuid`. For example:\n\n```ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e```\n\n**NOTE:** The call must contain the same email as used for registration itself.\n
          */
         get: operations["InitRegister"];
         /**
          * Register
-         * @description You need to register both *admin* and *data* accounts with the same email address. Both accounts share the same data, but are used for different purposes. *Admin* account must be registered first, then *data* account.
-         *
-         *     *Admin* account is used to configure setup with **Certs** and **Pgp** operations, while the *data* account is used with **Files** operations only. Both accounts use **Account** and **Session** operations.
-         *
-         *     *Admin* account always requires SMS MFA during login, whilst *data* account does not. Generally, the *data* account is considered *read-noly* when no PGP keys are configured, since PGP Keys are used to verify file upload signatures and are thus required to successfully upload files with **Files** *UploadFile* operation.
-         *
-         *     Registrations are independent for both accounts, *admin* and *data* and both require phone number and email verifications.
-         *
-         *     `email` is the login username for both accounts and `mode` defines the selected &quot;mode&quot; for the login, i.e. *admin* or *data*.
-         *
-         *     Before registration client must fetch challenge from API (see Account InitRegister operation) and pass it back within the `ChResp` parameter.
-         *
-         *     The following parameters `name`, `phone`, and `company` are required and must be valid (`phone`, `email`) as they need to be confirmed before registration becomes successful and login possible.
-         *
-         *     Client must RSA encrypt (OAEP padding) the _password_ and the challenge _timestamp_ as string in the form `password||timestamp`, base64 encode it and provide the resulting string as `Encrypted` parameter. The RSA encryption can be done e.g. for illustration purposes within command line with openssl rsautl:
-         *     ```
-         *     echo -n Toddler_..123456789012345\|\|1475175151231 |
-         *     	openssl rsautl -oaep -encrypt -pubin -inkey test.pem |
-         *     	base64
-         *
-         *     ```
-         *
-         *     The **test** API's RSA public key is as follows:
-         *
-         *     ```
-         *     % cat test.pem
-         *     -----BEGIN PUBLIC KEY-----
-         *     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkuSaoSZztGAIGDTY7Rff
-         *     psBHJJT1k207UodOJbYFhHAq0lWJnvMPLl5Q1DUUZdTGtTdL8Dsaj/Bo2+gSykMM
-         *     R5QiKewvQsLfvqjwOO8JDItnhJl0lUqcPpdQV4M/Ai3YNRjNcVy4a+pichqtSAWl
-         *     9S1HV01MNeouk8PEr/zoUasmgfO3mz6N6XTUtF/tIi8K2kBOsLAtqltihFSd/zT8
-         *     ifYZE9cZTJ09lUs7kMz1wxFIsiegaE1jUYV+VSLu3PJ97oKhQpqop8EnkBAoBl6r
-         *     mdmFryBQIdakPIdd4rO5Yg+to10n4u7Wij9ePIwWMfbqY4QoW5nXqMgFJQkIt4TG
-         *     eQIDAQAB
-         *     -----END PUBLIC KEY-----
-         *     ```
-         *
-         *     The **production** API's RSA public key is as follows:
-         *
-         *     ```
-         *     % cat prod.pem
-         *     -----BEGIN PUBLIC KEY-----
-         *     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7wx4l7P3eLsaEyK7ZRME
-         *     g5urEHwaEoY9LjkYcpMw9gmPIi3RoGjQX7HzPad2D7ES2yIGdmyxjN8R2LyFa8ke
-         *     EE+VY3ISYzP2cOjd/zDkX01yjDXQLRxntXbtqIypGQAzmZbCyIB226ZKEE+ldh6M
-         *     YyM41YWYikfocYssFEjY7fpPGeUg4FOmHmyWIZeMkXYovskoi1jZ1Ay1qn95XlpA
-         *     /Ptru2efro4T1xksv4WBBrj8bMNwdDpf4oyzH2PKYkn3/KlNTBCHlAmzP0jd4pIa
-         *     N0tAf2m8TcNq7kuBzyfs8AcCUj870p8SEiko0PMx6K+zVsTVWsxfUX+/+kmapmp/
-         *     AwIDAQAB
-         *     -----END PUBLIC KEY-----
-         *     ```
-         *
-         *
-         *
-         *     **NOTE:** Password must be at least 20 characters long, have lower and upper case letters, numbers, and special characters.
-         *
-         *     **NOTE:** Phone number must be provided with country code, e.g. `+358404982201`.
+         * @description You need to register both *admin* and *data* accounts with the same email address. Both accounts share the same data, but are used for different purposes. *Admin* account must be registered first, then *data* account.\n\n*Admin* account is used to configure setup with **Certs** and **Pgp** operations, while the *data* account is used with **Files** operations only. Both accounts use **Account** and **Session** operations.\n\n*Admin* account always requires MFA during login. SMS MFA remains available, and TOTP can be enrolled after SMS bootstrap. *Data* account does not require MFA. Generally, the *data* account is considered *read-only* when no PGP keys are configured, since PGP Keys are used to verify file upload signatures and are thus required to successfully upload files with **Files** *UploadFile* operation.\n\nRegistrations are independent for both accounts, *admin* and *data* and both require phone number and email verifications.\n\n`email` is the login username for both accounts and `mode` defines the selected "mode" for the login, i.e. *admin* or *data*.\n\nBefore registration client must fetch challenge from API (see Account InitRegister operation) and pass it back within the `ChResp` parameter.\n\nThe following parameters `name`, `phone`, and `company` are required and must be valid (`phone`, `email`) as they need to be confirmed before registration becomes successful and login possible.\n\nClient must RSA encrypt (OAEP padding) the _password_ and the challenge _timestamp_ as string in the form `password||timestamp`, base64 encode it and provide the resulting string as `Encrypted` parameter. The RSA encryption can be done e.g. for illustration purposes within command line with openssl rsautl:\n```\necho -n Toddler_..123456789012345\\|\\|1475175151231 |\n\topenssl rsautl -oaep -encrypt -pubin -inkey test.pem |\n\tbase64\n\n```\n\nThe **test** API's RSA public key is as follows:\n\n```\n% cat test.pem\n-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkuSaoSZztGAIGDTY7Rff\npsBHJJT1k207UodOJbYFhHAq0lWJnvMPLl5Q1DUUZdTGtTdL8Dsaj/Bo2+gSykMM\nR5QiKewvQsLfvqjwOO8JDItnhJl0lUqcPpdQV4M/Ai3YNRjNcVy4a+pichqtSAWl\n9S1HV01MNeouk8PEr/zoUasmgfO3mz6N6XTUtF/tIi8K2kBOsLAtqltihFSd/zT8\nifYZE9cZTJ09lUs7kMz1wxFIsiegaE1jUYV+VSLu3PJ97oKhQpqop8EnkBAoBl6r\nmdmFryBQIdakPIdd4rO5Yg+to10n4u7Wij9ePIwWMfbqY4QoW5nXqMgFJQkIt4TG\neQIDAQAB\n-----END PUBLIC KEY-----\n```\n\nThe **production** API's RSA public key is as follows:\n\n```\n% cat prod.pem\n-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7wx4l7P3eLsaEyK7ZRME\ng5urEHwaEoY9LjkYcpMw9gmPIi3RoGjQX7HzPad2D7ES2yIGdmyxjN8R2LyFa8ke\nEE+VY3ISYzP2cOjd/zDkX01yjDXQLRxntXbtqIypGQAzmZbCyIB226ZKEE+ldh6M\nYyM41YWYikfocYssFEjY7fpPGeUg4FOmHmyWIZeMkXYovskoi1jZ1Ay1qn95XlpA\n/Ptru2efro4T1xksv4WBBrj8bMNwdDpf4oyzH2PKYkn3/KlNTBCHlAmzP0jd4pIa\nN0tAf2m8TcNq7kuBzyfs8AcCUj870p8SEiko0PMx6K+zVsTVWsxfUX+/+kmapmp/\nAwIDAQAB\n-----END PUBLIC KEY-----\n```\n\n\n\n**NOTE:** Password must be at least 20 characters long, have lower and upper case letters, numbers, and special characters.\n\n**NOTE:** Phone number must be provided with country code, e.g. `+358404982201`.
          */
         put: operations["Register"];
         /**
          * VerifyEmail
-         * @description Provide _Code_ received to _Email_ address for email address verification. Provide also _AccessToken_ received during login.
+         * @description Provide the _Code_ received by email and the _AccessToken_ received during login. The access token is only used to complete verification and should not be persisted.
          *
-         *     **NOTE**: _Phone_ and _EMail_ verification can be bypassed per API key on request to _dan.forsberg@isecure.fi_. E.g. if integrator verifies EMail and Phone beforehand.
+         *     **NOTE:** Phone and email verification bypass is an integrator-level policy option for deployments where the integrator has already verified those attributes. Contact ISECure support if this is required for your API key.
          */
         post: operations["VerifyEmail"];
         delete?: never;
@@ -103,15 +43,15 @@ export interface paths {
         };
         /**
          * InitPasswordReset
-         * @description Start password reset by getting confirmation SMS code.
+         * @description Start password reset for the selected email and mode. Cognito sends a confirmation code to the configured recovery channel. This flow is separate from admin login MFA.
          */
         get: operations["InitPasswordReset"];
         put?: never;
         /**
          * PasswordReset
-         * @description Set new _password_ for user with _Email_. Provide received SMS _Code_.
+         * @description Set a new _password_ for the selected email and mode. Provide the confirmation _Code_ from the password reset flow.
          *
-         *     **NOTE:** the password must be encrypted, see Register for more details.
+         *     **NOTE:** The new password must be RSA encrypted with the challenge timestamp; see Register for encryption details.
          */
         post: operations["PasswordReset"];
         delete?: never;
@@ -131,9 +71,9 @@ export interface paths {
         put?: never;
         /**
          * VerifyPhone
-         * @description Confirm phone number for _Email_ _Mode_ user, with _Code_ received via SMS.
+         * @description Confirm the phone number for the _Email_ and _Mode_ user with the _Code_ received by SMS.
          *
-         *     **NOTE**: _Phone_ and _EMail_ verification can be bypassed per API key on request to _dan.forsberg@isecure.fi_. E.g. if integrator verifies EMail and Phone beforehand.
+         *     **NOTE:** Phone and email verification bypass is an integrator-level policy option for deployments where the integrator has already verified those attributes. Contact ISECure support if this is required for your API key.
          */
         post: operations["VerifyPhone"];
         delete?: never;
@@ -142,7 +82,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/certs/": {
+    "/certs": {
         parameters: {
             query?: never;
             header?: never;
@@ -151,15 +91,13 @@ export interface paths {
         };
         /**
          * ListCerts
-         * @description List certs from all banks
+         * @description List bank connections visible to the authenticated account. Connections includes directly owned and same-API-key shared certificate status without exposing the linked owner or shared certificate material. The legacy Certs field remains limited to certificates directly owned by this account.
          */
         get: operations["ListCerts"];
         put?: never;
         /**
          * ConfigCerts
-         * @description Configure certificate usage parameters. Currently, only settable (permanent) parameter is `export`. Set it to `disabled` for disallowing private key export.
-         *
-         *     **NOTE**: When export is disabled it is permanent, it can not be re-enabled through the API (safety feature).
+         * @description Reserved admin operation for configuring certificate usage parameters such as private-key export policy. The current deployed implementation validates authorization and then returns `configcerts not yet implemented`; do not build production workflows that depend on this operation changing account state yet.
          */
         post: operations["ConfigCerts"];
         delete?: never;
@@ -178,15 +116,13 @@ export interface paths {
         get?: never;
         /**
          * ShareCerts
-         * @description Share certs with an existing account _ExtEmail_ under the same API Key.
-         *
-         *     If the _ExtEmail_ account does not have the specific bank certificate (key pair), then certs (key pair) from this account will be used (shared), if any. Both accounts must be registered and using the same integrator API Key.
+         * @description Share this account's bank certificates with an existing _ExtEmail_ account under the same API key. The caller must be authenticated in `admin` mode and must own the certificate being shared. The target account can then use the shared certificate for bank operations, but certificate/private-key export remains available only to the certificate owner.
          */
         put: operations["ShareCerts"];
         post?: never;
         /**
          * UnshareCerts
-         * @description Unshare certs with an existing _ExtEmail_ account.
+         * @description Reserved admin operation for removing certificate sharing from an existing _ExtEmail_ account under the same API key. The current deployed implementation validates authorization and then returns `unlinkaccount not yet implemented`; contact ISECure support if certificate sharing must be removed before this operation is fully available.
          */
         delete: operations["UnshareCerts"];
         options?: never;
@@ -203,25 +139,17 @@ export interface paths {
         };
         /**
          * ExportCert
-         * @description Download bank certificate and private key encrypted with stored PGP key.
-         *
-         *     **NOTE**: The previously uploaded `PgpKeyId` must have purpose type `export`. I.e. purpose type `authorize` PGP keys can not be used for exporting.
-         *
-         *     **NOTE**: If `export` has been set to `disabled` (see ConfigCerts), then exporting private keys is not possible through API.
+         * @description Download bank certificate and private key encrypted with stored PGP key.\n\n**NOTE**: The previously uploaded `PgpKeyId` must have purpose type `export`. I.e. purpose type `authorize` PGP keys cannot be used for exporting.\n\n**NOTE**: If `export` has been set to `disabled` (see ConfigCerts), then exporting private keys is not possible through API.
          */
         get: operations["ExportCert"];
         /**
          * ImportCert
-         * @description Provide _WsUserId_, _Company_, _PrivateKey_, and _Certificate_ for importing existing WS Channel certificate and private key. _Company_ must match with the contract with the bank. Certificate(s) and private key(s) must be PEM formatted.
-         *
-         *     **NOTE:** _EncCcertificate_ and _EncPrivatekey_ are for DanskeBank only.
+         * @description Provide _WsUserId_, _Company_, _PrivateKey_, and _Certificate_ for importing existing WS Channel certificate and private key. _Company_ must match with the contract with the bank. Certificate(s) and private key(s) must be PEM formatted.\n\n**NOTE:** _EncCertificate_ and _EncPrivatekey_ are for DanskeBank only.
          */
         put: operations["ImportCert"];
         /**
          * EnrollCert
-         * @description Provide WS-Channel user id, _WsUserId_, _Company_, and PIN _Code_ for _Bank_ certificate enrollment. _Company_ must match with the contract with the bank and is part of enrollment process. Note that certificate private key is securely generated and stored encrypted with AWS KMS encrypted authentication on API side. Certificates are automatically renewed when needed.
-         *
-         *     **NOTE:** For OP bank, ensure that you set the PIN code blocks 1 and 2 in correct order. If not initially in correct order, bank will lock the registration and you need to call them for unlock.
+         * @description Provide WS-Channel user id, _WsUserId_, _Company_, and PIN _Code_ for _Bank_ certificate enrollment. _Company_ must match with the contract with the bank and is part of enrollment process. Note that certificate private key is securely generated and stored encrypted with AWS KMS encrypted authentication on API side. Certificates are automatically renewed when needed.\n\n**NOTE:** For OP bank, ensure that you set the PIN code blocks 1 and 2 in correct order. If not initially in correct order, bank will lock the registration and you need to call them for unlock.
          */
         post: operations["EnrollCert"];
         delete?: never;
@@ -239,40 +167,25 @@ export interface paths {
         };
         /**
          * ListFiles
-         * @description Asks _bank_ to list downloadable files matching filters. _Status_ can be e.g. _NEW_, _ALL_, or _DLD_. _Filetype_ is bank specific (ALL is not accepted), see bank specification. _Bank_ is the name of the bank. Returns a list of _FileDescriptors_.
+         * @description Ask the selected _Bank_ to list downloadable files matching filters. _Status_ can be e.g. _NEW_, _ALL_, or _DLD_. _FileType_ is bank specific (`ALL` is not accepted); see the bank specification. Returns a list of _FileDescriptors_.
          *
-         *     **NOTE:** Certificate must be enrolled before files can be listed, downloaded or uploaded.
+         *     **NOTE:** Certificate must be enrolled before files can be listed, downloaded, or uploaded.
          *
-         *     **NOTE:** The uploaded files do not show up on the file listing.
+         *     **NOTE:** Uploaded files do not show up in the bank file listing.
          *
-         *     ```
-         *     % export SESSION=~/.wscli/settings.yaml
-         *     % wscli session login -c $SESSION
-         *     %
-         *     % curl -H Authorization:`yq -r .settings.idtoken $SESSION` \
-         *            -H x-api-key:`yq -r .settings.apikey $SESSION` \
-         *            https://ws-api.isecure.fi/v2/files/danskebank
-         *     ```
+         *     ~~~sh
+         *     export SESSION=~/.wscli/settings.yaml
+         *     wscli session login -c $SESSION
+         *
+         *     curl -H Authorization:$(yq -r .settings.idtoken $SESSION) \
+         *          -H x-api-key:$(yq -r .settings.apikey $SESSION) \
+         *          https://ws-api.isecure.fi/v2/files/danskebank
+         *     ~~~
          */
         get: operations["ListFiles"];
         /**
          * UploadFile
-         * @description Uploads file to bank if PGP signature(s) are valid. _FileContents_ is a string of _Base64_ encoded file contents. _FileType_ is bank specific. _Signature_ is detached PGP signature or concatenation of PGP detached signatures in ASCII armor format. PGP signatures are used for authorizing file uploads. Currently one valid PGP authorize registered key signature is enough. _FileName_ is upload filename.
-         *
-         *     **NOTE:** The uploaded files do not show up on the file listing from bank.
-         *
-         *     ```
-         *     % export SESSION=~/.wscli/settings.yaml
-         *     % wscli session login -c $SESSION
-         *     % export APIKEY=`yq -r .settings.apikey $SESSION`
-         *     % export IDTOKEN=`yq -r .settings.idtoken $SESSION`
-         *     %
-         *     % curl -X PUT -H Content-Type:application/json \
-         *            -H Authorization:$IDTOKEN \
-         *            -H x-api-key:$APIKEY \
-         *            -d @request-example.json \
-         *            https://ws-api.isecure.fi/v2/files/danskebank
-         *     ```
+         * @description Uploads file to bank if PGP signature(s) are valid. _FileContents_ is a string of _Base64_ encoded file contents. _FileType_ is bank specific. _Signature_ is detached PGP signature or concatenation of PGP detached signatures in ASCII armor format. PGP signatures are used for authorizing file uploads. Currently one valid PGP authorize registered key signature is enough. _FileName_ is upload filename.\n\n**NOTE:** The uploaded files do not show up on the file listing from bank.\n\n```\n% export SESSION=~/.wscli/settings.yaml\n% wscli session login -c $SESSION\n% export APIKEY=`yq -r .settings.apikey $SESSION`\n% export IDTOKEN=`yq -r .settings.idtoken $SESSION`\n%\n% curl -X PUT -H Content-Type:application/json \\ \n       -H Authorization:$IDTOKEN \\ \n       -H x-api-key:$APIKEY \\ \n       -d @request-example.json \\ \n       https://ws-api.isecure.fi/v2/files/danskebank\n```\n\n
          */
         put: operations["UploadFile"];
         post?: never;
@@ -291,14 +204,14 @@ export interface paths {
         };
         /**
          * DownloadFile
-         * @description Downloads file identified with _filereference_, _filetype_, and _bank_. _Filereference_ is received in file list from bank. Returns _base64_ encoded file content.
+         * @description Download a bank file identified by _Bank_, _FileType_, and _FileReference_. The file reference is received from ListFiles. The response Content field contains the file content returned by the bank, typically Base64 encoded.
          */
         get: operations["DownloadFile"];
         put?: never;
         post?: never;
         /**
          * DeleteFile
-         * @description Deletes file on bank side. File is identified with _filereference_.
+         * @description Delete or mark as deleted a bank-side file identified by _Bank_, _FileType_, and _FileReference_. Use values returned by ListFiles. Bank support and final semantics are bank-specific.
          */
         delete: operations["DeleteFile"];
         options?: never;
@@ -315,7 +228,7 @@ export interface paths {
         };
         /**
          * ListAccounts
-         * @description List accounts registered under the integrator's API key. Account that created the API key is authorized to call this.
+         * @description List accounts registered under the authenticated integrator API key. This is an API key owner/admin operation intended for integrators managing their own customer accounts.
          */
         get: operations["ListAccounts"];
         put?: never;
@@ -335,18 +248,18 @@ export interface paths {
         };
         /**
          * ListKeys
-         * @description List PGP keys.
+         * @description List PGP public keys registered for the authenticated account. `authorize` keys verify UploadFile signatures. `export` keys encrypt exported certificate private keys.
          */
         get: operations["ListKeys"];
         /**
          * UploadKey
-         * @description Upload PGP key.
+         * @description Upload an ASCII-armored PGP public key for the authenticated admin account. Use purpose `authorize` for detached UploadFile signature verification, or `export` for encrypting ExportCert private-key material. The same PGP key cannot be registered for both purposes at the same time.
          */
         put: operations["UploadKey"];
         post?: never;
         /**
          * DeleteKey
-         * @description Delete PGP key.
+         * @description Reserved admin operation for deleting a registered PGP key by 8-character key id. The current deployed implementation validates authorization and key lookup, but returns `pgpDelete is not yet supported`; do not build production workflows that rely on key deletion yet.
          */
         delete: operations["DeleteKey"];
         options?: never;
@@ -363,11 +276,7 @@ export interface paths {
         };
         /**
          * InitLogin
-         * @description Before login, client must fetch `challenge` from the API. Then on login, the challenge must be passed along to the API (as response to the challenge). The challenge is always fresh for some period of time and the API validates it when passed with login. The challenge has form of `base64-string|timestamp|uuid`. For example:
-         *
-         *     ```ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e```
-         *
-         *     **NOTE:** The call must contain the same email as used for registration itself.
+         * @description Before login, client must fetch `challenge` from the API. Then on login, the challenge must be passed along to the API (as response to the challenge). The challenge is always fresh for some period of time and the API validates it when passed with login. The challenge has form of `base64-string|timestamp|uuid`. For example:\n\n```ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e```\n\n**NOTE:** The call must contain the same email as used for registration itself.
          */
         get: operations["InitLogin"];
         put?: never;
@@ -375,23 +284,20 @@ export interface paths {
          * Login
          * @description After `getchallenge`, call `login` with _Email_, _Mode_, and RSA encrypted _admin_ or _data_ account _password_ and _challenge timestamp_. For further API calls (requiring authorization), include the received _IdToken_ into the Authorization header of the request (pass idtoken as required parameter with the client SDK API calls). The _IdToken_ expires in _ExpiresIn_ seconds, after which new login must be performed.
          *
-         *     **NOTE:** In case SMS _Code_ is required, the call returns only _Session_, _ResponseCode_, and _ResponseText_ as the login process continues with the _LoginMFA_ API call.
+         *     **NOTE:** In case MFA _Code_ is required, the call returns _Session_, _ChallengeName_, _ResponseCode_, and _ResponseText_ as the login process continues with the _LoginMFA_ API call. Echo _ChallengeName_ back to `LoginMFA` so the API can distinguish SMS (`SMS_MFA`) from authenticator/TOTP (`SOFTWARE_TOKEN_MFA`) codes.
          *
          *     **NOTE:** If _Email_ has not been yet verified, successful login provides only _ResponseCode_, _ResponseText_, and an _AccessToken_ that must be used to verify email address.
          *
-         *
-         *     ```
-         *     % CHALLENGE=`curl -s https://ws-api.test.isecure.fi/v2/session/dan.forsberg@isecure.fi/data | jq -r .Challenge`
-         *     % TIMESTAMP=`echo $CHALLENGE | cut -f 2 -d \|`
-         *     % ENCRYPTED=`echo -n testPassword..123455677098811\|\|$TIMESTAMP | openssl rsautl -oaep -encrypt -pubin -inkey test.pem | base64
-         *     ```
+         *     ~~~sh
+         *     CHALLENGE=$(curl -s https://ws-api.isecure.fi/v2/session/user@example.com/data | jq -r .Challenge)
+         *     TIMESTAMP=$(echo $CHALLENGE | cut -f 2 -d \|)
+         *     ENCRYPTED=$(echo -n testPassword..123455677098811\|\|$TIMESTAMP | openssl rsautl -oaep -encrypt -pubin -inkey prod.pem | base64)
+         *     ~~~
          */
         post: operations["Login"];
         /**
          * Logout
-         * @description Logout user.
-         *
-         *     **NOTE**: AWS Cognito allows user logout, but the received authorization _IdToken_ **is still valid**. When the optional _AccessToken_ parameter is also provided, the _IdToken_ is also revoked.
+         * @description Logout user.\n\n**NOTE**: AWS Cognito allows user logout, but the received authorization _IdToken_ **is still valid**. When the optional _AccessToken_ parameter is also provided, the _IdToken_ is also revoked.
          */
         delete: operations["Logout"];
         options?: never;
@@ -409,9 +315,29 @@ export interface paths {
         get?: never;
         /**
          * LoginMFA
-         * @description Send SMS _Code_ along with previously received _Session_ token. If _Email_ has not been yet verified, successful login provides only _ResponseCode_, _ResponseText_, and an _AccessToken_ that must be used to verify email address. If email is already verified and the login succeeds, add the _IdToken_ from the login response as Authorization header in API requests requiring authorization (i.e. pass as parameter to client SDK API calls). _IdToken_ expires in _ExpiresIn_ seconds.
+         * @description Send MFA _Code_ along with the previously received _Session_ token. For SMS MFA use the SMS code; for software-token MFA use the authenticator/TOTP code and echo `ChallengeName: SOFTWARE_TOKEN_MFA`. If _Email_ has not been yet verified, successful login provides only _ResponseCode_, _ResponseText_, and an _AccessToken_ that must be used to verify email address. If email is already verified and the login succeeds, add the _IdToken_ from the login response as Authorization header in API requests requiring authorization (i.e. pass as parameter to client SDK API calls). _IdToken_ expires in _ExpiresIn_ seconds.
          */
         put: operations["LoginMFA"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/session/{Email}/{Mode}/verifytotp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * VerifyTOTP
+         * @description Confirm Google Authenticator (TOTP) enrollment. After a `LoginMFA` call with `SetupTOTP: true`, scan the returned `OtpauthUri`/`SecretCode` into an authenticator app and submit the generated 6-digit _Code_ together with the _AccessToken_ from that login response. On success, TOTP becomes the preferred MFA factor (SMS remains enabled as a fallback). No phone number parameter is required.
+         */
+        put: operations["VerifyTOTP"];
         post?: never;
         delete?: never;
         options?: never;
@@ -426,11 +352,12 @@ export interface components {
         /**
          * @example {
          *       "AdminMode": "registered",
+         *       "Certs": [],
          *       "DataMode": "unregistered",
          *       "Email": "dan.forsberg@isecure.fi",
+         *       "Export": "allowed",
          *       "Name": "Dan Forsberg",
-         *       "Phone": "+358404835507",
-         *       "export": "allowed"
+         *       "Phone": "+358404835507"
          *     }
          */
         AccountDescriptor: {
@@ -456,6 +383,28 @@ export interface components {
             Name: string;
             /** @description Phone number with country code and `+` in front */
             Phone: string;
+        };
+        /** @description Minimal certificate status for bank connection discovery */
+        BankConnectionCertificateDescriptor: {
+            /** @description Certificate expiry reported by the certificate parser */
+            Expires: string;
+            /**
+             * @description How the certificate is used for this bank connection
+             * @enum {string}
+             */
+            Purpose: "signing" | "encryption";
+        };
+        /** @description A bank connection the authenticated account can use */
+        BankConnectionDescriptor: {
+            /**
+             * @description Whether this account owns the bank certificates or uses certificates shared by its linked account
+             * @enum {string}
+             */
+            Access: "direct" | "shared";
+            /** @description Public File Exchange API bank identifier */
+            Bank: string;
+            /** @description Minimal certificate status needed for connection discovery; certificate material and owner identity are omitted */
+            Certificates: components["schemas"]["BankConnectionCertificateDescriptor"][];
         };
         /**
          * @example {
@@ -507,20 +456,6 @@ export interface components {
         };
         /**
          * @example {
-         *       "ResponseCode": "..",
-         *       "ResponseText": ".."
-         *     }
-         */
-        DeleteKeyResp: {
-            /** @description List of PGP keys in API */
-            PgpKeys: components["schemas"]["PgpKeyDescriptor"][];
-            /** @description Two digit response code in string format */
-            ResponseCode: string;
-            /** @description Human readable response text */
-            ResponseText: string;
-        };
-        /**
-         * @example {
          *       "Content": "xxxxxxxx",
          *       "ResponseCode": "..",
          *       "ResponseText": ".."
@@ -546,7 +481,7 @@ export interface components {
             Code: string;
             /** @description Company name as registered with bank (e.g. full capital letters, see contract). **NOTE**: The value of this field is not compared with the account company name set during registration because the format for cert enrollment differs between banks. */
             Company: string;
-            /** @description *SEPA WebService*s channel user id as in contract with bank */
+            /** @description *SEPA WebServices* channel user id as in contract with bank */
             WsUserId: string;
         };
         ErrorResponse: {
@@ -559,6 +494,7 @@ export interface components {
         };
         /**
          * @example {
+         *       "CertsAndKeys": [],
          *       "ResponseCode": "..",
          *       "ResponseText": ".."
          *     }
@@ -616,7 +552,7 @@ export interface components {
             EncPrivatekey?: string;
             /** @description Private key in PEM format */
             PrivateKey: string;
-            /** @description *SEPA WebService*s channel user id as in contract with bank */
+            /** @description *SEPA WebServices* channel user id as in contract with bank */
             WsUserId: string;
         };
         /**
@@ -651,6 +587,7 @@ export interface components {
         };
         /**
          * @example {
+         *       "Accounts": [],
          *       "ResponseCode": "..",
          *       "ResponseText": ".."
          *     }
@@ -665,13 +602,17 @@ export interface components {
         };
         /**
          * @example {
+         *       "Certs": [],
+         *       "Connections": [],
          *       "ResponseCode": "..",
          *       "ResponseText": ".."
          *     }
          */
         ListCertsResp: {
-            /** @description List of certificates */
+            /** @description Legacy list of certificates directly owned by this account */
             Certs: components["schemas"]["CertDescriptor"][];
+            /** @description Effective bank connections, including same-API-key certificates shared by the linked owner */
+            Connections?: components["schemas"]["BankConnectionDescriptor"][];
             /** @description Two digit response code in string format */
             ResponseCode: string;
             /** @description Human readable response text */
@@ -679,6 +620,7 @@ export interface components {
         };
         /**
          * @example {
+         *       "FileDescriptors": [],
          *       "ResponseCode": "..",
          *       "ResponseText": ".."
          *     }
@@ -693,6 +635,7 @@ export interface components {
         };
         /**
          * @example {
+         *       "PgpKeys": [],
          *       "ResponseCode": "..",
          *       "ResponseText": ".."
          *     }
@@ -707,15 +650,21 @@ export interface components {
         };
         /**
          * @example {
+         *       "ChallengeName": "SMS_MFA",
          *       "Code": "123456",
-         *       "Session": "..."
+         *       "Session": "...",
+         *       "SetupTOTP": false
          *     }
          */
         LoginMFAReq: {
-            /** @description Code from SMS */
+            /** @description Echo the `ChallengeName` returned by the login response (`SMS_MFA` or `SOFTWARE_TOKEN_MFA`). Optional; defaults to `SMS_MFA` when omitted */
+            ChallengeName?: string;
+            /** @description MFA code: SMS code (when ChallengeName is `SMS_MFA`) or authenticator/TOTP code (when `SOFTWARE_TOKEN_MFA`) */
             Code: string;
             /** @description Session token from login response */
             Session: string;
+            /** @description When `true`, a successful login also returns `SecretCode`, `OtpauthUri`, and `AccessToken` to begin Google Authenticator (TOTP) enrollment. Optional */
+            SetupTOTP?: boolean;
         };
         /**
          * @example {
@@ -723,35 +672,29 @@ export interface components {
          *       "ApiKey": "4vN6hGHrav31smM0Ha1k15MDlZKOEGn43UToWTt2",
          *       "ExpiresIn": "3600",
          *       "IdToken": "eyJraWQiOiJ...jExlzbFU4GlGtml7AWQHDYi05IpA",
+         *       "OtpauthUri": "otpauth://totp/ISECure:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=ISECure",
          *       "ResponseCode": "..",
-         *       "ResponseText": ".."
+         *       "ResponseText": "..",
+         *       "SecretCode": "JBSWY3DPEHPK3PXP"
          *     }
          */
         LoginMFAResp: {
-            /**
-             * @description Access token
-             *     - **Only** present when Email verification is required
-             */
+            /** @description Access token\n- **Only** present when Email verification is required, or when `SetupTOTP` was requested (held by the client in memory only, posted back to `VerifyTOTP`) */
             AccessToken?: string;
-            /**
-             * @description Integrator API Key
-             *     - **Not** present when Email verification is required
-             */
+            /** @description Integrator API Key\n- **Not** present when Email verification is required */
             ApiKey?: string;
-            /**
-             * @description Session expiration time
-             *     - **Not** present when Email verification is required
-             */
+            /** @description Session expiration time\n- **Not** present when Email verification is required */
             ExpiresIn?: string;
-            /**
-             * @description ID token
-             *     - **Not** present when Email verification is required
-             */
+            /** @description ID token\n- **Not** present when Email verification is required */
             IdToken?: string;
+            /** @description `otpauth://` URI for rendering the enrollment QR code\n- **Only** present when `SetupTOTP` was requested */
+            OtpauthUri?: string;
             /** @description Two digit response code in string format */
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
+            /** @description TOTP shared secret\n- **Only** present when `SetupTOTP` was requested */
+            SecretCode?: string;
         };
         /**
          * @example {
@@ -769,6 +712,7 @@ export interface components {
          * @example {
          *       "AccessToken": "eyJraWQiO...CzzcdcdAdEzKIcJPR7Fda0A",
          *       "ApiKey": "4vN6hGHrav31smM0Ha1k15MDlZKOEGn43UToWTt2",
+         *       "ChallengeName": "SOFTWARE_TOKEN_MFA",
          *       "ExpiresIn": "3600",
          *       "IdToken": "eyJraWQiOiJ...jExlzbFU4GlGtml7AWQHDYi05IpA",
          *       "ResponseCode": "..",
@@ -777,35 +721,21 @@ export interface components {
          *     }
          */
         LoginResp: {
-            /**
-             * @description Access token
-             *     - **Not** present on MFA login initiation, i.e. `admin` mode
-             *     - **Only** present when Email verification is required
-             */
+            /** @description Access token\n- **Not** present on MFA login initiation, i.e. `admin` mode\n- **Only** present when Email verification is required */
             AccessToken?: string;
-            /**
-             * @description Integrator API Key
-             *     - **Not** present on MFA login initiation, i.e. `admin` mode)
-             */
+            /** @description Integrator API Key\n- **Not** present on MFA login initiation, i.e. `admin` mode) */
             ApiKey?: string;
-            /**
-             * @description Session expiration time
-             *     - **Not** present on MFA login initiation, i.e. `admin` mode)
-             */
+            /** @description MFA challenge returned by Cognito\n- **Only** present on MFA login initiation (`SMS_MFA` or `SOFTWARE_TOKEN_MFA`) */
+            ChallengeName?: string;
+            /** @description Session expiration time\n- **Not** present on MFA login initiation, i.e. `admin` mode) */
             ExpiresIn?: string;
-            /**
-             * @description ID token
-             *     - **Not** present on MFA login initiation, i.e. `admin` mode
-             */
+            /** @description ID token\n- **Not** present on MFA login initiation, i.e. `admin` mode */
             IdToken?: string;
             /** @description Two digit response code in string format */
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
-            /**
-             * @description Session token
-             *     - **Only** present on MFA login initiation, i.e. `admin` mode)
-             */
+            /** @description Session token\n- **Only** present on MFA login initiation, i.e. `admin` mode) */
             Session?: string;
         };
         /**
@@ -830,7 +760,7 @@ export interface components {
          *     }
          */
         PgpKeyDescriptor: {
-            /** @description Short version of a PGP Key id idenfiying the key, e.g. `3A3A59B2` */
+            /** @description Short version of a PGP Key id identifying the key, e.g. `3A3A59B2` */
             PgpKeyId: string;
             /**
              * @description PGP Key purpose
@@ -887,8 +817,8 @@ export interface components {
          * @example {
          *       "ResponseCode": "..",
          *       "ResponseText": "..",
-         *       "SharedFrom": "string",
-         *       "SharedTo": "string"
+         *       "SharedFrom": [],
+         *       "SharedTo": []
          *     }
          */
         ShareCertsResp: {
@@ -905,8 +835,8 @@ export interface components {
          * @example {
          *       "ResponseCode": "..",
          *       "ResponseText": "..",
-         *       "SharedFrom": "string",
-         *       "SharedTo": "string"
+         *       "SharedFrom": [],
+         *       "SharedTo": []
          *     }
          */
         UnshareCertsResp: {
@@ -970,6 +900,18 @@ export interface components {
             /** @description Code from SMS */
             Code: string;
         };
+        /**
+         * @example {
+         *       "AccessToken": "eyJraWQiO...CzzcdcdAdEzKIcJPR7Fda0A",
+         *       "Code": "123456"
+         *     }
+         */
+        VerifyTOTPReq: {
+            /** @description AccessToken returned by `LoginMFA` when `SetupTOTP` was requested (held by the client in memory only) */
+            AccessToken: string;
+            /** @description 6-digit code from the authenticator app */
+            Code: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -984,7 +926,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Email address as the account username, e.g. `dan.forsberg@isecure.fi` */
+                /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
                 /** @description Administer account with `admin` mode, exchange files with `data` mode */
                 Mode: "admin" | "data";
@@ -993,7 +935,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1027,7 +969,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Email address as the account username, e.g. `dan.forsberg@isecure.fi` */
+                /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
                 /** @description Administer account with `admin` mode, exchange files with `data` mode */
                 Mode: "admin" | "data";
@@ -1041,7 +983,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. Resource created. See response. */
+            /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1075,7 +1017,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Email address as the account username, e.g. `dan.forsberg@isecure.fi` */
+                /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
                 /** @description Administer account with `admin` mode, exchange files with `data` mode */
                 Mode: "admin" | "data";
@@ -1089,7 +1031,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1123,7 +1065,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Email address as the account username, e.g. `dan.forsberg@isecure.fi` */
+                /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
                 /** @description Administer account with `admin` mode, exchange files with `data` mode */
                 Mode: "admin" | "data";
@@ -1132,7 +1074,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1166,7 +1108,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Email address as the account username, e.g. `dan.forsberg@isecure.fi` */
+                /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
                 /** @description Administer account with `admin` mode, exchange files with `data` mode */
                 Mode: "admin" | "data";
@@ -1180,7 +1122,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1214,7 +1156,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Email address as the account username, e.g. `dan.forsberg@isecure.fi` */
+                /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
                 /** @description Administer account with `admin` mode, exchange files with `data` mode */
                 Mode: "admin" | "data";
@@ -1230,7 +1172,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1273,7 +1215,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1339,7 +1281,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1403,7 +1345,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. Resource created. See response. */
+            /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1467,7 +1409,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1517,7 +1459,7 @@ export interface operations {
     ExportCert: {
         parameters: {
             query: {
-                /** @description Short version of a PGP Key id idenfiying the exported Private Key, e.g. `3A3A59B2` */
+                /** @description Short version of a PGP Key id identifying the exported Private Key, e.g. `3A3A59B2` */
                 PgpKeyId: string;
             };
             header: {
@@ -1534,7 +1476,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1603,7 +1545,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. Resource created. See response. */
+            /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1672,7 +1614,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. Resource created. See response. */
+            /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1741,7 +1683,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1810,7 +1752,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. Resource created. See response. */
+            /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -1878,7 +1820,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1946,7 +1888,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2007,7 +1949,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2068,7 +2010,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2127,18 +2069,14 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /**
-         * @description ASCII armored PGP Key in `PgpKey` and key purpose, i.e. `export` (exporting cert private key) or `authorize` (upload content authorization verification) in `PgpKeyPurpose`.
-         *
-         *     **NOTE**: The same PGP key can not be used for both `export` and `authorize` purpose at the same time.
-         */
+        /** @description ASCII armored PGP Key in `PgpKey` and key purpose, i.e. `export` (exporting cert private key) or `authorize` (upload content authorization verification) in `PgpKeyPurpose`.\n\n**NOTE**: The same PGP key cannot be used for both `export` and `authorize` purpose at the same time. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UploadKeyReq"];
             };
         };
         responses: {
-            /** @description Operation succesfully processed. Resource created. See response. */
+            /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -2204,13 +2142,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DeleteKeyResp"];
+                    "application/json": components["schemas"]["Response"];
                 };
             };
             /** @description Request validation error */
@@ -2256,7 +2194,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Email address as the account username, e.g. `dan.forsberg@isecure.fi` */
+                /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
                 /** @description Administer account with `admin` mode, exchange files with `data` mode */
                 Mode: "admin" | "data";
@@ -2265,7 +2203,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2299,7 +2237,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Email address as the account username, e.g. `dan.forsberg@isecure.fi` */
+                /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
                 /** @description Administer account with `admin` mode, exchange files with `data` mode */
                 Mode: "admin" | "data";
@@ -2313,7 +2251,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2352,7 +2290,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description Email address as the account username, e.g. `dan.forsberg@isecure.fi` */
+                /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
                 /** @description Administer account with `admin` mode, exchange files with `data` mode */
                 Mode: "admin" | "data";
@@ -2361,7 +2299,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2413,7 +2351,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description Email address as the account username, e.g. `dan.forsberg@isecure.fi` */
+                /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
                 /** @description Administer account with `admin` mode, exchange files with `data` mode */
                 Mode: "admin" | "data";
@@ -2427,13 +2365,61 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operation succesfully processed. See response. */
+            /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["LoginMFAResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    VerifyTOTP: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Email address as the account username, e.g. `user@example.com` */
+                Email: string;
+                /** @description TOTP enrollment is an `admin` mode operation */
+                Mode: "admin";
+            };
+            cookie?: never;
+        };
+        /** @description Session parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyTOTPReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
                 };
             };
             /** @description Request validation error */

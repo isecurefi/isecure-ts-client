@@ -54,7 +54,7 @@ export class UrlBuilder {
   }
 
   certs(): string {
-    return `${this.base()}/certs/`;
+    return this.url("certs");
   }
 
   cert(): string {

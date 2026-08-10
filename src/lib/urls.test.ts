@@ -29,7 +29,7 @@ describe("UrlBuilder", () => {
     const urls = builder();
     expect(urls.files()).toBe("https://ws-api.test.isecure.fi/v2/files/nordea");
     expect(urls.file("CAMT", "123")).toBe("https://ws-api.test.isecure.fi/v2/files/nordea/CAMT/123");
-    expect(urls.certs()).toBe("https://ws-api.test.isecure.fi/v2/certs/");
+    expect(urls.certs()).toBe("https://ws-api.test.isecure.fi/v2/certs");
     expect(urls.cert()).toBe("https://ws-api.test.isecure.fi/v2/certs/nordea");
     expect(urls.sharedCerts("other@example.test")).toBe(
       "https://ws-api.test.isecure.fi/v2/certs/shared/other%40example.test",

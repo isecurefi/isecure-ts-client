@@ -460,10 +460,21 @@ describe("WSChannel", () => {
           ResponseText: "Login OK",
         });
       }
-      if (match("GET", "/certs/")(request)) {
-        return response({ Certs: [], ResponseCode: "00", ResponseText: "certs" });
+      if (match("GET", "/certs")(request)) {
+        return response({
+          Certs: [],
+          Connections: [
+            {
+              Bank: "nordea",
+              Access: "shared",
+              Certificates: [{ Purpose: "signing", Expires: "Jan 01 00:00:00 2030 GMT" }],
+            },
+          ],
+          ResponseCode: "00",
+          ResponseText: "certs",
+        });
       }
-      if (match("POST", "/certs/")(request)) {
+      if (match("POST", "/certs")(request)) {
         return response({ ResponseCode: "00", ResponseText: "configured" });
       }
       if (match("PUT", "/certs/shared/other%40example.test")(request)) {
@@ -504,7 +515,16 @@ describe("WSChannel", () => {
 
     const client = new WSChannel(props(), { transport });
     await client.login();
-    await expect(client.listCerts()).resolves.toMatchObject({ Certs: [] });
+    await expect(client.listCerts()).resolves.toMatchObject({
+      Certs: [],
+      Connections: [
+        {
+          Bank: "nordea",
+          Access: "shared",
+          Certificates: [{ Purpose: "signing", Expires: "Jan 01 00:00:00 2030 GMT" }],
+        },
+      ],
+    });
     await expect(client.configCerts("disabled")).resolves.toMatchObject({ ResponseText: "configured" });
     await expect(client.configCerts({ Export: "disabled" })).resolves.toMatchObject({ ResponseText: "configured" });
     await expect(client.shareCerts("other@example.test")).resolves.toMatchObject({ SharedFrom: [] });

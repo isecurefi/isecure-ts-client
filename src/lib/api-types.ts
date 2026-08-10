@@ -75,16 +75,14 @@ export type LoginMfaRequest = JsonRequest<"LoginMFA"> & {
 };
 export type LoginMfaResponse = JsonResponse<"LoginMFA", 200> & TotpResponseFields;
 
-/** Confirm TOTP enrollment. No generated operation yet (see TotpResponseFields). */
-export interface VerifyTotpRequest {
-  Code: string;
-  AccessToken: string;
-}
-export type VerifyTotpResponse = ApiResponse;
+export type VerifyTotpRequest = JsonRequest<"VerifyTOTP">;
+export type VerifyTotpResponse = JsonResponse<"VerifyTOTP", 200>;
 export type VerifyEmailRequest = JsonRequest<"VerifyEmail">;
 export type VerifyPhoneRequest = JsonRequest<"VerifyPhone">;
 export type UploadKeyRequest = JsonRequest<"UploadKey">;
 export type UploadFileRequest = JsonRequest<"UploadFile">;
+export type BankConnectionCertificateDescriptor = components["schemas"]["BankConnectionCertificateDescriptor"];
+export type BankConnectionDescriptor = components["schemas"]["BankConnectionDescriptor"];
 export type ListCertsResponse = JsonResponse<"ListCerts", 200>;
 export type ConfigCertsRequest = JsonRequest<"ConfigCerts">;
 export type ConfigCertsResponse = JsonResponse<"ConfigCerts", 200>;
@@ -115,6 +113,7 @@ export const SUPPORTED_OPERATIONS = [
   "InitLogin",
   "Login",
   "LoginMFA",
+  "VerifyTOTP",
   "VerifyEmail",
   "VerifyPhone",
   "ListCerts",

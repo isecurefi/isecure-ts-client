@@ -97,6 +97,12 @@ const contract = {
     },
     invoke: (client) => client.loginMFA("123456"),
   },
+  VerifyTOTP: {
+    sdkMethod: "verifyTotp",
+    method: "PUT",
+    path: "/session/{Email}/{Mode}/verifytotp",
+    invoke: (client) => client.verifyTotp("access-token", "123456"),
+  },
   VerifyEmail: {
     sdkMethod: "verifyEmail",
     method: "POST",
@@ -118,14 +124,14 @@ const contract = {
   ListCerts: {
     sdkMethod: "listCerts",
     method: "GET",
-    path: "/certs/",
+    path: "/certs",
     setup: authenticate,
     invoke: (client) => client.listCerts(),
   },
   ConfigCerts: {
     sdkMethod: "configCerts",
     method: "POST",
-    path: "/certs/",
+    path: "/certs",
     setup: authenticate,
     invoke: (client) => client.configCerts("disabled"),
   },
@@ -444,13 +450,16 @@ function contractResponse(request: TransportRequest, transport: FakeTransport): 
   if (request.method === "PUT" && path.endsWith("/mfacode")) {
     return response({ ApiKey: "api-key", IdToken: "id-token", ResponseCode: "00", ResponseText: "logged in" });
   }
+  if (request.method === "PUT" && path.endsWith("/verifytotp")) {
+    return response({ ResponseCode: "00", ResponseText: "TOTP verified" });
+  }
   if (request.method === "DELETE" && path.startsWith("/session/")) {
     return response({ ResponseCode: "00", ResponseText: "logged out" });
   }
-  if (request.method === "GET" && path === "/certs/") {
-    return response({ Certs: [], ResponseCode: "00", ResponseText: "certs" });
+  if (request.method === "GET" && path === "/certs") {
+    return response({ Certs: [], Connections: [], ResponseCode: "00", ResponseText: "certs" });
   }
-  if (request.method === "POST" && path === "/certs/") {
+  if (request.method === "POST" && path === "/certs") {
     return response({ ResponseCode: "00", ResponseText: "certs configured" });
   }
   if (request.method === "PUT" && path === "/certs/shared/other%40example.test") {
