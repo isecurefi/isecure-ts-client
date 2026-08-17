@@ -7,3 +7,6 @@ coverage/
 .browser-check/
 .chrome-wsapi-playwright/
 docs-api/
+isecure-simulator-downloads/
+.isecure-simulator-api-key
+.isecure-simulator-pgp/
