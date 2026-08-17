@@ -28,6 +28,13 @@ const operationIds = [
   "payment_capabilities.get",
   "payment_capabilities.list",
   "payment_capabilities.resolve",
+  "payment_export_profile_catalog.list",
+  "payment_export_profiles.configure",
+  "payment_export_profiles.get",
+  "payment_export_profiles.revoke",
+  "payment_exports.download_content",
+  "payment_exports.get",
+  "payment_exports.release",
   "payment_orders.cancel_draft",
   "payment_orders.create_draft",
   "payment_orders.execute",
@@ -55,9 +62,7 @@ if (mode === undefined || (arguments_.includes("--write") && arguments_.includes
   throw new Error("usage: node scripts/sync-platform-contracts.mjs (--write|--check) [--source <path>]");
 }
 const sourceIndex = arguments_.indexOf("--source");
-const platformRoot = resolve(
-  sourceIndex === -1 ? resolve(repositoryRoot, "../bankfiles-platform") : requireArgument(arguments_, sourceIndex + 1),
-);
+const platformRoot = resolve(sourceIndex === -1 ? defaultPlatformRoot() : requireArgument(arguments_, sourceIndex + 1));
 const sourceRevision =
   mode === "write"
     ? execFileSync("git", ["-C", platformRoot, "rev-parse", "HEAD"], { encoding: "utf8" }).trim()
@@ -102,6 +107,15 @@ function requireArgument(values, index) {
   const value = values[index];
   if (value === undefined || value.startsWith("--")) throw new Error("--source requires a path");
   return value;
+}
+
+function defaultPlatformRoot() {
+  const commonGitDirectory = execFileSync(
+    "git",
+    ["-C", repositoryRoot, "rev-parse", "--path-format=absolute", "--git-common-dir"],
+    { encoding: "utf8" },
+  ).trim();
+  return resolve(dirname(commonGitDirectory), "../bankfiles-platform");
 }
 
 function requireRevision(value) {
@@ -214,6 +228,7 @@ function generateContract(sourceText, openApi, revision) {
       headerParameters,
     );
     const requestBody = requireRequestBodyParity(openApi, binding, contract.input, operationId);
+    const successResponse = requireSuccessResponseParity(binding, contract, operationId);
     const placeholders = [...binding.path.matchAll(/\{([^}]+)\}/gu)].map((match) => match[1]);
     const pathParameters = parameters
       .filter((parameter) => parameter.location === "path")
@@ -234,6 +249,7 @@ function generateContract(sourceText, openApi, revision) {
       idempotencyKeySchema,
       expectedResourceVersionSchema,
       requestBody,
+      successResponse,
       parameters,
     };
   }
@@ -388,6 +404,81 @@ function requireRequestBodyParity(openApi, binding, inputContract, operationId) 
     }
   }
   return hasBody;
+}
+
+function requireSuccessResponseParity(binding, contract, operationId) {
+  const status = contract.execution === "durable" ? "202" : "200";
+  const response = binding.operation.responses?.[status];
+  if (response === undefined || typeof response !== "object") {
+    throw new Error(`${operationId} has no generated success response`);
+  }
+  const content = response.content;
+  if (content === undefined || typeof content !== "object" || Array.isArray(content)) {
+    throw new Error(`${operationId} success response has no generated content`);
+  }
+  const mediaTypes = Object.keys(content);
+  if (mediaTypes.length !== 1) throw new Error(`${operationId} success response must have one media type`);
+  const mediaType = mediaTypes[0];
+  if (mediaType === "application/json") {
+    const schema = content[mediaType]?.schema;
+    if (schema?.$ref !== `#/components/schemas/${contract.result}`) {
+      throw new Error(`${operationId} JSON success response disagrees with its result contract`);
+    }
+    if (response.headers !== undefined) throw new Error(`${operationId} JSON success response has unsupported headers`);
+    return { kind: "json", status: Number(status), mediaType };
+  }
+  if (mediaType !== "application/xml") {
+    throw new Error(`${operationId} has unsupported success media type ${String(mediaType)}`);
+  }
+  const schema = content[mediaType]?.schema;
+  if (
+    schema?.type !== "string" ||
+    schema.format !== "binary" ||
+    !Number.isSafeInteger(schema.maxLength) ||
+    schema.maxLength < 1 ||
+    schema.maxLength > 16 * 1024 * 1024
+  ) {
+    throw new Error(`${operationId} binary success response has an invalid byte bound`);
+  }
+  const headers = response.headers;
+  if (headers === undefined || typeof headers !== "object" || Array.isArray(headers)) {
+    throw new Error(`${operationId} binary success response has no integrity headers`);
+  }
+  const expectedHeaderNames = ["ISECure-Artifact-Id", "ISECure-Artifact-Sha256", "Content-Length"];
+  if (JSON.stringify(Object.keys(headers).sort()) !== JSON.stringify(expectedHeaderNames.sort())) {
+    throw new Error(`${operationId} binary success response has unsupported integrity headers`);
+  }
+  const artifactId = requireResponseHeader(headers, "ISECure-Artifact-Id", operationId);
+  if (artifactId.type !== "string" || artifactId.format !== "uuid") {
+    throw new Error(`${operationId} artifact identity header must be a UUID`);
+  }
+  const artifactDigest = requireResponseHeader(headers, "ISECure-Artifact-Sha256", operationId);
+  if (artifactDigest.type !== "string" || artifactDigest.pattern !== "^sha256:[0-9a-f]{64}$") {
+    throw new Error(`${operationId} artifact digest header must be a canonical SHA-256 digest`);
+  }
+  const contentLength = requireResponseHeader(headers, "Content-Length", operationId);
+  if (contentLength.type !== "integer" || contentLength.minimum !== 1 || contentLength.maximum !== schema.maxLength) {
+    throw new Error(`${operationId} content-length header disagrees with its binary byte bound`);
+  }
+  return {
+    kind: "binary",
+    status: Number(status),
+    mediaType,
+    maximumBytes: schema.maxLength,
+    headers: {
+      artifactId: "ISECure-Artifact-Id",
+      artifactDigest: "ISECure-Artifact-Sha256",
+      contentLength: "Content-Length",
+    },
+  };
+}
+
+function requireResponseHeader(headers, name, operationId) {
+  const header = headers[name];
+  if (header?.required !== true || header.schema === undefined || typeof header.schema !== "object") {
+    throw new Error(`${operationId} ${name} response header must be required and inline`);
+  }
+  return header.schema;
 }
 
 function findOperation(openApi, operationId) {

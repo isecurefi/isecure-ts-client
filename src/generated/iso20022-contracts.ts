@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@356496d220e508fb9c7d6faf0bf875410726ba0c
-// model: Bankfiles@0.66.0
-// source-digest: sha256:0576509d1d8bd4123999416ecbb73681fb567357871e096d15070ead51b335b9
+// source: isecurefi/bankfiles-platform@c85d846b36bc56b0f1124da1799a5eec54fe1a7f
+// model: Bankfiles@0.94.0
+// source-digest: sha256:11698c08b95bef9d11f5f91d5c5e8026148b7f55ae057c8ac5d917141d8bac3a
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type BalanceBoundary = "opening" | "closing" | "intraday" | "available" | "expected" | "forward_available" | "other";
@@ -24,8 +24,6 @@ export type AccountCapabilityAvailability = "available" | "pending" | "unavailab
 
 export type CancellationBoundary = "preventable" | "race_possible" | "irreversible";
 
-export type CancellationOutcome = "accepted" | "too_late" | "not_cancellable" | "already_terminal" | "indeterminate";
-
 export type IdempotencyOutcome = "applied" | "replayed" | "in_progress" | "mismatch" | "expired";
 
 export type OperationIssueCategory = "validation" | "authorization" | "policy" | "conflict" | "unsupported" | "external" | "internal";
@@ -35,6 +33,10 @@ export type OperationIssueSeverity = "error" | "warning" | "information";
 export type PaymentAccountScheme = "iban" | "domestic";
 
 export type PaymentApprovalBundleState = "not_required" | "pending" | "partially_approved" | "approved" | "rejected" | "expired" | "superseded";
+
+export type PaymentApprovalRequestState = "pending" | "partially_approved" | "approved" | "rejected" | "expired" | "cancelled" | "superseded";
+
+export type PaymentApprovalSubjectKind = "order_revision" | "transfer_revision" | "export_preparation";
 
 export type PaymentAuthorizationState = "not_required" | "pending" | "partially_satisfied" | "satisfied" | "rejected" | "expired" | "cancelled" | "indeterminate";
 
@@ -52,9 +54,15 @@ export type PaymentDestinationScope = "domestic" | "cross_border" | "any_qualifi
 
 export type PaymentExecutionSummaryState = "not_started" | "planned" | "in_progress" | "completed" | "failed" | "indeterminate" | "cancelled";
 
+export type PaymentExportProfileAvailabilityStatus = "available" | "unavailable";
+
+export type PaymentExportProfileQualificationStatus = "none" | "experimental" | "qualified_with_limitations" | "qualified";
+
+export type PaymentExportState = "pending_approval" | "approved" | "rejected" | "invalidated" | "released";
+
 export type PaymentOptionKind = "batch_booking" | "category_purpose" | "service_level" | "local_instrument" | "charge_bearer" | "purpose" | "priority" | "advice" | "regulatory_reporting";
 
-export type PaymentOrderWorkflowState = "draft" | "review_pending" | "ready_for_execution" | "execution_pending" | "closed" | "cancelled";
+export type PaymentOrderWorkflowState = "draft" | "finalized" | "review_pending" | "ready_for_execution" | "execution_pending" | "closed" | "cancelled";
 
 export type PaymentPriority = "normal" | "high" | "express";
 
@@ -295,13 +303,6 @@ export interface AuthorizationReference {
     readonly decided_at: string;
 }
 
-export interface CancellationResult {
-    readonly attempt: AttemptReference;
-    readonly boundary: CancellationBoundary;
-    readonly outcome: CancellationOutcome;
-    readonly decided_at: string;
-}
-
 export interface ConfigurationAction {
     readonly configuration_code: string;
 }
@@ -396,9 +397,26 @@ export interface ClearingMemberPaymentAgent {
     readonly member_identifier: string;
 }
 
+export interface ConfigurePaymentExportProfileInput {
+    readonly bank_profile_id: string;
+    readonly debtor_account_identifier: string;
+    readonly debtor_account_scheme: PaymentAccountScheme;
+    readonly debtor_account_currency?: string;
+    readonly initiating_party_name: string;
+    readonly initiating_party_customer_id: string;
+    readonly debtor_name: string;
+    readonly debtor_bank_agreement_id: string;
+    readonly debtor_country_code: string;
+    readonly debtor_agent_bic: string;
+}
+
 export interface DomesticPaymentAccount {
     readonly account_scheme_id: string;
     readonly account_identifier: string;
+}
+
+export interface DownloadPaymentExportContentInput {
+    readonly payment_export_id: string;
 }
 
 export interface IbanPaymentAccount {
@@ -408,6 +426,27 @@ export interface IbanPaymentAccount {
 export interface PaymentAdviceOption {
     readonly advice_method_id: string;
     readonly advice_reference?: string;
+}
+
+export interface PaymentApprovalRequestResource {
+    readonly payment_approval_request_id: string;
+    readonly resource_version: string;
+    readonly payment_approval_bundle_id?: string;
+    readonly approval_subject: PaymentApprovalSubject;
+    readonly state: PaymentApprovalRequestState;
+    readonly created_at: string;
+    readonly expires_at?: string;
+    readonly transitioned_at: string;
+}
+
+export interface PaymentApprovalSubject {
+    readonly payment_approval_request_id: string;
+    readonly subject_kind: PaymentApprovalSubjectKind;
+    readonly subject_reference: ResourceReference;
+    readonly exact_subject_digest: string;
+    readonly required_approvals: number;
+    readonly received_approvals: number;
+    readonly state: PaymentApprovalRequestState;
 }
 
 export interface PaymentApprovalSummary {
@@ -523,11 +562,120 @@ export interface PaymentCreditor {
     readonly postal_address?: PaymentPostalAddress;
 }
 
+export interface PaymentCurrencyTotal {
+    readonly currency: string;
+    readonly amount: string;
+    readonly transfer_count: number;
+}
+
 export interface PaymentExecutionSummary {
     readonly state: PaymentExecutionSummaryState;
     readonly current_attempt?: AttemptReference;
     readonly latest_task?: TaskReference;
     readonly transitioned_at?: string;
+}
+
+export interface PaymentExportContentResult {
+    readonly context: OperationContext;
+    readonly artifact_id: string;
+    readonly artifact_digest: string;
+    readonly artifact_byte_length: string;
+    readonly artifact_media_type: string;
+}
+
+export interface PaymentExportGetInput {
+    readonly payment_export_id: string;
+}
+
+export interface PaymentExportGetResult {
+    readonly context: OperationContext;
+    readonly payment_export: PaymentExportResource;
+}
+
+export interface PaymentExportProfileCatalogEntry {
+    readonly bank_profile_id: string;
+    readonly bank_id: string;
+    readonly bank_name: string;
+    readonly country_code: string;
+    readonly payment_type: string;
+    readonly message_definition: string;
+    readonly profile_version: number;
+    readonly qualification_status: PaymentExportProfileQualificationStatus;
+    readonly availability_status: PaymentExportProfileAvailabilityStatus;
+}
+
+export interface PaymentExportProfileCatalogListInput {
+
+}
+
+export interface PaymentExportProfileCatalogListResult {
+    readonly context: OperationContext;
+    readonly profiles: readonly PaymentExportProfileCatalogEntry[];
+    readonly catalog_digest: string;
+    readonly issues: readonly OperationIssue[];
+}
+
+export interface PaymentExportProfileGetInput {
+
+}
+
+export interface PaymentExportProfileResource {
+    readonly payment_export_profile_id: string;
+    readonly profile_revision: string;
+    readonly resource_version: string;
+    readonly debtor_account_id: string;
+    readonly debtor_account_identifier: string;
+    readonly debtor_account_scheme: PaymentAccountScheme;
+    readonly debtor_account_currency?: string;
+    readonly initiating_party_name: string;
+    readonly initiating_party_customer_id: string;
+    readonly debtor_name: string;
+    readonly debtor_bank_agreement_id: string;
+    readonly debtor_country_code: string;
+    readonly debtor_agent_bic: string;
+    readonly bank_profile_id: string;
+    readonly renderer_profile_id: string;
+    readonly renderer_profile_version: number;
+    readonly renderer_catalog_digest: string;
+    readonly qualification_contract_digest: string;
+    readonly message_definition: string;
+    readonly xml_namespace: string;
+    readonly exact_revision_digest: string;
+    readonly state: PaymentExportState;
+    readonly effective_from: string;
+    readonly effective_to?: string;
+    readonly approved_at: string;
+}
+
+export interface PaymentExportProfileResult {
+    readonly context: OperationContext;
+    readonly payment_export_profile: PaymentExportProfileResource;
+    readonly issues: readonly OperationIssue[];
+}
+
+export interface PaymentExportReleaseResult {
+    readonly context: OperationContext;
+    readonly payment_export: PaymentExportResource;
+    readonly issues: readonly OperationIssue[];
+}
+
+export interface PaymentExportResource {
+    readonly payment_export_id: string;
+    readonly payment_order_id: string;
+    readonly order_revision_id: string;
+    readonly order_revision_digest: string;
+    readonly payment_export_profile_id: string;
+    readonly profile_revision: string;
+    readonly profile_revision_digest: string;
+    readonly artifact_id: string;
+    readonly artifact_digest: string;
+    readonly artifact_byte_length: string;
+    readonly artifact_media_type: string;
+    readonly approval_request_id: string;
+    readonly exact_approval_subject_digest: string;
+    readonly state: PaymentExportState;
+    readonly prepared_at: string;
+    readonly released_at?: string;
 }
 
 export interface PaymentIssues {
@@ -543,15 +691,6 @@ export interface PaymentMoneyLimit {
     readonly limit_kind_id: string;
     readonly minimum?: ExactMoney;
     readonly maximum: ExactMoney;
-}
-
-export interface PaymentOrderCancellationResult {
-    readonly context: OperationContext;
-    readonly payment_order_reference: ResourceReference;
-    readonly cancellation: CancellationResult;
-    readonly workflow_state: PaymentOrderWorkflowState;
-    readonly required_actions: readonly RequiredAction[];
-    readonly issues: readonly OperationIssue[];
 }
 
 export interface PaymentOrderDraftInput {
@@ -604,6 +743,9 @@ export interface PaymentOrderMutationResult {
     readonly payment_order_reference: ResourceReference;
     readonly revision_id: string;
     readonly revision_digest: string;
+    readonly resource_version: string;
+    readonly payment_transfer_ids: readonly string[];
+    readonly currency_totals: readonly PaymentCurrencyTotal[];
     readonly workflow_state: PaymentOrderWorkflowState;
     readonly validation_outcome: PaymentValidationOutcome;
     readonly approval_state: PaymentApprovalBundleState;
@@ -614,9 +756,11 @@ export interface PaymentOrderMutationResult {
 export interface PaymentOrderResource {
     readonly payment_order_id: string;
     readonly resource_version: string;
-    readonly current_revision: PaymentOrderRevision;
+    readonly revision: PaymentOrderRevision;
+    readonly current_revision_id: string;
     readonly workflow_state: PaymentOrderWorkflowState;
     readonly validation: PaymentValidationSummary;
+    readonly currency_totals: readonly PaymentCurrencyTotal[];
     readonly approval_summary: PaymentApprovalSummary;
     readonly authorization: PaymentAuthorizationSummary;
     readonly execution: PaymentExecutionSummary;
@@ -624,6 +768,23 @@ export interface PaymentOrderResource {
     readonly next_operations: readonly NextOperation[];
     readonly created_at: string;
     readonly transitioned_at: string;
+}
+
+export interface PaymentOrderReviewSubmissionResult {
+    readonly context: OperationContext;
+    readonly payment_order_reference: ResourceReference;
+    readonly revision_id: string;
+    readonly revision_digest: string;
+    readonly resource_version: string;
+    readonly payment_transfer_ids: readonly string[];
+    readonly currency_totals: readonly PaymentCurrencyTotal[];
+    readonly workflow_state: PaymentOrderWorkflowState;
+    readonly validation_outcome: PaymentValidationOutcome;
+    readonly approval_state: PaymentApprovalBundleState;
+    readonly required_actions: readonly RequiredAction[];
+    readonly payment_export?: PaymentExportResource;
+    readonly approval_request?: PaymentApprovalRequestResource;
+    readonly issues: readonly OperationIssue[];
 }
 
 export interface PaymentOrderRevision {
@@ -654,6 +815,7 @@ export interface PaymentOrderSimulationResult {
     readonly predicted_approval_state: PaymentApprovalBundleState;
     readonly predicted_authorization_state: PaymentAuthorizationState;
     readonly transfers: readonly PaymentTransferValidationSummary[];
+    readonly currency_totals: readonly PaymentCurrencyTotal[];
     readonly required_actions: readonly RequiredAction[];
     readonly issues: readonly OperationIssue[];
 }
@@ -683,6 +845,7 @@ export interface PaymentOrderValidationResult {
     readonly revision_id: string;
     readonly validation: PaymentValidationSummary;
     readonly transfers: readonly PaymentTransferValidationSummary[];
+    readonly currency_totals: readonly PaymentCurrencyTotal[];
     readonly required_actions: readonly RequiredAction[];
     readonly issues: readonly OperationIssue[];
 }
@@ -694,6 +857,7 @@ export interface PaymentPartyIdentifier {
 
 export interface PaymentPostalAddress {
     readonly country_code: string;
+    readonly town_name?: string;
     readonly address_lines: readonly string[];
 }
 
@@ -758,9 +922,19 @@ export interface PaymentValidationSummary {
     readonly validated_at: string;
 }
 
+export interface ReleasePaymentExportInput {
+    readonly payment_export_id: string;
+    readonly exact_approval_subject_digest: string;
+}
+
 export interface RevisePaymentOrderInput {
     readonly payment_order_id: string;
     readonly draft: PaymentOrderDraftInput;
+}
+
+export interface RevokePaymentExportProfileInput {
+    readonly payment_export_profile_id: string;
+    readonly profile_revision: string;
 }
 
 export interface StructuredCreditorReferenceRemittance {
@@ -840,6 +1014,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "resource_id",
@@ -864,6 +1043,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "resource_id",
@@ -888,6 +1072,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "bank_account_id",
@@ -960,6 +1149,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "resource_id",
@@ -984,6 +1178,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "resource_id",
@@ -1008,6 +1207,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "bank_account_id",
@@ -1088,6 +1292,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "account_capability_id",
@@ -1120,6 +1329,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "account_capability_id",
@@ -1152,6 +1366,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "connected_account_id",
@@ -1219,15 +1438,85 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": []
   },
-  "payment_orders.cancel_draft": {
-    "method": "POST",
-    "path": "/v1/payment-orders:cancel-draft",
+  "payment_export_profile_catalog.list": {
+    "method": "GET",
+    "path": "/v1/payment-export-profile-catalog",
     "version": 1,
-    "contractDigest": "sha256:c4f1147978d1ba6a00a0cfbdf7771ac5798a1f41e2383a30c06491f3d3217409",
-    "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
-    "result": "isecure.bankfiles.payments_api.PaymentOrderCancellationResult",
+    "contractDigest": "sha256:52608f6a88fc8fe1d0c81396572590e8200f9af1689ce8a11be472e8650f7f02",
+    "input": "isecure.bankfiles.payments_api.PaymentExportProfileCatalogListInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExportProfileCatalogListResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payment_export_profiles.configure": {
+    "method": "POST",
+    "path": "/v1/payment-export-profiles:configure",
+    "version": 1,
+    "contractDigest": "sha256:d1dfea42aaa194db43101014f3aba331aca6a0e44ef05f06d85c7078d8c7790b",
+    "input": "isecure.bankfiles.payments_api.ConfigurePaymentExportProfileInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payment_export_profiles.get": {
+    "method": "GET",
+    "path": "/v1/payment-export-profiles",
+    "version": 1,
+    "contractDigest": "sha256:2e29d42f293d6a5dc4ca041424c2965612edc24a95eff13ac526026d3cabf064",
+    "input": "isecure.bankfiles.payments_api.PaymentExportProfileGetInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payment_export_profiles.revoke": {
+    "method": "POST",
+    "path": "/v1/payment-export-profiles:revoke",
+    "version": 1,
+    "contractDigest": "sha256:de9e12f5bfcc83240eee01cc7f7a894f76ccfe1df7dc8d3d18a8e5f09b82c232",
+    "input": "isecure.bankfiles.payments_api.RevokePaymentExportProfileInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
     "idempotency": "required",
     "expectedVersion": "required",
@@ -1244,13 +1533,138 @@ export const iso20022Operations = {
       "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
     },
     "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payment_exports.download_content": {
+    "method": "POST",
+    "path": "/v1/payment-exports:download-content",
+    "version": 1,
+    "contractDigest": "sha256:c7bc845d103b087e9714cb51261a56f512520d99c5394c63c8b6ef9a65bbe4dd",
+    "input": "isecure.bankfiles.payments_api.DownloadPaymentExportContentInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExportContentResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "binary",
+      "status": 200,
+      "mediaType": "application/xml",
+      "maximumBytes": 16777216,
+      "headers": {
+        "artifactId": "ISECure-Artifact-Id",
+        "artifactDigest": "ISECure-Artifact-Sha256",
+        "contentLength": "Content-Length"
+      }
+    },
+    "parameters": []
+  },
+  "payment_exports.get": {
+    "method": "GET",
+    "path": "/v1/payment-exports/{payment_export_id}",
+    "version": 1,
+    "contractDigest": "sha256:4948c65e5610a2b8770b63bea703263baab60e41069ef05b73dbdb8525fe2122",
+    "input": "isecure.bankfiles.payments_api.PaymentExportGetInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExportGetResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "payment_export_id",
+        "location": "path",
+        "inputField": "payment_export_id",
+        "required": true,
+        "style": "simple",
+        "objectFields": []
+      }
+    ]
+  },
+  "payment_exports.release": {
+    "method": "POST",
+    "path": "/v1/payment-exports:release",
+    "version": 1,
+    "contractDigest": "sha256:e572d8b0feb3eada5d396be036cf816411fc3773c8264fcb892eb90387a0b87a",
+    "input": "isecure.bankfiles.payments_api.ReleasePaymentExportInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExportReleaseResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payment_orders.cancel_draft": {
+    "method": "POST",
+    "path": "/v1/payment-orders:cancel-draft",
+    "version": 1,
+    "contractDigest": "sha256:14976041ee01abe2f7ba0a9b2294f5294976f9b497d8a43598d63a75345314ed",
+    "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+    "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": []
   },
   "payment_orders.create_draft": {
     "method": "POST",
     "path": "/v1/payment-orders:create-draft",
     "version": 1,
-    "contractDigest": "sha256:9a428a3a0a8ecdf7d9d698f5bb7a72d965f4aa6bbe7797f95ebc2dd0d082336c",
+    "contractDigest": "sha256:cb1ab14ad98f98172b75edd69c1a0db92371aed66beffac568c1c40c3c7f839e",
     "input": "isecure.bankfiles.payments_api.PaymentOrderDraftInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -1264,6 +1678,11 @@ export const iso20022Operations = {
     },
     "expectedResourceVersionSchema": null,
     "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": []
   },
   "payment_orders.execute": {
@@ -1289,6 +1708,11 @@ export const iso20022Operations = {
       "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
     },
     "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 202,
+      "mediaType": "application/json"
+    },
     "parameters": []
   },
   "payment_orders.explain": {
@@ -1304,6 +1728,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "payment_order_id",
@@ -1336,6 +1765,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "payment_order_id",
@@ -1368,6 +1802,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "connected_account_id",
@@ -1434,7 +1873,7 @@ export const iso20022Operations = {
     "method": "POST",
     "path": "/v1/payment-orders:revise-draft",
     "version": 1,
-    "contractDigest": "sha256:e386bc5c1d82905b62487b64b7ed62fd73375f9aa0b302d14559e160895b8222",
+    "contractDigest": "sha256:4f4f717f9a34ba59e99d070b02f9ccc589ea96d85c17ce3b1e037baa823112eb",
     "input": "isecure.bankfiles.payments_api.RevisePaymentOrderInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -1453,6 +1892,11 @@ export const iso20022Operations = {
       "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
     },
     "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": []
   },
   "payment_orders.simulate": {
@@ -1468,15 +1912,20 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": []
   },
   "payment_orders.submit_for_review": {
     "method": "POST",
     "path": "/v1/payment-orders:submit-for-review",
     "version": 1,
-    "contractDigest": "sha256:93af4a08cfc513a726ccbac9d4b545499bc4c7e70dbd7c74ab2e6e1cb30ef050",
+    "contractDigest": "sha256:a3a3e08d56f17e44a91667a1b1beb5f56ec7e07289da0d332ae2c4f193eee58d",
     "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
-    "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+    "result": "isecure.bankfiles.payments_api.PaymentOrderReviewSubmissionResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
     "idempotency": "required",
     "expectedVersion": "required",
@@ -1493,6 +1942,11 @@ export const iso20022Operations = {
       "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
     },
     "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": []
   },
   "payment_orders.validate": {
@@ -1508,6 +1962,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": []
   },
   "statements.explain": {
@@ -1523,6 +1982,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "resource_id",
@@ -1547,6 +2011,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "resource_id",
@@ -1571,6 +2040,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "bank_account_id",
@@ -1627,6 +2101,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "resource_id",
@@ -1651,6 +2130,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "resource_id",
@@ -1675,6 +2159,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "bank_account_id",
@@ -1739,6 +2228,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "resource_id",
@@ -1763,6 +2257,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "resource_id",
@@ -1787,6 +2286,11 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
     "parameters": [
       {
         "name": "run_kind",
