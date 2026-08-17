@@ -1,6 +1,7 @@
 import {
   iso20022Operations,
   type Iso20022OperationId,
+  type PaymentExportResource,
   type ProcessingRequestMetadata,
 } from "../generated/iso20022-contracts.js";
 
@@ -8,10 +9,13 @@ const DEFAULT_MAX_REQUEST_BYTES = 1024 * 1024;
 const DEFAULT_MAX_RESPONSE_BYTES = 1024 * 1024;
 const MAX_REQUEST_BYTES = 16 * 1024 * 1024;
 const MAX_RESPONSE_BYTES = 16 * 1024 * 1024;
-const MAX_ACCESS_TOKEN_LENGTH = 16 * 1024;
 const DEFAULT_TIMEOUT_MS = 30_000;
 const MAX_TIMEOUT_MS = 5 * 60_000;
 const MAX_REQUEST_URL_LENGTH = 16 * 1024;
+const MAX_BOOTSTRAP_CREDENTIAL_LENGTH = 16 * 1024;
+const PROCESSING_SESSION_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/u;
+const SHA256_PATTERN = /^sha256:[0-9a-f]{64}$/u;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 
 export interface Iso20022Transport {
   invoke<Input, Result>(
@@ -19,15 +23,53 @@ export interface Iso20022Transport {
     input: Input,
     metadata: ProcessingRequestMetadata,
   ): Promise<Result>;
+  downloadPaymentExport(
+    input: unknown,
+    metadata: ProcessingRequestMetadata,
+    authority: PaymentExportContentAuthority,
+  ): Promise<VerifiedPaymentExportContent>;
+  downloadPaymentExportTo(
+    input: unknown,
+    metadata: ProcessingRequestMetadata,
+    authority: PaymentExportContentAuthority,
+    sink: PaymentExportContentSink,
+  ): Promise<VerifiedPaymentExportContentMetadata>;
 }
 
-export type AccessTokenProvider = string | (() => string | Promise<string>);
+export interface ProcessingBootstrapAuthentication {
+  readonly apiKey: string;
+  readonly idToken: string;
+}
+export type ProcessingBootstrapAuthenticationProvider = () =>
+  ProcessingBootstrapAuthentication | Promise<ProcessingBootstrapAuthentication>;
+
+export interface ProcessingSessionMetadata {
+  readonly audience: string;
+  readonly expiresAtEpochSeconds: number;
+  readonly schemaVersion: 1;
+  readonly tokenType: "Processing";
+}
+
+export type PaymentExportContentAuthority = Readonly<
+  Pick<PaymentExportResource, "artifact_id" | "artifact_digest" | "artifact_byte_length" | "artifact_media_type">
+>;
+
+export type VerifiedPaymentExportContentMetadata = PaymentExportContentAuthority;
+
+export interface VerifiedPaymentExportContent extends VerifiedPaymentExportContentMetadata {
+  readonly bytes: Uint8Array;
+}
+
+/** Called exactly once, and only after the complete response passes every integrity check. */
+export type PaymentExportContentSink = (bytes: Uint8Array) => void | Promise<void>;
 
 export interface Iso20022HttpTransportOptions {
   /** Absolute Processing API base URL selected by the deployment. */
   baseUrl: string | URL;
-  /** Bearer credential or a provider called once immediately before each request. */
-  accessToken: AccessTokenProvider;
+  /** Reads current WSChannel authentication only while exchanging a separate Processing session. */
+  bootstrapAuthentication: ProcessingBootstrapAuthenticationProvider;
+  /** Exact deployment-owned audience expected in the Processing session response. */
+  processingAudience: string;
   /** Optional fetch implementation for non-browser runtimes and tests. */
   fetch?: typeof globalThis.fetch;
   /** Maximum serialized request bytes. Defaults to 1 MiB and cannot exceed 16 MiB. */
@@ -40,10 +82,13 @@ export interface Iso20022HttpTransportOptions {
 
 export type Iso20022TransportErrorCode =
   | "invalid_configuration"
+  | "invalid_session"
+  | "integrity_check_failed"
   | "malformed_response"
   | "request_too_large"
   | "request_failed"
   | "response_too_large"
+  | "sink_failed"
   | "serialization_failed"
   | "unsupported_operation";
 
@@ -78,15 +123,18 @@ export class Iso20022HttpError extends Error {
  */
 export class Iso20022HttpTransport implements Iso20022Transport {
   private readonly baseUrl: URL;
-  private readonly accessToken: AccessTokenProvider;
+  private readonly bootstrapAuthentication: ProcessingBootstrapAuthenticationProvider;
+  private readonly processingAudience: string;
   private readonly fetchImplementation: typeof globalThis.fetch;
   private readonly maxRequestBytes: number;
   private readonly maxResponseBytes: number;
   private readonly timeoutMs: number;
+  private processingSession: ProcessingSessionCredential | undefined;
 
   constructor(options: Iso20022HttpTransportOptions) {
     this.baseUrl = parseBaseUrl(options.baseUrl);
-    this.accessToken = options.accessToken;
+    this.bootstrapAuthentication = options.bootstrapAuthentication;
+    this.processingAudience = parseProcessingAudience(options.processingAudience);
     const fetchImplementation = options.fetch ?? globalThis.fetch;
     if (typeof fetchImplementation !== "function") {
       throw new Iso20022TransportError("invalid_configuration", "A fetch implementation is required");
@@ -107,6 +155,45 @@ export class Iso20022HttpTransport implements Iso20022Transport {
     this.timeoutMs = parseTimeoutMs(options.timeoutMs);
   }
 
+  /** Exchange the shared WSChannel identity for a short-lived, audience-bound Processing session. */
+  async exchangeProcessingSession(): Promise<ProcessingSessionMetadata> {
+    this.processingSession = undefined;
+    const authentication = await resolveBootstrapAuthentication(this.bootstrapAuthentication);
+    const controller = new AbortController();
+    const timer = abortAfter(controller, this.timeoutMs);
+    try {
+      const response = await this.fetchImplementation(new URL("session", this.baseUrl), {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: authentication.idToken,
+          "x-api-key": authentication.apiKey,
+        },
+        redirect: "error",
+        signal: controller.signal,
+      });
+      const body = await parseResponse(response, this.maxResponseBytes);
+      if (!response.ok) throw new Iso20022HttpError(response.status, body);
+      const session = parseProcessingSession(body, authentication.apiKey, this.processingAudience);
+      this.processingSession = session;
+      return sessionMetadata(session);
+    } catch (cause) {
+      if (cause instanceof Iso20022TransportError || cause instanceof Iso20022HttpError) throw cause;
+      throw requestFailure(controller);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /** Forget the Processing credential immediately; shared WSChannel authentication is untouched. */
+  clearProcessingSession(): void {
+    this.processingSession = undefined;
+  }
+
+  get processingSessionMetadata(): ProcessingSessionMetadata | undefined {
+    return this.processingSession === undefined ? undefined : sessionMetadata(this.processingSession);
+  }
+
   async invoke<Input, Result>(
     operationId: Iso20022OperationId,
     input: Input,
@@ -116,19 +203,21 @@ export class Iso20022HttpTransport implements Iso20022Transport {
     if (metadata.contractVersion !== operation.version) {
       throw new Iso20022TransportError("serialization_failed", `Contract version mismatch for ${operationId}`);
     }
+    if (operation.successResponse.kind !== "json") {
+      throw new Iso20022TransportError("unsupported_operation", "The operation requires the verified binary path");
+    }
     const inputRecord = requireInputRecord(input);
     const url = buildUrl(this.baseUrl, operation, inputRecord);
-    const token = await resolveAccessToken(this.accessToken);
-    const headers = buildHeaders(token, operation, metadata);
+    const session = this.requireProcessingSession();
+    const headers = buildHeaders(session, operation, metadata);
     const requestBody = operation.requestBody ? serializeRequestBody(inputRecord, this.maxRequestBytes) : undefined;
     const controller = new AbortController();
-    const timer = setTimeout(() => {
-      controller.abort();
-    }, this.timeoutMs);
+    const timer = abortAfter(controller, this.timeoutMs);
     try {
       const request: RequestInit = {
         method: operation.method,
         headers,
+        redirect: "error",
         signal: controller.signal,
       };
       if (requestBody !== undefined) request.body = requestBody;
@@ -139,15 +228,103 @@ export class Iso20022HttpTransport implements Iso20022Transport {
         return responseBody as Result;
       } catch (cause) {
         if (cause instanceof Iso20022TransportError || cause instanceof Iso20022HttpError) throw cause;
-        throw new Iso20022TransportError(
-          "request_failed",
-          controller.signal.aborted ? "The Processing API request timed out" : "The Processing API request failed",
-        );
+        throw requestFailure(controller);
       }
     } finally {
       clearTimeout(timer);
     }
   }
+
+  async downloadPaymentExport(
+    input: unknown,
+    metadata: ProcessingRequestMetadata,
+    authority: PaymentExportContentAuthority,
+  ): Promise<VerifiedPaymentExportContent> {
+    const verified = await this.downloadVerified(input, metadata, authority);
+    return { ...verified.metadata, bytes: verified.bytes };
+  }
+
+  async downloadPaymentExportTo(
+    input: unknown,
+    metadata: ProcessingRequestMetadata,
+    authority: PaymentExportContentAuthority,
+    sink: PaymentExportContentSink,
+  ): Promise<VerifiedPaymentExportContentMetadata> {
+    if (typeof sink !== "function") {
+      throw new Iso20022TransportError("invalid_configuration", "A payment-export content sink is required");
+    }
+    const verified = await this.downloadVerified(input, metadata, authority);
+    try {
+      await sink(verified.bytes.slice());
+    } catch {
+      throw new Iso20022TransportError("sink_failed", "The caller-owned payment-export sink failed");
+    }
+    return verified.metadata;
+  }
+
+  private requireProcessingSession(): ProcessingSessionCredential {
+    const session = this.processingSession;
+    if (
+      session?.audience !== this.processingAudience ||
+      session?.expiresAtEpochSeconds === undefined ||
+      session.expiresAtEpochSeconds <= Math.floor(Date.now() / 1000)
+    ) {
+      this.processingSession = undefined;
+      throw new Iso20022TransportError("invalid_session", "A current audience-bound Processing session is required");
+    }
+    return session;
+  }
+
+  private async downloadVerified(
+    input: unknown,
+    metadata: ProcessingRequestMetadata,
+    authority: PaymentExportContentAuthority,
+  ): Promise<{ readonly bytes: Uint8Array; readonly metadata: VerifiedPaymentExportContentMetadata }> {
+    const operation = lookupOperation("payment_exports.download_content");
+    if (operation.successResponse.kind !== "binary") {
+      throw new Iso20022TransportError("unsupported_operation", "The generated payment-export response is not binary");
+    }
+    if (metadata.contractVersion !== operation.version) {
+      throw new Iso20022TransportError(
+        "serialization_failed",
+        "Contract version mismatch for payment_exports.download_content",
+      );
+    }
+    const responseLimit = Math.min(this.maxResponseBytes, operation.successResponse.maximumBytes);
+    const expected = validateContentAuthority(authority, operation.successResponse.mediaType, responseLimit);
+    const inputRecord = requireInputRecord(input);
+    const url = buildUrl(this.baseUrl, operation, inputRecord);
+    const session = this.requireProcessingSession();
+    const headers = buildHeaders(session, operation, metadata);
+    const requestBody = serializeRequestBody(inputRecord, this.maxRequestBytes);
+    const controller = new AbortController();
+    const timer = abortAfter(controller, this.timeoutMs);
+    try {
+      const response = await this.fetchImplementation(url, {
+        method: operation.method,
+        body: requestBody,
+        headers,
+        redirect: "error",
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        const body = await parseResponse(response, this.maxResponseBytes);
+        throw new Iso20022HttpError(response.status, body);
+      }
+      const verified = await parseVerifiedBinaryResponse(response, responseLimit, operation.successResponse, expected);
+      return verified;
+    } catch (cause) {
+      if (cause instanceof Iso20022TransportError || cause instanceof Iso20022HttpError) throw cause;
+      throw requestFailure(controller);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+}
+
+interface ProcessingSessionCredential extends ProcessingSessionMetadata {
+  readonly apiKey: string;
+  readonly processingSession: string;
 }
 
 type Iso20022Operation = (typeof iso20022Operations)[Iso20022OperationId];
@@ -208,23 +385,93 @@ function parseTimeoutMs(value: number | undefined): number {
   return selected;
 }
 
-async function resolveAccessToken(provider: AccessTokenProvider): Promise<string> {
-  let token: unknown;
+async function resolveBootstrapAuthentication(
+  provider: ProcessingBootstrapAuthenticationProvider,
+): Promise<ProcessingBootstrapAuthentication> {
+  let authentication: unknown;
   try {
-    token = typeof provider === "function" ? await provider() : provider;
+    authentication = await provider();
   } catch {
-    throw new Iso20022TransportError("request_failed", "The bearer credential could not be resolved");
+    throw new Iso20022TransportError("request_failed", "The Processing bootstrap identity could not be resolved");
   }
+  const candidate = authentication as Partial<ProcessingBootstrapAuthentication> | null;
+  const apiKey = candidate?.apiKey;
+  const idToken = candidate?.idToken;
   if (
-    typeof token !== "string" ||
-    token.length === 0 ||
-    token.length > MAX_ACCESS_TOKEN_LENGTH ||
-    token.trim() !== token ||
-    hasAsciiControl(token)
+    candidate === null ||
+    typeof candidate !== "object" ||
+    Array.isArray(candidate) ||
+    !validCredential(apiKey) ||
+    !validCredential(idToken)
   ) {
-    throw new Iso20022TransportError("invalid_configuration", "The bearer credential is invalid");
+    throw new Iso20022TransportError("invalid_configuration", "The Processing bootstrap identity is invalid");
   }
-  return token;
+  return { apiKey, idToken };
+}
+
+function validCredential(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= MAX_BOOTSTRAP_CREDENTIAL_LENGTH &&
+    value.trim() === value &&
+    !hasAsciiControl(value)
+  );
+}
+
+function parseProcessingAudience(value: string): string {
+  if (
+    typeof value !== "string" ||
+    value.length === 0 ||
+    value.length > 256 ||
+    value.trim() !== value ||
+    hasAsciiControl(value)
+  ) {
+    throw new Iso20022TransportError("invalid_configuration", "The Processing session audience is invalid");
+  }
+  return value;
+}
+
+function parseProcessingSession(
+  body: Record<string, unknown>,
+  apiKey: string,
+  expectedAudience: string,
+): ProcessingSessionCredential {
+  const expectedKeys = ["audience", "expiresAtEpochSeconds", "processingSession", "schemaVersion", "tokenType"];
+  if (JSON.stringify(Object.keys(body).sort()) !== JSON.stringify(expectedKeys)) {
+    throw new Iso20022TransportError("invalid_session", "The Processing session response is malformed");
+  }
+  const now = Math.floor(Date.now() / 1000);
+  if (
+    body.audience !== expectedAudience ||
+    body.schemaVersion !== 1 ||
+    body.tokenType !== "Processing" ||
+    typeof body.processingSession !== "string" ||
+    !PROCESSING_SESSION_TOKEN_PATTERN.test(body.processingSession) ||
+    typeof body.expiresAtEpochSeconds !== "number" ||
+    !Number.isSafeInteger(body.expiresAtEpochSeconds) ||
+    body.expiresAtEpochSeconds <= now ||
+    body.expiresAtEpochSeconds > now + 15 * 60
+  ) {
+    throw new Iso20022TransportError("invalid_session", "The Processing session response is invalid");
+  }
+  return {
+    apiKey,
+    audience: expectedAudience,
+    expiresAtEpochSeconds: body.expiresAtEpochSeconds,
+    processingSession: body.processingSession,
+    schemaVersion: 1,
+    tokenType: "Processing",
+  };
+}
+
+function sessionMetadata(session: ProcessingSessionCredential): ProcessingSessionMetadata {
+  return {
+    audience: session.audience,
+    expiresAtEpochSeconds: session.expiresAtEpochSeconds,
+    schemaVersion: session.schemaVersion,
+    tokenType: session.tokenType,
+  };
 }
 
 function hasAsciiControl(value: string): boolean {
@@ -243,14 +490,15 @@ function requireInputRecord(input: unknown): Record<string, unknown> {
 }
 
 function buildHeaders(
-  token: string,
+  session: ProcessingSessionCredential,
   operation: Iso20022Operation,
   metadata: ProcessingRequestMetadata,
 ): Record<string, string> {
   const headers: Record<string, string> = {
-    Accept: "application/json",
-    Authorization: `Bearer ${token}`,
+    Accept: operation.successResponse.mediaType,
+    Authorization: `Processing ${session.processingSession}`,
     "ISECure-Contract-Version": String(operation.version),
+    "x-api-key": session.apiKey,
   };
   bindRequiredHeader(
     headers,
@@ -439,4 +687,90 @@ async function readBoundedResponse(response: Response, maxBytes: number): Promis
     offset += chunk.byteLength;
   }
   return combined;
+}
+
+function validateContentAuthority(
+  authority: PaymentExportContentAuthority,
+  mediaType: string,
+  maximumBytes: number,
+): VerifiedPaymentExportContentMetadata {
+  const byteLength = parsePositiveByteLength(authority?.artifact_byte_length);
+  if (
+    authority === null ||
+    typeof authority !== "object" ||
+    !UUID_PATTERN.test(authority.artifact_id) ||
+    !SHA256_PATTERN.test(authority.artifact_digest) ||
+    authority.artifact_media_type !== mediaType ||
+    byteLength === undefined ||
+    byteLength > maximumBytes
+  ) {
+    throw new Iso20022TransportError("invalid_configuration", "The payment-export authority is invalid");
+  }
+  return {
+    artifact_id: authority.artifact_id,
+    artifact_digest: authority.artifact_digest,
+    artifact_byte_length: authority.artifact_byte_length,
+    artifact_media_type: authority.artifact_media_type,
+  };
+}
+
+function parsePositiveByteLength(value: unknown): number | undefined {
+  if (typeof value !== "string" || !/^[1-9][0-9]*$/u.test(value)) return undefined;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : undefined;
+}
+
+async function parseVerifiedBinaryResponse(
+  response: Response,
+  maxBytes: number,
+  success: Extract<Iso20022Operation["successResponse"], { readonly kind: "binary" }>,
+  expected: VerifiedPaymentExportContentMetadata,
+): Promise<{ readonly bytes: Uint8Array; readonly metadata: VerifiedPaymentExportContentMetadata }> {
+  const mediaType = response.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase();
+  const artifactId = response.headers.get(success.headers.artifactId);
+  const artifactDigest = response.headers.get(success.headers.artifactDigest);
+  const contentLength = parsePositiveByteLength(response.headers.get(success.headers.contentLength));
+  const expectedLength = parsePositiveByteLength(expected.artifact_byte_length);
+  if (
+    mediaType !== success.mediaType ||
+    artifactId !== expected.artifact_id ||
+    artifactDigest !== expected.artifact_digest ||
+    contentLength === undefined ||
+    expectedLength === undefined ||
+    contentLength !== expectedLength ||
+    contentLength > maxBytes
+  ) {
+    throw new Iso20022TransportError("integrity_check_failed", "Payment-export response metadata did not match");
+  }
+  const bytes = await readBoundedResponse(response, maxBytes);
+  if (bytes.byteLength !== contentLength || (await sha256(bytes)) !== expected.artifact_digest) {
+    throw new Iso20022TransportError("integrity_check_failed", "Payment-export response bytes did not match");
+  }
+  return { bytes, metadata: expected };
+}
+
+async function sha256(bytes: Uint8Array): Promise<string> {
+  const subtle = globalThis.crypto?.subtle;
+  if (subtle === undefined) {
+    throw new Iso20022TransportError("invalid_configuration", "Web Crypto SHA-256 is required");
+  }
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  const digest = new Uint8Array(await subtle.digest("SHA-256", copy.buffer));
+  return `sha256:${Array.from(digest, (value) => {
+    return value.toString(16).padStart(2, "0");
+  }).join("")}`;
+}
+
+function abortAfter(controller: AbortController, timeoutMs: number): ReturnType<typeof setTimeout> {
+  return setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+}
+
+function requestFailure(controller: AbortController): Iso20022TransportError {
+  return new Iso20022TransportError(
+    "request_failed",
+    controller.signal.aborted ? "The Processing API request timed out" : "The Processing API request failed",
+  );
 }
