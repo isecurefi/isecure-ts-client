@@ -64,6 +64,12 @@ if (state.status === "authenticated") {
 }
 ```
 
+For a complete gpgtest `simulator` flow—including registration/login, certificate enrollment, PGP
+key management, detached signing, signed `pain.001.001.09` upload, file listing, and downloading the
+initial and payment-derived `camt.053` files—see the
+[bank simulator end-to-end example](examples/bank-simulator/README.md) or run
+`yarn example:simulator`.
+
 ## First Registration
 
 ```ts
