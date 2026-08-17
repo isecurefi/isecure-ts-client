@@ -92,11 +92,5 @@
     "typescript-eslint": "^8.66.0",
     "vite": "^8.2.0",
     "vitest": "^4.1.10"
-  },
-  "overrides": {
-    "js-yaml": "4.3.1"
-  },
-  "resolutions": {
-    "js-yaml": "4.3.1"
   }
 }
