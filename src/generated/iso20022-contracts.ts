@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@c85d846b36bc56b0f1124da1799a5eec54fe1a7f
+// source: isecurefi/bankfiles-platform@13660d3004a8cec437428a24e2562452d009fe4a
 // model: Bankfiles@0.94.0
-// source-digest: sha256:11698c08b95bef9d11f5f91d5c5e8026148b7f55ae057c8ac5d917141d8bac3a
+// source-digest: sha256:0bb6d73f8e69e6ab9f32c42adfe24cb4a00a40f1df5624953d9d07f608ae83b9
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type BalanceBoundary = "opening" | "closing" | "intraday" | "available" | "expected" | "forward_available" | "other";
@@ -55,6 +55,8 @@ export type PaymentDestinationScope = "domestic" | "cross_border" | "any_qualifi
 export type PaymentExecutionSummaryState = "not_started" | "planned" | "in_progress" | "completed" | "failed" | "indeterminate" | "cancelled";
 
 export type PaymentExportProfileAvailabilityStatus = "available" | "unavailable";
+
+export type PaymentExportProfileLifecycleState = "active" | "revoked";
 
 export type PaymentExportProfileQualificationStatus = "none" | "experimental" | "qualified_with_limitations" | "qualified";
 
@@ -641,7 +643,7 @@ export interface PaymentExportProfileResource {
     readonly message_definition: string;
     readonly xml_namespace: string;
     readonly exact_revision_digest: string;
-    readonly state: PaymentExportState;
+    readonly state: PaymentExportProfileLifecycleState;
     readonly effective_from: string;
     readonly effective_to?: string;
     readonly approved_at: string;
