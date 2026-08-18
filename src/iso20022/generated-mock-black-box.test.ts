@@ -3,7 +3,21 @@ import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { iso20022Operations, type Iso20022OperationId } from "../generated/iso20022-contracts.js";
 import { createIso20022Client, type Iso20022Client } from "./client.js";
-import { Iso20022HttpError, Iso20022HttpTransport, Iso20022TransportError } from "./transport.js";
+import {
+  Iso20022HttpError,
+  Iso20022HttpTransport,
+  Iso20022TransportError,
+  type PaymentExportContentAuthority,
+} from "./transport.js";
+
+const PROCESSING_TOKEN = "A".repeat(43);
+const AUDIENCE = "isecure-processing-gpgtest-v1";
+const CONTENT_AUTHORITY: PaymentExportContentAuthority = {
+  artifact_id: "00000000-0000-4000-8000-000000000001",
+  artifact_digest: `sha256:${"0".repeat(64)}`,
+  artifact_byte_length: "1",
+  artifact_media_type: "application/xml",
+};
 
 interface MockFixture {
   scenario: string;
@@ -27,7 +41,19 @@ describe("generated ISO client mock black box", () => {
 
     for (const operation of mock) {
       for (const fixture of operation.fixtures) {
-        const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        if (
+          operation.operationId === "payment_exports.download_content" &&
+          fixture.outcome.status >= 200 &&
+          fixture.outcome.status < 300
+        ) {
+          expect(typeof fixture.outcome.body.artifact_id).toBe("string");
+          expect(typeof fixture.outcome.body.artifact_digest).toBe("string");
+          expect(typeof fixture.outcome.body.artifact_byte_length).toBe("string");
+          expect(typeof fixture.outcome.body.artifact_media_type).toBe("string");
+          executed += 1;
+          continue;
+        }
+        const operationFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
           expect(input).toBeDefined();
           expect(init).toBeDefined();
           return new Response(JSON.stringify(fixture.outcome.body), {
@@ -35,17 +61,34 @@ describe("generated ISO client mock black box", () => {
             headers: { "content-type": "application/json" },
           });
         });
-        const client = createIso20022Client(
-          new Iso20022HttpTransport({
-            baseUrl: "https://api.example.test/processing/",
-            accessToken: "synthetic-token",
-            fetch,
-          }),
-        );
+        const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+          const url = input instanceof Request ? input.url : input.toString();
+          if (new URL(url).pathname.endsWith("/session")) {
+            return new Response(
+              JSON.stringify({
+                audience: AUDIENCE,
+                expiresAtEpochSeconds: Math.floor(Date.now() / 1000) + 600,
+                processingSession: PROCESSING_TOKEN,
+                schemaVersion: 1,
+                tokenType: "Processing",
+              }),
+              { headers: { "content-type": "application/json" } },
+            );
+          }
+          return operationFetch(input, init);
+        });
+        const transport = new Iso20022HttpTransport({
+          baseUrl: "https://api.example.test/processing/",
+          bootstrapAuthentication: () => ({ apiKey: "synthetic-api-key", idToken: "synthetic-id-token" }),
+          processingAudience: AUDIENCE,
+          fetch,
+        });
+        await transport.exchangeProcessingSession();
+        const client = createIso20022Client(transport);
 
         const outcome = await invoke(client, operation.operationId, fixture.input).catch((error: unknown) => error);
 
-        const request = fetch.mock.calls[0];
+        const request = operationFetch.mock.calls[0];
         if (request === undefined) {
           expect(fixture.scenario).toBe("invalid_request");
           expect(outcome).toBeInstanceOf(Iso20022TransportError);
@@ -115,6 +158,20 @@ function invoke(
       return client.paymentCapabilities.list(input as never);
     case "payment_capabilities.resolve":
       return client.paymentCapabilities.resolve(input as never);
+    case "payment_export_profile_catalog.list":
+      return client.paymentExportProfiles.list(input);
+    case "payment_export_profiles.configure":
+      return client.paymentExportProfiles.configure(input as never, commandOptions(operationId));
+    case "payment_export_profiles.get":
+      return client.paymentExportProfiles.get(input);
+    case "payment_export_profiles.revoke":
+      return client.paymentExportProfiles.revoke(input as never, revisionOptions(operationId));
+    case "payment_exports.download_content":
+      return client.paymentExports.download(input as never, CONTENT_AUTHORITY, commandOptions(operationId));
+    case "payment_exports.get":
+      return client.paymentExports.get(input as never);
+    case "payment_exports.release":
+      return client.paymentExports.release(input as never, revisionOptions(operationId));
     case "payment_orders.cancel_draft":
       return client.paymentOrders.cancelDraft(input as never, revisionOptions(operationId));
     case "payment_orders.create_draft":
