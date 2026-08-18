@@ -73,6 +73,7 @@
     "pack:check": "yarn build && NPM_CONFIG_CACHE=${TMPDIR:-/tmp}/isecure-npm-cache npm pack --dry-run",
     "prepublishOnly": "yarn format:check && yarn lint && yarn typecheck && yarn test && yarn browser:check && yarn pack:check",
     "example:workflow": "yarn build:examples && node dist-examples/examples/full-workflow/full-workflow.js",
+    "example:processing-upload": "yarn build:examples && node dist-examples/examples/processing-manual-upload/processing-manual-upload.js",
     "example:simulator": "yarn build:examples && node dist-examples/examples/bank-simulator/bank-simulator.js"
   },
   "dependencies": {

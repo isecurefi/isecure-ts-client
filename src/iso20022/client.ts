@@ -16,7 +16,9 @@ import {
   type PaymentCapabilityListResult,
   type PaymentCapabilityResolution,
   type ConfigurePaymentExportProfileInput,
+  type DecidePaymentApprovalRequestInput,
   type DownloadPaymentExportContentInput,
+  type PaymentApprovalDecisionResult,
   type PaymentExportGetInput,
   type PaymentExportGetResult,
   type PaymentExportProfileCatalogListInput,
@@ -26,11 +28,13 @@ import {
   type PaymentExportReleaseResult,
   type PaymentOrderDraftInput,
   type PaymentOrderExecuteResult,
+  type PaymentOrderFinalizationResult,
   type PaymentOrderGetInput,
   type PaymentOrderGetResult,
   type PaymentOrderListInput,
   type PaymentOrderListResult,
   type PaymentOrderMutationResult,
+  type PaymentOrderReviewSubmissionResult,
   type PaymentOrderRevisionInput,
   type PaymentOrderSimulationResult,
   type PaymentOrderTransitionInput,
@@ -81,6 +85,15 @@ export function createIso20022Client(transport: Iso20022Transport) {
         invoke<ObservationExplainInput, ExplanationResult>(transport, "entries.explain", input),
       get: (input: ObservationGetInput) => invoke<ObservationGetInput, EntryGetResult>(transport, "entries.get", input),
       list: (input: EntryListInput) => invoke<EntryListInput, EntryListResult>(transport, "entries.list", input),
+    },
+    paymentApprovalRequests: {
+      decide: (input: DecidePaymentApprovalRequestInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<DecidePaymentApprovalRequestInput, PaymentApprovalDecisionResult>(
+          transport,
+          "payment_approval_requests.decide",
+          input,
+          options,
+        ),
     },
     paymentCapabilities: {
       explain: (input: PaymentCapabilityGetInput) =>
@@ -177,6 +190,13 @@ export function createIso20022Client(transport: Iso20022Transport) {
         ),
       explain: (input: PaymentOrderGetInput) =>
         invoke<PaymentOrderGetInput, ExplanationResult>(transport, "payment_orders.explain", input),
+      finalizeDraft: (input: PaymentOrderTransitionInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<PaymentOrderTransitionInput, PaymentOrderFinalizationResult>(
+          transport,
+          "payment_orders.finalize_draft",
+          input,
+          options,
+        ),
       get: (input: PaymentOrderGetInput) =>
         invoke<PaymentOrderGetInput, PaymentOrderGetResult>(transport, "payment_orders.get", input),
       list: (input: PaymentOrderListInput) =>
@@ -191,7 +211,7 @@ export function createIso20022Client(transport: Iso20022Transport) {
       simulate: (input: PaymentOrderRevisionInput) =>
         invoke<PaymentOrderRevisionInput, PaymentOrderSimulationResult>(transport, "payment_orders.simulate", input),
       submitForReview: (input: PaymentOrderTransitionInput, options: ProcessingRevisionCommandOptions) =>
-        invoke<PaymentOrderTransitionInput, PaymentOrderMutationResult>(
+        invoke<PaymentOrderTransitionInput, PaymentOrderReviewSubmissionResult>(
           transport,
           "payment_orders.submit_for_review",
           input,

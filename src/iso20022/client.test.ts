@@ -59,6 +59,14 @@ describe("experimental ISO 20022 client", () => {
       client.entries.explain(resource),
       client.entries.get(resource),
       client.entries.list({ status_code: "BOOK" }),
+      client.paymentApprovalRequests.decide(
+        {
+          payment_approval_request_id: resource.resource_id,
+          exact_subject_digest: `sha256:${"2".repeat(64)}`,
+          decision: "approve",
+        },
+        { idempotencyKey: "synthetic-approve", expectedResourceVersion: "1" },
+      ),
       client.paymentCapabilities.explain({ account_capability_id: resource.resource_id }),
       client.paymentCapabilities.get({ account_capability_id: resource.resource_id }),
       client.paymentCapabilities.list({ page: {} }),
@@ -92,6 +100,10 @@ describe("experimental ISO 20022 client", () => {
         { idempotencyKey: "synthetic-execute", expectedResourceVersion: '"1"' },
       ),
       client.paymentOrders.explain({ payment_order_id: resource.resource_id }),
+      client.paymentOrders.finalizeDraft(
+        { payment_order_id: resource.resource_id },
+        { idempotencyKey: "synthetic-finalize", expectedResourceVersion: "1" },
+      ),
       client.paymentOrders.get({ payment_order_id: resource.resource_id }),
       client.paymentOrders.list({ page: {} }),
       client.paymentOrders.reviseDraft({} as never, {
@@ -115,7 +127,7 @@ describe("experimental ISO 20022 client", () => {
       client.validations.list({ run_kind: "validate" }),
     ]);
 
-    expect(transport.calls).toHaveLength(36);
+    expect(transport.calls).toHaveLength(38);
     expect(transport.calls.map((call) => call.operationId)).toEqual(Object.keys(iso20022Operations));
     for (const call of transport.calls) {
       const operation = iso20022Operations[call.operationId as keyof typeof iso20022Operations];
