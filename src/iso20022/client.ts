@@ -15,7 +15,15 @@ import {
   type PaymentCapabilityListInput,
   type PaymentCapabilityListResult,
   type PaymentCapabilityResolution,
-  type PaymentOrderCancellationResult,
+  type ConfigurePaymentExportProfileInput,
+  type DownloadPaymentExportContentInput,
+  type PaymentExportGetInput,
+  type PaymentExportGetResult,
+  type PaymentExportProfileCatalogListInput,
+  type PaymentExportProfileCatalogListResult,
+  type PaymentExportProfileGetInput,
+  type PaymentExportProfileResult,
+  type PaymentExportReleaseResult,
   type PaymentOrderDraftInput,
   type PaymentOrderExecuteResult,
   type PaymentOrderGetInput,
@@ -30,6 +38,8 @@ import {
   type ProcessingCommandOptions,
   type ProcessingRequestMetadata,
   type ProcessingRevisionCommandOptions,
+  type ReleasePaymentExportInput,
+  type RevokePaymentExportProfileInput,
   type RevisePaymentOrderInput,
   type StatementGetResult,
   type StatementListInput,
@@ -41,7 +51,13 @@ import {
   type ValidationListInput,
   type ValidationListResult,
 } from "../generated/iso20022-contracts.js";
-import type { Iso20022Transport } from "./transport.js";
+import type {
+  Iso20022Transport,
+  PaymentExportContentAuthority,
+  PaymentExportContentSink,
+  VerifiedPaymentExportContent,
+  VerifiedPaymentExportContentMetadata,
+} from "./transport.js";
 
 /**
  * Creates the experimental ISO 20022 observation and payment surface.
@@ -80,9 +96,66 @@ export function createIso20022Client(transport: Iso20022Transport) {
           input,
         ),
     },
+    paymentExportProfiles: {
+      list: (input: PaymentExportProfileCatalogListInput = {}) =>
+        invoke<PaymentExportProfileCatalogListInput, PaymentExportProfileCatalogListResult>(
+          transport,
+          "payment_export_profile_catalog.list",
+          input,
+        ),
+      configure: (input: ConfigurePaymentExportProfileInput, options: ProcessingCommandOptions) =>
+        invoke<ConfigurePaymentExportProfileInput, PaymentExportProfileResult>(
+          transport,
+          "payment_export_profiles.configure",
+          input,
+          options,
+        ),
+      get: (input: PaymentExportProfileGetInput = {}) =>
+        invoke<PaymentExportProfileGetInput, PaymentExportProfileResult>(
+          transport,
+          "payment_export_profiles.get",
+          input,
+        ),
+      revoke: (input: RevokePaymentExportProfileInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<RevokePaymentExportProfileInput, PaymentExportProfileResult>(
+          transport,
+          "payment_export_profiles.revoke",
+          input,
+          options,
+        ),
+    },
+    paymentExports: {
+      download: (
+        input: DownloadPaymentExportContentInput,
+        authority: PaymentExportContentAuthority,
+        options: ProcessingCommandOptions,
+      ): Promise<VerifiedPaymentExportContent> =>
+        transport.downloadPaymentExport(input, commandMetadata("payment_exports.download_content", options), authority),
+      downloadTo: (
+        input: DownloadPaymentExportContentInput,
+        authority: PaymentExportContentAuthority,
+        sink: PaymentExportContentSink,
+        options: ProcessingCommandOptions,
+      ): Promise<VerifiedPaymentExportContentMetadata> =>
+        transport.downloadPaymentExportTo(
+          input,
+          commandMetadata("payment_exports.download_content", options),
+          authority,
+          sink,
+        ),
+      get: (input: PaymentExportGetInput) =>
+        invoke<PaymentExportGetInput, PaymentExportGetResult>(transport, "payment_exports.get", input),
+      release: (input: ReleasePaymentExportInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<ReleasePaymentExportInput, PaymentExportReleaseResult>(
+          transport,
+          "payment_exports.release",
+          input,
+          options,
+        ),
+    },
     paymentOrders: {
       cancelDraft: (input: PaymentOrderTransitionInput, options: ProcessingRevisionCommandOptions) =>
-        invoke<PaymentOrderTransitionInput, PaymentOrderCancellationResult>(
+        invoke<PaymentOrderTransitionInput, PaymentOrderMutationResult>(
           transport,
           "payment_orders.cancel_draft",
           input,
@@ -167,4 +240,14 @@ function invoke<Input, Result>(
     ...options,
   };
   return transport.invoke<Input, Result>(operationId, input, metadata);
+}
+
+function commandMetadata(
+  operationId: keyof typeof iso20022Operations,
+  options: Omit<ProcessingRequestMetadata, "contractVersion">,
+): ProcessingRequestMetadata {
+  return {
+    contractVersion: iso20022Operations[operationId].version,
+    ...options,
+  };
 }

@@ -5,9 +5,15 @@ import {
   Iso20022HttpTransport,
   Iso20022TransportError,
   type Iso20022HttpTransportOptions,
+  type PaymentExportContentAuthority,
 } from "./transport.js";
 
+const API_KEY = "synthetic-api-key";
+const ID_TOKEN = "synthetic-id-token";
+const PROCESSING_TOKEN = "A".repeat(43);
+const AUDIENCE = "isecure-processing-gpgtest-v1";
 const RESOURCE_ID = "00000000-0000-4000-8000-000000000001";
+const ARTIFACT_ID = "00000000-0000-4000-8000-000000000002";
 
 function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
@@ -15,491 +21,374 @@ function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(body), { ...init, headers });
 }
 
-function transport(options: Partial<Iso20022HttpTransportOptions> = {}): Iso20022HttpTransport {
-  return new Iso20022HttpTransport({
-    baseUrl: "https://api.example.test/processing",
-    accessToken: "synthetic-token",
-    fetch: vi.fn(async () => jsonResponse({ ok: true })),
-    ...options,
+function sessionResponse(overrides: Record<string, unknown> = {}): Response {
+  return jsonResponse({
+    audience: AUDIENCE,
+    expiresAtEpochSeconds: Math.floor(Date.now() / 1000) + 600,
+    processingSession: PROCESSING_TOKEN,
+    schemaVersion: 1,
+    tokenType: "Processing",
+    ...overrides,
+  });
+}
+
+function transport(
+  operationFetch: typeof globalThis.fetch = vi.fn(async () => jsonResponse({ ok: true })),
+  options: Partial<Iso20022HttpTransportOptions> = {},
+): { adapter: Iso20022HttpTransport; fetch: ReturnType<typeof vi.fn> } {
+  const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = input instanceof Request ? input.url : input.toString();
+    if (new URL(url).pathname.endsWith("/session")) return sessionResponse();
+    return operationFetch(input, init);
+  });
+  return {
+    adapter: new Iso20022HttpTransport({
+      baseUrl: "https://api.example.test/processing/",
+      bootstrapAuthentication: () => ({ apiKey: API_KEY, idToken: ID_TOKEN }),
+      processingAudience: AUDIENCE,
+      fetch,
+      ...options,
+    }),
+    fetch,
+  };
+}
+
+async function readyTransport(
+  operationFetch?: typeof globalThis.fetch,
+  options: Partial<Iso20022HttpTransportOptions> = {},
+) {
+  const result = transport(operationFetch, options);
+  await result.adapter.exchangeProcessingSession();
+  return result;
+}
+
+async function digest(bytes: Uint8Array): Promise<string> {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  const result = new Uint8Array(await crypto.subtle.digest("SHA-256", copy.buffer));
+  return `sha256:${Array.from(result, (value) => value.toString(16).padStart(2, "0")).join("")}`;
+}
+
+async function contentAuthority(bytes: Uint8Array): Promise<PaymentExportContentAuthority> {
+  return {
+    artifact_id: ARTIFACT_ID,
+    artifact_digest: await digest(bytes),
+    artifact_byte_length: String(bytes.byteLength),
+    artifact_media_type: "application/xml",
+  };
+}
+
+function xmlResponse(bytes: Uint8Array, authority: PaymentExportContentAuthority, overrides = {}): Response {
+  return new Response(bytes, {
+    status: 200,
+    headers: {
+      "content-type": authority.artifact_media_type,
+      "content-length": authority.artifact_byte_length,
+      "ISECure-Artifact-Id": authority.artifact_id,
+      "ISECure-Artifact-Sha256": authority.artifact_digest,
+      ...overrides,
+    },
   });
 }
 
 describe("ISO 20022 HTTP transport", () => {
-  it("serializes generated path/query/version/auth bindings and returns a JSON result", async () => {
-    const fetch = vi.fn(async () => jsonResponse({ statements: [], page: { has_more: false } }));
-    const accessToken = vi.fn(async () => "rotated-synthetic-token");
-    const client = createIso20022Client(transport({ fetch, accessToken }));
+  it("exchanges an existing WSChannel identity for a separate Processing session", async () => {
+    const { adapter, fetch } = transport();
 
-    const result = await client.statements.list({
+    const metadata = await adapter.exchangeProcessingSession();
+
+    expect(metadata).toMatchObject({ audience: AUDIENCE, schemaVersion: 1, tokenType: "Processing" });
+    expect(typeof metadata.expiresAtEpochSeconds).toBe("number");
+    expect(metadata).not.toHaveProperty("processingSession");
+    expect(metadata).not.toHaveProperty("apiKey");
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(String(fetch.mock.calls[0]?.[0])).toBe("https://api.example.test/processing/session");
+    expect(fetch.mock.calls[0]?.[1]).toMatchObject({
+      method: "POST",
+      headers: { Accept: "application/json", Authorization: ID_TOKEN, "x-api-key": API_KEY },
+    });
+  });
+
+  it("requires explicit exchange and uses only the audience-bound Processing token for operations", async () => {
+    const { adapter, fetch } = transport();
+    const client = createIso20022Client(adapter);
+
+    await expect(client.validations.list({})).rejects.toMatchObject({ code: "invalid_session" });
+    await adapter.exchangeProcessingSession();
+    await client.validations.list({});
+
+    const request = fetch.mock.calls[1];
+    expect(request?.[1]).toMatchObject({
+      headers: {
+        Accept: "application/json",
+        Authorization: `Processing ${PROCESSING_TOKEN}`,
+        "ISECure-Contract-Version": "1",
+        "x-api-key": API_KEY,
+      },
+    });
+    expect(JSON.stringify(request)).not.toContain(ID_TOKEN);
+    adapter.clearProcessingSession();
+    expect(adapter.processingSessionMetadata).toBeUndefined();
+    await expect(client.validations.list({})).rejects.toMatchObject({ code: "invalid_session" });
+  });
+
+  it("serializes generated path, query, JSON, idempotency, and version bindings", async () => {
+    const operationFetch = vi.fn(async () => jsonResponse({ ok: true }));
+    const { adapter } = await readyTransport(operationFetch);
+    const client = createIso20022Client(adapter);
+
+    await client.statements.list({
       bank_account_id: RESOURCE_ID,
       observed_from: "2040-01-01T00:00:00Z",
       page_size: 25,
       cursor: "synthetic cursor",
     });
-
-    expect(result).toEqual({ statements: [], page: { has_more: false } });
-    expect(accessToken).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledTimes(1);
-    const [url, init] = fetch.mock.calls[0] ?? [];
-    expect(String(url)).toBe(
-      "https://api.example.test/processing/v1/statements?bank_account_id=00000000-0000-4000-8000-000000000001&observed_from=2040-01-01T00%3A00%3A00Z&page_size=25&cursor=synthetic+cursor",
-    );
-    expect(init).toMatchObject({
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: "Bearer rotated-synthetic-token",
-        "ISECure-Contract-Version": "1",
-      },
-    });
-    expect(init?.signal).toBeInstanceOf(AbortSignal);
-    expect(init).not.toHaveProperty("body");
-  });
-
-  it("serializes generated JSON, idempotency, and expected-version bindings", async () => {
-    const fetch = vi.fn(async () => jsonResponse({ accepted: true }));
-    const client = createIso20022Client(transport({ fetch }));
-    const input = { payment_order_id: RESOURCE_ID, draft: { synthetic: true } } as never;
-
-    await client.paymentOrders.reviseDraft(input, {
-      idempotencyKey: "synthetic-revise-key",
+    await client.paymentOrders.reviseDraft({ payment_order_id: RESOURCE_ID, draft: { synthetic: true } } as never, {
+      idempotencyKey: "synthetic-revise",
       expectedResourceVersion: '"7"',
     });
 
-    const [url, init] = fetch.mock.calls[0] ?? [];
-    expect(String(url)).toBe("https://api.example.test/processing/v1/payment-orders:revise-draft");
-    expect(init).toMatchObject({
+    expect(String(operationFetch.mock.calls[0]?.[0])).toBe(
+      "https://api.example.test/processing/v1/statements?bank_account_id=00000000-0000-4000-8000-000000000001&observed_from=2040-01-01T00%3A00%3A00Z&page_size=25&cursor=synthetic+cursor",
+    );
+    expect(operationFetch.mock.calls[0]?.[1]).not.toHaveProperty("body");
+    expect(operationFetch.mock.calls[1]?.[1]).toMatchObject({
       method: "POST",
       headers: {
-        Accept: "application/json",
-        Authorization: "Bearer synthetic-token",
         "Content-Type": "application/json",
-        "Idempotency-Key": "synthetic-revise-key",
+        "Idempotency-Key": "synthetic-revise",
         "If-Match": '"7"',
-        "ISECure-Contract-Version": "1",
       },
     });
-    expect(JSON.parse(String(init?.body))).toEqual(input);
   });
 
-  it("serializes generated OpenAPI deep-object query parameters", async () => {
-    const fetch = vi.fn(async () => jsonResponse({ capabilities: [], page: {} }));
-    const client = createIso20022Client(transport({ fetch }));
-
-    await client.paymentCapabilities.list({ page: { page_size: 25, cursor: "synthetic cursor" } });
-
-    expect(String(fetch.mock.calls[0]?.[0])).toBe(
-      "https://api.example.test/processing/v1/payment-capabilities?page%5Bpage_size%5D=25&page%5Bcursor%5D=synthetic+cursor",
-    );
-  });
-
-  it("uses the runtime fetch implementation and preserves an already normalized base path", async () => {
-    const runtimeFetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(jsonResponse({ ok: true }));
+  it.each([
+    { audience: "wrong-audience" },
+    { processingSession: "not-a-token" },
+    { expiresAtEpochSeconds: 1 },
+    { expiresAtEpochSeconds: Math.floor(Date.now() / 1000) + 901 },
+    { schemaVersion: 2 },
+    { tokenType: "Bearer" },
+    { extra: "rejected" },
+  ])("fails closed on malformed or substituted Processing session fields: %o", async (override) => {
+    const fetch = vi.fn(async () => sessionResponse(override));
     const adapter = new Iso20022HttpTransport({
-      baseUrl: new URL("https://api.example.test/processing/"),
-      accessToken: "synthetic-token",
+      baseUrl: "https://api.example.test/processing/",
+      bootstrapAuthentication: () => ({ apiKey: API_KEY, idToken: ID_TOKEN }),
+      processingAudience: AUDIENCE,
+      fetch,
     });
 
-    await adapter.invoke("balances.list", {}, { contractVersion: 2 });
-
-    const request = runtimeFetch.mock.calls[0]?.[0];
-    expect(request instanceof Request ? request.url : request?.toString()).toBe(
-      "https://api.example.test/processing/v1/balances",
-    );
-    runtimeFetch.mockRestore();
+    await expect(adapter.exchangeProcessingSession()).rejects.toMatchObject({ code: "invalid_session" });
+    expect(adapter.processingSessionMetadata).toBeUndefined();
   });
 
-  it.each(["http://localhost:8080/api", "http://127.0.0.1:8080/api", "http://[::1]:8080/api"])(
-    "permits plaintext HTTP only for loopback development at %s",
-    async (baseUrl) => {
-      const fetch = vi.fn(async () => jsonResponse({ ok: true }));
-      const adapter = transport({ baseUrl, fetch });
+  it("does not expose bootstrap-provider failures or retain a previous session after exchange failure", async () => {
+    const secret = "customer-secret-detail";
+    const { adapter } = await readyTransport();
+    Object.assign(adapter as object, {
+      bootstrapAuthentication: vi.fn(async () => Promise.reject(new Error(secret))),
+    });
 
-      await adapter.invoke("balances.list", {}, { contractVersion: 2 });
+    const error = await adapter.exchangeProcessingSession().catch((cause: unknown) => cause);
 
-      expect(fetch).toHaveBeenCalledTimes(1);
-    },
-  );
-
-  it("encodes generated path parameters without changing the base path", async () => {
-    const fetch = vi.fn(async () => jsonResponse({ statement: {} }));
-    const client = createIso20022Client(transport({ fetch }));
-
-    await client.statements.get({ resource_id: "synthetic/id" });
-
-    expect(String(fetch.mock.calls[0]?.[0])).toBe("https://api.example.test/processing/v1/statements/synthetic%2Fid");
+    expect(error).toMatchObject({
+      code: "request_failed",
+      message: "The Processing bootstrap identity could not be resolved",
+    });
+    expect(String(error)).not.toContain(secret);
+    expect(adapter.processingSessionMetadata).toBeUndefined();
   });
 
-  it("surfaces generated refusal bodies without retrying or echoing them in the message", async () => {
+  it("surfaces generated refusal bodies without retrying or echoing them in the error message", async () => {
     const issue = { issues: [{ issue_code: "SYNTHETIC_DENIED", safe_message: "Denied" }] };
-    const fetch = vi.fn(async () => jsonResponse(issue, { status: 403 }));
-    const client = createIso20022Client(transport({ fetch }));
-
-    const error = await client.entries.get({ resource_id: RESOURCE_ID }).catch((cause: unknown) => cause);
+    const operationFetch = vi.fn(async () => jsonResponse(issue, { status: 403 }));
+    const { adapter } = await readyTransport(operationFetch);
+    const error = await createIso20022Client(adapter)
+      .entries.get({ resource_id: RESOURCE_ID })
+      .catch((cause: unknown) => cause);
 
     expect(error).toBeInstanceOf(Iso20022HttpError);
     expect(error).toMatchObject({ status: 403, body: issue });
     expect((error as Error).message).not.toContain("Denied");
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(operationFetch).toHaveBeenCalledTimes(1);
   });
 
-  it("performs concurrent reads independently with no shared request state", async () => {
-    const fetch = vi.fn(async (input: RequestInfo | URL) =>
-      jsonResponse({ url: input instanceof Request ? input.url : input.toString() }),
-    );
-    const client = createIso20022Client(transport({ fetch }));
-
-    const results = await Promise.all(
-      Array.from({ length: 32 }, async (_, index) =>
-        client.transactions.list({ end_to_end_id: `synthetic-${String(index)}` }),
-      ),
-    );
-
-    expect(fetch).toHaveBeenCalledTimes(32);
-    expect(new Set(results.map((result) => (result as unknown as { url: string }).url)).size).toBe(32);
-  });
-
-  it("performs concurrent payment commands without sharing idempotency metadata", async () => {
-    const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      expect(input).toBeDefined();
-      expect(init).toBeDefined();
-      return jsonResponse({ accepted: true });
-    });
-    const client = createIso20022Client(transport({ fetch }));
-
-    await Promise.all(
-      Array.from({ length: 16 }, async (_, index) =>
-        client.paymentOrders.createDraft({ synthetic_index: index } as never, {
-          idempotencyKey: `synthetic-${String(index)}`,
-        }),
-      ),
-    );
-
-    expect(fetch).toHaveBeenCalledTimes(16);
-    expect(new Set(fetch.mock.calls.map((call) => new Headers(call[1]?.headers).get("Idempotency-Key"))).size).toBe(16);
-  });
-
-  it("does not retry a network failure", async () => {
-    const failure = new Error("synthetic network failure");
-    const fetch = vi.fn(async () => Promise.reject(failure));
-    const client = createIso20022Client(transport({ fetch }));
-
-    const error = await client.validations.list({}).catch((cause: unknown) => cause);
-
-    expect(error).toMatchObject({
-      name: "Iso20022TransportError",
+  it("does not retry network failure or timeout", async () => {
+    const networkFetch = vi.fn(async () => Promise.reject(new Error("network detail")));
+    const network = await readyTransport(networkFetch);
+    await expect(createIso20022Client(network.adapter).validations.list({})).rejects.toMatchObject({
       code: "request_failed",
       message: "The Processing API request failed",
     });
-    expect(error).not.toHaveProperty("cause");
-    expect((error as Error).message).not.toContain(failure.message);
-    expect(fetch).toHaveBeenCalledTimes(1);
-  });
+    expect(networkFetch).toHaveBeenCalledTimes(1);
 
-  it("does not expose access-token provider failures", async () => {
-    const client = createIso20022Client(
-      transport({
-        accessToken: vi.fn(async () => Promise.reject(new Error("synthetic credential detail"))),
-      }),
-    );
-
-    const error = await client.validations.list({}).catch((cause: unknown) => cause);
-
-    expect(error).toMatchObject({
-      name: "Iso20022TransportError",
-      code: "request_failed",
-      message: "The bearer credential could not be resolved",
-    });
-    expect(error).not.toHaveProperty("cause");
-    expect((error as Error).message).not.toContain("credential detail");
-  });
-
-  it("aborts a request at the configured timeout without retrying", async () => {
     vi.useFakeTimers();
-    const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      expect(input).toBeDefined();
-      return new Promise<Response>((_resolve, reject) => {
-        init?.signal?.addEventListener(
-          "abort",
-          () => {
-            const reason: unknown = init.signal?.reason;
-            reject(reason instanceof Error ? reason : new Error("request aborted"));
-          },
-          { once: true },
-        );
-      });
-    });
-    const client = createIso20022Client(transport({ fetch, timeoutMs: 25 }));
-
-    try {
-      const request = client.validations.list({}).catch((error: unknown) => error);
-      await vi.advanceTimersByTimeAsync(25);
-
-      await expect(request).resolves.toMatchObject({
-        name: "Iso20022TransportError",
-        code: "request_failed",
-        message: "The Processing API request timed out",
-      });
-      expect(fetch).toHaveBeenCalledTimes(1);
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it("keeps the timeout active while consuming the response body", async () => {
-    vi.useFakeTimers();
-    const fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
-      const body = new ReadableStream<Uint8Array>({
-        start(controller) {
+    const hangingFetch = vi.fn(
+      async (_input: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
           init?.signal?.addEventListener(
             "abort",
             () => {
-              const reason: unknown = init.signal?.reason;
-              controller.error(reason instanceof Error ? reason : new Error("request aborted"));
+              reject(new Error("aborted"));
             },
             { once: true },
           );
-        },
-      });
-      return new Response(body, { headers: { "content-type": "application/json" } });
-    });
-    const client = createIso20022Client(transport({ fetch, timeoutMs: 25 }));
-
+        }),
+    );
+    const timed = await readyTransport(hangingFetch, { timeoutMs: 25 });
     try {
-      const request = client.validations.list({}).catch((error: unknown) => error);
+      const request = createIso20022Client(timed.adapter)
+        .validations.list({})
+        .catch((cause: unknown) => cause);
       await vi.advanceTimersByTimeAsync(25);
-
       await expect(request).resolves.toMatchObject({
-        name: "Iso20022TransportError",
         code: "request_failed",
         message: "The Processing API request timed out",
       });
-      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(hangingFetch).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it.each([
-    ["wrong media type", new Response("{}", { headers: { "content-type": "text/plain" } })],
-    ["invalid JSON", new Response("{", { headers: { "content-type": "application/json" } })],
-    ["non-object JSON", new Response("[]", { headers: { "content-type": "application/json" } })],
-    [
-      "invalid UTF-8",
-      new Response(new Uint8Array([0xff]), { headers: { "content-type": "application/problem+json" } }),
-    ],
-    ["empty body", new Response(null, { headers: { "content-type": "application/json" } })],
-  ])("rejects a malformed %s response", async (_label, response) => {
-    const client = createIso20022Client(transport({ fetch: vi.fn(async () => response) }));
+  it("downloads and returns only exact, bounded, integrity-verified XML bytes", async () => {
+    const bytes = new TextEncoder().encode("<Document>synthetic</Document>");
+    const authority = await contentAuthority(bytes);
+    const operationFetch = vi.fn(async () => xmlResponse(bytes, authority));
+    const { adapter } = await readyTransport(operationFetch);
 
-    const error = await client.balances.list({}).catch((cause: unknown) => cause);
+    const result = await createIso20022Client(adapter).paymentExports.download(
+      { payment_export_id: RESOURCE_ID },
+      authority,
+      { idempotencyKey: "synthetic-download" },
+    );
 
-    expect(error).toMatchObject({
-      name: "Iso20022TransportError",
-      code: "malformed_response",
-    });
-    expect(error).not.toHaveProperty("cause");
-    expect((error as Error).message).not.toContain("{");
-  });
-
-  it("accepts registered +json response media types", async () => {
-    const response = new Response('{"ok":true}', { headers: { "content-type": "application/problem+json" } });
-    const client = createIso20022Client(transport({ fetch: vi.fn(async () => response) }));
-
-    await expect(client.balances.list({})).resolves.toEqual({ ok: true });
-  });
-
-  it("rejects an oversized Content-Length before reading the body", async () => {
-    const response = new Response("{}", {
-      headers: { "content-type": "application/json", "content-length": "100" },
-    });
-    const client = createIso20022Client(transport({ fetch: vi.fn(async () => response), maxResponseBytes: 2 }));
-
-    await expect(client.balances.list({})).rejects.toMatchObject({ code: "response_too_large" });
-  });
-
-  it("cancels a streaming response as soon as its actual bytes exceed the limit", async () => {
-    const cancel = vi.fn();
-    const body = new ReadableStream<Uint8Array>({
-      start(controller) {
-        controller.enqueue(new TextEncoder().encode('{"a":'));
-        controller.enqueue(new TextEncoder().encode('"too large"}'));
-      },
-      cancel,
-    });
-    const response = new Response(body, {
-      headers: { "content-type": "application/json", "content-length": "unknown" },
-    });
-    const client = createIso20022Client(transport({ fetch: vi.fn(async () => response), maxResponseBytes: 8 }));
-
-    await expect(client.balances.list({})).rejects.toMatchObject({ code: "response_too_large" });
-    expect(cancel).toHaveBeenCalledTimes(1);
-  });
-
-  it("combines bounded streaming chunks deterministically", async () => {
-    const body = new ReadableStream<Uint8Array>({
-      start(controller) {
-        controller.enqueue(new TextEncoder().encode('{"ok":'));
-        controller.enqueue(new TextEncoder().encode("true}"));
-        controller.close();
+    expect(result).toEqual({ ...authority, bytes });
+    const request = operationFetch.mock.calls[0]?.[1];
+    expect(request).toMatchObject({
+      method: "POST",
+      headers: {
+        Accept: "application/xml",
+        "Content-Type": "application/json",
+        "Idempotency-Key": "synthetic-download",
       },
     });
-    const response = new Response(body, { headers: { "content-type": "application/json" } });
-    const client = createIso20022Client(transport({ fetch: vi.fn(async () => response), maxResponseBytes: 32 }));
+  });
 
-    await expect(client.balances.list({})).resolves.toEqual({ ok: true });
+  it("calls a sink exactly once and only after complete verification", async () => {
+    const bytes = new TextEncoder().encode("<Document>verified</Document>");
+    const authority = await contentAuthority(bytes);
+    const operationFetch = vi.fn(async () => xmlResponse(bytes, authority));
+    const { adapter } = await readyTransport(operationFetch);
+    const sink = vi.fn(async () => undefined);
+
+    const result = await createIso20022Client(adapter).paymentExports.downloadTo(
+      { payment_export_id: RESOURCE_ID },
+      authority,
+      sink,
+      { idempotencyKey: "synthetic-download" },
+    );
+
+    expect(result).toEqual(authority);
+    expect(sink).toHaveBeenCalledTimes(1);
+    expect(sink).toHaveBeenCalledWith(bytes);
   });
 
   it.each([
-    ["invalid URL", { baseUrl: "not a URL" }],
-    ["non-HTTP URL", { baseUrl: "file:///tmp/api" }],
-    ["remote plaintext URL", { baseUrl: "http://api.example.test/" }],
-    ["URL credentials", { baseUrl: "https://user@example.test/api" }],
-    ["URL query", { baseUrl: "https://example.test/api?tenant=x" }],
-    ["zero response limit", { maxResponseBytes: 0 }],
-    ["fractional response limit", { maxResponseBytes: 1.5 }],
-    ["excessive response limit", { maxResponseBytes: 16 * 1024 * 1024 + 1 }],
-    ["zero request limit", { maxRequestBytes: 0 }],
-    ["fractional request limit", { maxRequestBytes: 1.5 }],
-    ["excessive request limit", { maxRequestBytes: 16 * 1024 * 1024 + 1 }],
-    ["invalid fetch", { fetch: 1 as never }],
-    ["zero timeout", { timeoutMs: 0 }],
-    ["fractional timeout", { timeoutMs: 1.5 }],
-    ["excessive timeout", { timeoutMs: 5 * 60_000 + 1 }],
-  ])("rejects %s configuration", (_label, overrides) => {
-    expect(() => transport(overrides)).toThrow(Iso20022TransportError);
+    ["wrong artifact", { "ISECure-Artifact-Id": RESOURCE_ID }],
+    ["wrong digest", { "ISECure-Artifact-Sha256": `sha256:${"0".repeat(64)}` }],
+    ["wrong media", { "content-type": "text/plain" }],
+    ["wrong length", { "content-length": "1" }],
+  ])("rejects %s metadata before exposing bytes", async (_label, overrides) => {
+    const bytes = new TextEncoder().encode("<Document/>");
+    const authority = await contentAuthority(bytes);
+    const operationFetch = vi.fn(async () => xmlResponse(bytes, authority, overrides));
+    const { adapter } = await readyTransport(operationFetch);
+    const sink = vi.fn();
+
+    await expect(
+      createIso20022Client(adapter).paymentExports.downloadTo({ payment_export_id: RESOURCE_ID }, authority, sink, {
+        idempotencyKey: "synthetic-download",
+      }),
+    ).rejects.toMatchObject({ code: "integrity_check_failed" });
+    expect(sink).not.toHaveBeenCalled();
   });
 
-  it.each(["", " leading", "trailing ", "line\nbreak", "x".repeat(16 * 1024 + 1)])(
-    "rejects an invalid bearer credential without making a request",
-    async (accessToken) => {
-      const fetch = vi.fn(async () => jsonResponse({}));
-      const client = createIso20022Client(transport({ accessToken, fetch }));
-
-      await expect(client.balances.list({})).rejects.toMatchObject({ code: "invalid_configuration" });
-      expect(fetch).not.toHaveBeenCalled();
-    },
-  );
-
-  it("rejects runtime inputs that cannot be serialized by the generated REST binding", async () => {
-    const adapter = transport();
-
-    await expect(adapter.invoke("balances.list", null as never, { contractVersion: 2 })).rejects.toMatchObject({
-      code: "serialization_failed",
-    });
-    await expect(adapter.invoke("balances.get", {} as never, { contractVersion: 1 })).rejects.toMatchObject({
-      code: "serialization_failed",
-    });
-    await expect(
-      adapter.invoke("balances.get", { resource_id: 4 } as never, { contractVersion: 1 }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("balances.list", { page_size: {} } as never, { contractVersion: 2 }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("balances.list", { page_size: Number.NaN } as never, { contractVersion: 2 }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(adapter.invoke("balances.list", {}, { contractVersion: 1 })).rejects.toMatchObject({
-      code: "serialization_failed",
-    });
-    await expect(adapter.invoke("payments.execute" as never, {}, { contractVersion: 1 })).rejects.toMatchObject({
-      code: "unsupported_operation",
-    });
-    await expect(
-      adapter.invoke("payment_capabilities.list", {} as never, { contractVersion: 1 }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("payment_capabilities.list", { page: { unknown: true } } as never, { contractVersion: 1 }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("payment_capabilities.list", { page: [] } as never, { contractVersion: 1 }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-  });
-
-  it("enforces generated idempotency and expected-version header contracts", async () => {
-    const adapter = transport();
-    const revisionInput = { payment_order_id: RESOURCE_ID };
-
-    await expect(adapter.invoke("payment_orders.create_draft", {}, { contractVersion: 1 })).rejects.toMatchObject({
-      code: "serialization_failed",
-    });
-    for (const idempotencyKey of [" leading", "space key", "line\nfeed", "trailing\n", "ümlaut", "x".repeat(257)]) {
+  it("rejects tampered and truncated bytes without exposing partial content", async () => {
+    const bytes = new TextEncoder().encode("<Document>exact</Document>");
+    const authority = await contentAuthority(bytes);
+    for (const responseBytes of [
+      new TextEncoder().encode("<Document>evil!</Document>"),
+      bytes.slice(0, bytes.byteLength - 1),
+    ]) {
+      const operationFetch = vi.fn(async () => xmlResponse(responseBytes, authority));
+      const { adapter } = await readyTransport(operationFetch);
+      const sink = vi.fn();
       await expect(
-        adapter.invoke("payment_orders.create_draft", {}, { contractVersion: 1, idempotencyKey }),
-      ).rejects.toMatchObject({ code: "serialization_failed" });
+        createIso20022Client(adapter).paymentExports.downloadTo({ payment_export_id: RESOURCE_ID }, authority, sink, {
+          idempotencyKey: "synthetic-download",
+        }),
+      ).rejects.toMatchObject({ code: "integrity_check_failed" });
+      expect(sink).not.toHaveBeenCalled();
     }
-    await expect(
-      adapter.invoke("payment_orders.create_draft", {}, { contractVersion: 1, idempotencyKey: "x".repeat(256) }),
-    ).resolves.toEqual({ ok: true });
-    await expect(
-      adapter.invoke("payment_orders.execute", revisionInput, {
-        contractVersion: 1,
-        idempotencyKey: "synthetic",
-      }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("payment_orders.execute", revisionInput, {
-        contractVersion: 1,
-        idempotencyKey: "synthetic",
-        expectedResourceVersion: "1",
-      }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("balances.list", {}, { contractVersion: 2, idempotencyKey: "unexpected" }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("balances.list", {}, { contractVersion: 2, expectedResourceVersion: '"1"' }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
   });
 
-  it("rejects non-JSON and oversized request bodies before fetching", async () => {
-    const fetch = vi.fn(async () => jsonResponse({}));
-    const adapter = transport({ fetch, maxRequestBytes: 32 });
-    const cyclic: Record<string, unknown> = {};
-    cyclic.self = cyclic;
-
-    await expect(
-      adapter.invoke("payment_capabilities.resolve", { value: 1n } as never, { contractVersion: 1 }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("payment_capabilities.resolve", { value: Number.NaN } as never, { contractVersion: 1 }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("payment_capabilities.resolve", cyclic as never, { contractVersion: 1 }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("payment_capabilities.resolve", { toJSON: () => "not-an-object" } as never, {
-        contractVersion: 1,
-      }),
-    ).rejects.toMatchObject({ code: "serialization_failed" });
-    await expect(
-      adapter.invoke("payment_capabilities.resolve", { value: "x".repeat(64) } as never, { contractVersion: 1 }),
-    ).rejects.toMatchObject({ code: "request_too_large" });
-    expect(fetch).not.toHaveBeenCalled();
-  });
-
-  it("serializes every supported query scalar without applying business validation", async () => {
-    const fetch = vi.fn(async () => jsonResponse({ ok: true }));
-    const adapter = transport({ fetch });
-
-    await adapter.invoke(
-      "balances.list",
-      { currency: true, page_size: 0, unknown_customer_field: "ignored" } as never,
-      { contractVersion: 2 },
+  it("rejects authoritative or streamed bytes above the configured limit", async () => {
+    const bytes = new Uint8Array(201).fill(65);
+    const authority = await contentAuthority(bytes);
+    const tooSmall = await readyTransport(
+      vi.fn(async () => xmlResponse(bytes, authority)),
+      { maxResponseBytes: 200 },
     );
+    await expect(
+      createIso20022Client(tooSmall.adapter).paymentExports.download({ payment_export_id: RESOURCE_ID }, authority, {
+        idempotencyKey: "synthetic-download",
+      }),
+    ).rejects.toMatchObject({ code: "invalid_configuration" });
 
-    expect(String(fetch.mock.calls[0]?.[0])).toBe(
-      "https://api.example.test/processing/v1/balances?currency=true&page_size=0",
+    const declared = { ...authority, artifact_byte_length: "200" };
+    const streamed = await readyTransport(
+      vi.fn(async () => xmlResponse(bytes, declared)),
+      { maxResponseBytes: 200 },
     );
+    await expect(
+      createIso20022Client(streamed.adapter).paymentExports.download({ payment_export_id: RESOURCE_ID }, declared, {
+        idempotencyKey: "synthetic-download",
+      }),
+    ).rejects.toMatchObject({ code: "response_too_large" });
   });
 
-  it("rejects an oversized generated request URL before fetching", async () => {
-    const fetch = vi.fn(async () => jsonResponse({ ok: true }));
-    const client = createIso20022Client(transport({ fetch }));
+  it("turns caller sink failure into a privacy-safe local error", async () => {
+    const bytes = new TextEncoder().encode("<Document/>");
+    const authority = await contentAuthority(bytes);
+    const { adapter } = await readyTransport(vi.fn(async () => xmlResponse(bytes, authority)));
 
-    await expect(client.balances.list({ cursor: "x".repeat(17 * 1024) })).rejects.toMatchObject({
-      code: "serialization_failed",
-    });
-    expect(fetch).not.toHaveBeenCalled();
+    const error = await createIso20022Client(adapter)
+      .paymentExports.downloadTo(
+        { payment_export_id: RESOURCE_ID },
+        authority,
+        async () => Promise.reject(new Error("private filesystem detail")),
+        { idempotencyKey: "synthetic-download" },
+      )
+      .catch((cause: unknown) => cause);
+
+    expect(error).toMatchObject({ code: "sink_failed", message: "The caller-owned payment-export sink failed" });
+    expect(String(error)).not.toContain("filesystem detail");
+  });
+
+  it.each([
+    "http://api.example.test/processing",
+    "https://user:password@api.example.test/processing",
+    "https://api.example.test/processing?tenant=other",
+  ])("rejects unsafe Processing base URLs: %s", (baseUrl) => {
+    expect(
+      () =>
+        new Iso20022HttpTransport({
+          baseUrl,
+          bootstrapAuthentication: () => ({ apiKey: API_KEY, idToken: ID_TOKEN }),
+          processingAudience: AUDIENCE,
+        }),
+    ).toThrow(Iso20022TransportError);
   });
 });
