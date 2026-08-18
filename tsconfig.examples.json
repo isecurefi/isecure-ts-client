@@ -7,5 +7,5 @@
     "declarationMap": false
   },
   "include": ["./src/**/*", "./examples/**/*.ts"],
-  "exclude": ["./src/**/*.test.ts"]
+  "exclude": ["./src/**/*.test.ts", "./examples/**/*.test.ts"]
 }

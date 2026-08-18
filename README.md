@@ -296,6 +296,13 @@ evidence of a deployed execution handler, bank connection, payment authority, or
 support. The server remains responsible for authentication, authorization, exact revision,
 approval, policy, rendering, channel transfer, and indeterminate-outcome handling.
 
+The runnable [manual Processing-to-ISECure upload example](examples/processing-manual-upload/README.md)
+shows the currently available bridge: two separately authenticated users create and approve a
+Processing payment export, the SDK integrity-verifies the generated `pain.001.001.09`, and the
+example detached-OpenPGP-signs and uploads those exact in-memory bytes through the unchanged
+`WSChannel`. This is an explicit, non-retried manual upload—not `paymentOrders.execute`, automatic
+bank orchestration, feedback reconciliation, bank acceptance, or production qualification.
+
 The source pin and artifact hashes are recorded in `platform-contracts.lock.json`. With a compatible
 `bankfiles-platform` checkout next to this repository, maintainers update and verify the generated
 surface using:

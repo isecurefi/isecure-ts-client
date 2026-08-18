@@ -150,6 +150,8 @@ function invoke(
       return client.entries.get(input as never);
     case "entries.list":
       return client.entries.list(input);
+    case "payment_approval_requests.decide":
+      return client.paymentApprovalRequests.decide(input as never, revisionOptions(operationId));
     case "payment_capabilities.explain":
       return client.paymentCapabilities.explain(input as never);
     case "payment_capabilities.get":
@@ -180,6 +182,8 @@ function invoke(
       return client.paymentOrders.execute(input as never, revisionOptions(operationId));
     case "payment_orders.explain":
       return client.paymentOrders.explain(input as never);
+    case "payment_orders.finalize_draft":
+      return client.paymentOrders.finalizeDraft(input as never, revisionOptions(operationId));
     case "payment_orders.get":
       return client.paymentOrders.get(input as never);
     case "payment_orders.list":
