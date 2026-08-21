@@ -10,3 +10,5 @@ docs-api/
 isecure-simulator-downloads/
 .isecure-simulator-api-key
 .isecure-simulator-pgp/
+.isecure-processing-simulator/
+isecure-processing-simulator-downloads/

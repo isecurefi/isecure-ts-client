@@ -15,6 +15,13 @@ export interface ManualUploadClient {
   }): Promise<{ readonly ResponseCode: string }>;
 }
 
+export class ManualUploadRefusedError extends Error {
+  public constructor(public readonly responseCode: string) {
+    super(`upload exact signed payment export was refused with code ${responseCode}`);
+    this.name = "ManualUploadRefusedError";
+  }
+}
+
 export function requirePain001(bytes: Uint8Array): void {
   const xml = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   if (!PAIN_001_ROOT.test(xml) || xml.includes("<!DOCTYPE") || xml.includes("<!ENTITY")) {
@@ -67,6 +74,6 @@ export async function uploadPain001Once(
     Signature: signature,
   });
   if (response.ResponseCode !== "00") {
-    throw new Error(`upload exact signed payment export was refused with code ${response.ResponseCode}`);
+    throw new ManualUploadRefusedError(response.ResponseCode);
   }
 }

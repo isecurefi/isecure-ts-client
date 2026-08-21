@@ -1,0 +1,23 @@
+import { readFile } from "node:fs/promises";
+import { describe, expect, it } from "vitest";
+
+describe("Processing-to-simulator release lock", () => {
+  it("pins the exact qualified client, Processing, simulator, and REST releases", async () => {
+    const lock = JSON.parse(await readFile(new URL("./release-lock.json", import.meta.url), "utf8")) as Record<
+      string,
+      unknown
+    >;
+    expect(lock).toEqual({
+      schemaVersion: 1,
+      isecureTsClientBaseRevision: "44cfece86f56a320619a7f90bcacb9e282f87772",
+      platformSourceRevision: "ce5790448a146c0c1087f8e8b3a3668934548b32",
+      processingRelease: "processing-26671d79ef49c47094197e19",
+      processingLambdaVersion: "30",
+      processingApiDeployment: "a69i6i",
+      simulatorPlatformRevision: "0cdbb38fec1322cc2e52443feb89c2d8963a4139",
+      simulatorHostRelease: "release-0d071358",
+      isecureRestGpgtestRevision: "ea6dd2e8f960ae8cbc4d9a9d888f272eb3c25f39",
+      isecureRestGpgtestVersion: "604",
+    });
+  });
+});
