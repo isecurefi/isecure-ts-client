@@ -160,6 +160,16 @@ function invoke(
       return client.paymentCapabilities.list(input as never);
     case "payment_capabilities.resolve":
       return client.paymentCapabilities.resolve(input as never);
+    case "payment_execution_attempts.explain":
+      return client.paymentSubmissions.explain(input as never);
+    case "payment_execution_attempts.get":
+      return client.paymentSubmissions.get(input as never);
+    case "payment_execution_attempts.list":
+      return client.paymentSubmissions.list(input as never);
+    case "payment_execution_fulfillments.claim":
+      return client.paymentSubmissions.claim(input as never, commandOptions(operationId));
+    case "payment_execution_observations.report":
+      return client.paymentSubmissions.reportUpload(input as never, commandOptions(operationId));
     case "payment_export_profile_catalog.list":
       return client.paymentExportProfiles.list(input);
     case "payment_export_profiles.configure":
@@ -174,28 +184,42 @@ function invoke(
       return client.paymentExports.get(input as never);
     case "payment_exports.release":
       return client.paymentExports.release(input as never, revisionOptions(operationId));
+    case "payment_order_outcomes.explain":
+      return client.paymentOutcomes.explain(input as never);
+    case "payment_order_outcomes.get":
+      return client.paymentOutcomes.get(input as never);
+    case "payment_order_outcomes.list":
+      return client.paymentOutcomes.list(input as never);
+    case "payment_orders.append_transfers":
+      return client.paymentBatches.addPayments(input as never, revisionOptions(operationId));
     case "payment_orders.cancel_draft":
-      return client.paymentOrders.cancelDraft(input as never, revisionOptions(operationId));
+      return client.paymentBatches.cancelDraft(input as never, revisionOptions(operationId));
+    case "payment_orders.correct":
+      return client.paymentBatches.createCorrection(input as never, revisionOptions(operationId));
     case "payment_orders.create_draft":
-      return client.paymentOrders.createDraft(input as never, commandOptions(operationId));
+      return client.paymentBatches.createDraft(input as never, commandOptions(operationId));
     case "payment_orders.execute":
-      return client.paymentOrders.execute(input as never, revisionOptions(operationId));
+      return client.paymentSubmissions.createAttempt(input as never, revisionOptions(operationId));
     case "payment_orders.explain":
-      return client.paymentOrders.explain(input as never);
+      return client.paymentBatches.explain(input as never);
     case "payment_orders.finalize_draft":
-      return client.paymentOrders.finalizeDraft(input as never, revisionOptions(operationId));
+      return client.paymentBatches.finalize(input as never, revisionOptions(operationId));
     case "payment_orders.get":
-      return client.paymentOrders.get(input as never);
+      return client.paymentBatches.get(input as never);
     case "payment_orders.list":
-      return client.paymentOrders.list(input as never);
+      return client.paymentBatches.list(input as never);
+    case "payment_orders.remove_transfers":
+      return client.paymentBatches.removePayments(input as never, revisionOptions(operationId));
     case "payment_orders.revise_draft":
-      return client.paymentOrders.reviseDraft(input as never, revisionOptions(operationId));
+      return client.paymentBatches.replaceDraft(input as never, revisionOptions(operationId));
+    case "payment_orders.revise_transfer":
+      return client.paymentBatches.updatePayment(input as never, revisionOptions(operationId));
     case "payment_orders.simulate":
-      return client.paymentOrders.simulate(input as never);
+      return client.paymentBatches.simulate(input as never);
     case "payment_orders.submit_for_review":
-      return client.paymentOrders.submitForReview(input as never, revisionOptions(operationId));
+      return client.paymentBatches.submitForReview(input as never, revisionOptions(operationId));
     case "payment_orders.validate":
-      return client.paymentOrders.validate(input as never);
+      return client.paymentBatches.validate(input as never);
     case "statements.explain":
       return client.statements.explain(input as never);
     case "statements.get":
