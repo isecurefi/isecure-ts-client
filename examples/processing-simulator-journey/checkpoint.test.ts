@@ -47,6 +47,12 @@ describe("private simulator journey checkpoint", () => {
     await expect(readCheckpoint(file, "synthetic-run")).resolves.toEqual(value());
     await writeCheckpoint(file, withPhase(value(), "upload_uncertain"));
     await expect(readCheckpoint(file, "synthetic-run")).resolves.toMatchObject({ phase: "upload_uncertain" });
+    const withoutInstruction = {
+      ...value(),
+      correlation: { ...value().correlation, instructionId: null },
+    };
+    await writeCheckpoint(file, withoutInstruction);
+    await expect(readCheckpoint(file, "synthetic-run")).resolves.toEqual(withoutInstruction);
   });
 
   it("rejects a different run, corrupt content, duplicate references, and non-private files", async () => {

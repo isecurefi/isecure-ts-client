@@ -42,9 +42,29 @@ describe("synthetic Processing-to-simulator evidence", () => {
     expect(() => {
       verifyCamt054(new TextEncoder().encode(duplicated), correlation);
     }).toThrow("Expected exactly one cash entry");
+    const duplicateReference = new TextDecoder()
+      .decode(camt054())
+      .replace(`<MsgId>${IDS.message}</MsgId>`, `<MsgId>OTHER-MESSAGE</MsgId><MsgId>${IDS.message}</MsgId>`);
+    expect(() => {
+      verifyCamt054(new TextEncoder().encode(duplicateReference), correlation);
+    }).toThrow("Expected at most one message reference");
     expect(() =>
       verifyCamt053Transition(camt053("100.00", "87.67"), correlation, statementBalance(baseline(), IDS.account)),
     ).toThrow("closing balance");
+  });
+
+  it("preserves an absent optional instruction identifier without weakening other correlation", () => {
+    const correlation = paymentCorrelation(pain001(IDS.message, null));
+    expect(correlation.instructionId).toBeNull();
+    expect(() => {
+      verifyPain002(pain002(IDS.message, IDS.endToEnd), correlation);
+    }).not.toThrow();
+    expect(() => {
+      verifyCamt054(camt054(IDS.message, IDS.endToEnd), correlation);
+    }).not.toThrow();
+    expect(() => {
+      verifyPain002(pain002(IDS.message, null), correlation);
+    }).toThrow("Expected exactly one original instruction ID");
   });
 
   it("rejects wrong namespaces, entity declarations, malformed UTF-8, and multiple transactions", () => {

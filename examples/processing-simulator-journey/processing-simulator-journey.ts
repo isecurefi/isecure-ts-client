@@ -1,7 +1,7 @@
 import { lstat, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { WSChannel } from "../../src/index.js";
-import type { Iso20022Client } from "../../src/iso20022/index.js";
+import { Iso20022HttpError, Iso20022TransportError, type Iso20022Client } from "../../src/iso20022/index.js";
 import {
   channelClients,
   createApprovedExport,
@@ -17,7 +17,9 @@ import {
 import {
   ManualUploadRefusedError,
   detachedSignature,
+  hasAuthorizeKey,
   requirePain001,
+  requireSharedApiKeyDomain,
   uploadPain001Once,
 } from "../processing-manual-upload/security.js";
 import { checkpointPath, readCheckpoint, withPhase, writeCheckpoint } from "./checkpoint.js";
@@ -28,6 +30,38 @@ const RUN_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$/u;
 const GPGTEST_REST_BASE_URL = "https://ws-api.test.isecure.fi/v2";
 const GPGTEST_PROCESSING_AUDIENCE = "isecure-processing-gpgtest-v1";
 
+type JourneyFailureCode =
+  | "CHECKPOINT_INVALID"
+  | "CONFIGURATION_INVALID"
+  | "LOCAL_SIGNING_FAILED"
+  | "OUTPUT_PERSISTENCE_FAILED"
+  | "OUTPUT_RECONCILIATION_FAILED"
+  | "PAYMENT_CONTENT_INVALID"
+  | "PAYMENT_DOWNLOAD_FAILED"
+  | "PAYMENT_PREPARATION_FAILED"
+  | "PROCESSING_SESSION_DENIED"
+  | "PROCESSING_SESSION_FAILED"
+  | "PROCESSING_SESSION_UNAVAILABLE"
+  | "REST_AUTHENTICATION_FAILED"
+  | "SIMULATOR_CONNECTION_UNAVAILABLE"
+  | "UPLOAD_REFUSED";
+
+class JourneyStageError extends Error {
+  public constructor(public readonly code: JourneyFailureCode) {
+    super(code);
+    this.name = "JourneyStageError";
+  }
+}
+
+async function stage<T>(code: JourneyFailureCode, work: () => Promise<T> | T): Promise<T> {
+  try {
+    return await work();
+  } catch (error) {
+    if (error instanceof JourneyStageError) throw error;
+    throw new JourneyStageError(code);
+  }
+}
+
 async function assertSimulatorConnection(data: WSChannel): Promise<void> {
   const response = await data.listCerts();
   if (
@@ -35,6 +69,13 @@ async function assertSimulatorConnection(data: WSChannel): Promise<void> {
     !response.Certs.some((connection) => connection.CertName.toLowerCase().includes("simulator"))
   ) {
     throw new Error("The authenticated data identity has no ready simulator connection");
+  }
+}
+
+async function assertUploaderAuthorizeKey(uploader: WSChannel, publicKey: import("openpgp").PublicKey): Promise<void> {
+  const response = await uploader.listKeys();
+  if (response.ResponseCode !== "00" || !hasAuthorizeKey(publicKey, response.PgpKeys)) {
+    throw new Error("The uploader cannot use the Admin-managed authorize OpenPGP key");
   }
 }
 
@@ -51,24 +92,42 @@ async function processingIdentities(channels: ChannelClients): Promise<{
   ) {
     throw new Error("Processing submitter and approver must be distinct admin/data identities");
   }
-  return {
-    submitter: await processingClient(channels[submitterMode]),
-    approver: await processingClient(channels[approverMode]),
-  };
+  try {
+    return {
+      submitter: await processingClient(channels[submitterMode]),
+      approver: await processingClient(channels[approverMode]),
+    };
+  } catch (error) {
+    if (error instanceof Iso20022HttpError && (error.status === 401 || error.status === 403)) {
+      throw new JourneyStageError("PROCESSING_SESSION_DENIED");
+    }
+    if (error instanceof Iso20022HttpError || error instanceof Iso20022TransportError) {
+      throw new JourneyStageError("PROCESSING_SESSION_UNAVAILABLE");
+    }
+    throw error;
+  }
 }
 
 async function prepareAndUpload(channels: ChannelClients, runId: string, filePath: string): Promise<JourneyCheckpoint> {
   requireExplicitUploadConfirmation();
-  const identities = await processingIdentities(channels);
-  const approved = await createApprovedExport(identities.submitter, identities.approver, runId);
-  const downloaded = await identities.submitter.paymentBatches.download(
-    { payment_export_id: approved.paymentExportId },
-    approved.authority,
-    { idempotencyKey: `${runId}-download` },
+  const identities = await stage("PROCESSING_SESSION_FAILED", async () => processingIdentities(channels));
+  const approved = await stage("PAYMENT_PREPARATION_FAILED", async () =>
+    createApprovedExport(identities.submitter, identities.approver, runId, (preparationStage) => {
+      console.log(`Synthetic payment preparation: ${preparationStage}.`);
+    }),
   );
-  requirePain001(downloaded.bytes);
-  const correlation = paymentCorrelation(downloaded.bytes);
-  const baseline = await captureBaseline(channels.data, correlation.debtorIban);
+  const downloaded = await stage("PAYMENT_DOWNLOAD_FAILED", async () =>
+    identities.submitter.paymentBatches.download({ payment_export_id: approved.paymentExportId }, approved.authority, {
+      idempotencyKey: `${runId}-download`,
+    }),
+  );
+  const correlation = await stage("PAYMENT_CONTENT_INVALID", () => {
+    requirePain001(downloaded.bytes);
+    return paymentCorrelation(downloaded.bytes);
+  });
+  const baseline = await stage("SIMULATOR_CONNECTION_UNAVAILABLE", async () =>
+    captureBaseline(channels.uploader, correlation.debtorIban),
+  );
   const checkpoint: JourneyCheckpoint = {
     version: 1,
     runId,
@@ -77,22 +136,25 @@ async function prepareAndUpload(channels: ChannelClients, runId: string, filePat
     ...baseline,
   };
 
-  const material = await signingMaterial();
-  await ensureAuthorizeKey(channels.admin, material);
-  const signature = await detachedSignature(downloaded.bytes, material.publicKey, material.privateKey);
-  await writeCheckpoint(filePath, checkpoint);
+  const signature = await stage("LOCAL_SIGNING_FAILED", async () => {
+    const material = await signingMaterial();
+    await ensureAuthorizeKey(channels.admin, material);
+    await assertUploaderAuthorizeKey(channels.uploader, material.publicKey);
+    return detachedSignature(downloaded.bytes, material.publicKey, material.privateKey);
+  });
+  await stage("CHECKPOINT_INVALID", async () => writeCheckpoint(filePath, checkpoint));
   try {
-    await uploadPain001Once(channels.data, downloaded.bytes, signature, runId);
+    await uploadPain001Once(channels.uploader, downloaded.bytes, signature, runId);
     const accepted = withPhase(checkpoint, "upload_accepted");
-    await writeCheckpoint(filePath, accepted);
+    await stage("CHECKPOINT_INVALID", async () => writeCheckpoint(filePath, accepted));
     return accepted;
   } catch (error) {
     if (error instanceof ManualUploadRefusedError) {
-      await writeCheckpoint(filePath, withPhase(checkpoint, "upload_refused"));
-      throw error;
+      await stage("CHECKPOINT_INVALID", async () => writeCheckpoint(filePath, withPhase(checkpoint, "upload_refused")));
+      throw new JourneyStageError("UPLOAD_REFUSED");
     }
     const uncertain = withPhase(checkpoint, "upload_uncertain");
-    await writeCheckpoint(filePath, uncertain);
+    await stage("CHECKPOINT_INVALID", async () => writeCheckpoint(filePath, uncertain));
     return uncertain;
   }
 }
@@ -138,49 +200,62 @@ async function persistEvidence(
 }
 
 async function main(): Promise<void> {
-  if (optionalEnv("ISECURE_BANK", "").toLowerCase() !== "simulator") {
-    throw new Error("This synthetic journey requires ISECURE_BANK=simulator");
-  }
-  if (
-    optionalEnv("ISECURE_BASE_URL", "") !== GPGTEST_REST_BASE_URL ||
-    optionalEnv("ISECURE_PROCESSING_AUDIENCE", "") !== GPGTEST_PROCESSING_AUDIENCE
-  ) {
-    throw new Error("This synthetic journey is restricted to the exact gpgtest REST and Processing profiles");
-  }
-  const runId = exactEnv("ISECURE_EXAMPLE_RUN_ID", RUN_ID);
+  const runId = await stage("CONFIGURATION_INVALID", () => {
+    if (optionalEnv("ISECURE_BANK", "").toLowerCase() !== "simulator") {
+      throw new Error("This synthetic journey requires ISECURE_BANK=simulator");
+    }
+    if (
+      optionalEnv("ISECURE_BASE_URL", "") !== GPGTEST_REST_BASE_URL ||
+      optionalEnv("ISECURE_PROCESSING_AUDIENCE", "") !== GPGTEST_PROCESSING_AUDIENCE
+    ) {
+      throw new Error("This synthetic journey is restricted to the exact gpgtest REST and Processing profiles");
+    }
+    return exactEnv("ISECURE_EXAMPLE_RUN_ID", RUN_ID);
+  });
   const filePath = checkpointPath(runId);
-  const channels = await channelClients(await publicRsaKey());
-  if (!channels.admin.session.apiKey || channels.admin.session.apiKey !== channels.data.session.apiKey) {
-    throw new Error("The admin and data identities do not belong to the same API-key security domain");
+  const channels = await stage("REST_AUTHENTICATION_FAILED", async () => channelClients(await publicRsaKey()));
+  try {
+    requireSharedApiKeyDomain([
+      channels.admin.session.apiKey,
+      channels.data.session.apiKey,
+      channels.uploader.session.apiKey,
+    ]);
+  } catch {
+    throw new JourneyStageError("REST_AUTHENTICATION_FAILED");
   }
-  await assertSimulatorConnection(channels.data);
-  let checkpoint = await readCheckpoint(filePath, runId);
+  await stage("SIMULATOR_CONNECTION_UNAVAILABLE", async () => assertSimulatorConnection(channels.uploader));
+  let checkpoint = await stage("CHECKPOINT_INVALID", async () => readCheckpoint(filePath, runId));
   if (checkpoint?.phase === "complete") {
     console.log("The synthetic Processing-to-simulator journey was already completed for this run.");
     return;
   }
   if (checkpoint?.phase === "upload_refused") {
-    throw new Error("The prior upload was refused; start a deliberately new run after correcting the cause");
+    throw new JourneyStageError("UPLOAD_REFUSED");
   }
   if (checkpoint?.phase === "upload_started") {
-    checkpoint = withPhase(checkpoint, "upload_uncertain");
-    await writeCheckpoint(filePath, checkpoint);
+    const uncertainCheckpoint = withPhase(checkpoint, "upload_uncertain");
+    await stage("CHECKPOINT_INVALID", async () => writeCheckpoint(filePath, uncertainCheckpoint));
+    checkpoint = uncertainCheckpoint;
   }
   checkpoint ??= await prepareAndUpload(channels, runId, filePath);
+  const readyCheckpoint: JourneyCheckpoint = checkpoint;
 
-  const evidence = await collectSimulatorEvidence(channels.data, checkpoint);
-  await persistEvidence(runId, evidence.files);
-  await writeCheckpoint(filePath, withPhase(checkpoint, "complete"));
+  const evidence = await stage("OUTPUT_RECONCILIATION_FAILED", async () =>
+    collectSimulatorEvidence(channels.uploader, readyCheckpoint),
+  );
+  await stage("OUTPUT_PERSISTENCE_FAILED", async () => persistEvidence(runId, evidence.files));
+  await stage("CHECKPOINT_INVALID", async () => writeCheckpoint(filePath, withPhase(readyCheckpoint, "complete")));
   console.log(
-    checkpoint.phase === "upload_uncertain"
+    readyCheckpoint.phase === "upload_uncertain"
       ? "The uncertain upload was reconciled from exact simulator outputs; no upload retry was attempted."
       : "The approved payment batch and all exact simulator outputs were verified successfully.",
   );
 }
 
-main().catch(() => {
+main().catch((error: unknown) => {
+  const code = error instanceof JourneyStageError ? error.code : "CONFIGURATION_INVALID";
   console.error(
-    "The synthetic Processing-to-simulator journey stopped safely; inspect the private checkpoint before retrying.",
+    `The synthetic Processing-to-simulator journey stopped safely (${code}); inspect the private checkpoint before retrying.`,
   );
   process.exitCode = 1;
 });

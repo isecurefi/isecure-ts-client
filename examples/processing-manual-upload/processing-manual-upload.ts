@@ -12,7 +12,14 @@ import {
   type ProcessingBootstrapAuthentication,
 } from "../../src/iso20022/index.js";
 import { authenticate, configFromEnv, requiredEnv } from "../shared/auth.js";
-import { detachedSignature, requireMatchingKeys, requirePain001, uploadPain001Once } from "./security.js";
+import {
+  detachedSignature,
+  requireMatchingKeys,
+  requirePain001,
+  roleCredentials,
+  uploaderCredentials,
+  uploadPain001Once,
+} from "./security.js";
 
 const PAIN_001 = "pain.001.001.09";
 const UPLOAD_CONFIRMATION = "I-understand-upload-is-not-idempotent";
@@ -25,6 +32,7 @@ let uploadAttemptStarted = false;
 export interface ChannelClients {
   readonly admin: WSChannel;
   readonly data: WSChannel;
+  readonly uploader: WSChannel;
 }
 
 export interface SigningMaterial {
@@ -32,6 +40,17 @@ export interface SigningMaterial {
   readonly privateKey: openpgp.PrivateKey;
   readonly publicKey: openpgp.PublicKey;
 }
+
+export type PaymentPreparationStage =
+  | "approval"
+  | "capability-resolution"
+  | "draft-creation"
+  | "finalization"
+  | "profile-catalog"
+  | "profile-configuration"
+  | "release"
+  | "review-submission"
+  | "validation";
 
 function assertSuccess<T extends Pick<ApiResponse, "ResponseCode" | "ResponseText">>(
   response: T,
@@ -71,11 +90,18 @@ export async function channelClients(publicKey: string): Promise<ChannelClients>
     BaseUrl: requiredEnv("ISECURE_BASE_URL"),
     PublicKey: publicKey,
   };
-  const admin = new WSChannel(configFromEnv({ ...shared, Mode: "admin" }));
-  const data = new WSChannel(configFromEnv({ ...shared, Mode: "data" }));
+  const admin = new WSChannel(configFromEnv({ ...shared, ...roleCredentials("admin", process.env), Mode: "admin" }));
+  const dataIdentity = roleCredentials("data", process.env);
+  const uploadIdentity = uploaderCredentials(process.env);
+  const data = new WSChannel(configFromEnv({ ...shared, ...dataIdentity, Mode: "data" }));
+  const uploader =
+    uploadIdentity.Email === dataIdentity.Email && uploadIdentity.Password === dataIdentity.Password
+      ? data
+      : new WSChannel(configFromEnv({ ...shared, ...uploadIdentity, Mode: "data" }));
   await authenticate(admin);
   await authenticate(data);
-  return { admin, data };
+  if (uploader !== data) await authenticate(uploader);
+  return { admin, data, uploader };
 }
 
 function bootstrapAuthentication(channel: WSChannel): ProcessingBootstrapAuthentication {
@@ -138,8 +164,10 @@ export async function createApprovedExport(
   submitter: Iso20022Client,
   approver: Iso20022Client,
   runId: string,
+  observeStage: (stage: PaymentPreparationStage) => void = () => undefined,
 ): Promise<{ readonly authority: PaymentExportContentAuthority; readonly paymentExportId: string }> {
   const bankProfileId = requiredEnv("ISECURE_BANK_PROFILE_ID");
+  observeStage("profile-catalog");
   const catalog = await submitter.paymentExportProfiles.list();
   const profile = admittedProfile(catalog.profiles, bankProfileId);
   const channelBank = requiredEnv("ISECURE_BANK").toLowerCase();
@@ -152,6 +180,7 @@ export async function createApprovedExport(
   const debtorCountry = exactEnv("ISECURE_DEBTOR_COUNTRY", COUNTRY_CODE);
   if (profile.country_code !== debtorCountry) throw new Error("The bank profile country does not match the debtor");
 
+  observeStage("profile-configuration");
   const configured = await submitter.paymentExportProfiles.configure(
     {
       bank_profile_id: profile.bank_profile_id,
@@ -172,6 +201,7 @@ export async function createApprovedExport(
   const requestedExecutionDate = executionDate();
   const amount = exactEnv("ISECURE_PAYMENT_AMOUNT", EXACT_AMOUNT);
   const creditorCountry = exactEnv("ISECURE_CREDITOR_COUNTRY", COUNTRY_CODE);
+  observeStage("capability-resolution");
   const capability = await submitter.paymentCapabilities.resolve({
     connected_account_id: configured.payment_export_profile.debtor_account_id,
     business_type: "credit_transfer",
@@ -186,6 +216,7 @@ export async function createApprovedExport(
     throw new Error("No exact payment capability was resolved");
   }
 
+  observeStage("draft-creation");
   const created = await submitter.paymentBatches.createDraft(
     {
       capability: capability.selected,
@@ -221,22 +252,25 @@ export async function createApprovedExport(
     throw new Error("The Processing API did not return a new draft");
   }
   const paymentOrderId = created.payment_order_reference.resource_id;
+  observeStage("validation");
   const validated = await submitter.paymentBatches.validate({
     payment_order_id: paymentOrderId,
     revision_id: created.revision_id,
   });
   if (validated.validation.outcome !== "valid") throw new Error("The payment batch is not valid");
 
+  observeStage("finalization");
   const finalized = await submitter.paymentBatches.finalize(
     { payment_order_id: paymentOrderId },
-    { idempotencyKey: `${runId}-finalize`, expectedResourceVersion: "1" },
+    { idempotencyKey: `${runId}-finalize`, expectedResourceVersion: '"1"' },
   );
   if (finalized.mutation.workflow_state !== "finalized" || finalized.mutation.resource_version !== "2") {
     throw new Error("The payment batch was not finalized");
   }
+  observeStage("review-submission");
   const submitted = await submitter.paymentBatches.submitForReview(
     { payment_order_id: paymentOrderId },
-    { idempotencyKey: `${runId}-submit-review`, expectedResourceVersion: "2" },
+    { idempotencyKey: `${runId}-submit-review`, expectedResourceVersion: '"2"' },
   );
   const pendingExport = submitted.payment_export;
   const approvalRequest = submitted.approval_request;
@@ -252,6 +286,7 @@ export async function createApprovedExport(
     throw new Error("The approval request is not bound to the prepared export");
   }
 
+  observeStage("approval");
   const decision = await approver.paymentApprovalRequests.decide(
     {
       payment_approval_request_id: approvalRequest.payment_approval_request_id,
@@ -259,16 +294,17 @@ export async function createApprovedExport(
       decision: "approve",
       reason_code: optionalEnv("ISECURE_APPROVAL_REASON_CODE", "manual_example_approval"),
     },
-    { idempotencyKey: `${runId}-approve`, expectedResourceVersion: "1" },
+    { idempotencyKey: `${runId}-approve`, expectedResourceVersion: '"1"' },
   );
   if (decision.state !== "approved") throw new Error("The separate approval was not accepted");
 
+  observeStage("release");
   const released = await submitter.paymentExports.release(
     {
       payment_export_id: pendingExport.payment_export_id,
       exact_approval_subject_digest: pendingExport.exact_approval_subject_digest,
     },
-    { idempotencyKey: `${runId}-release`, expectedResourceVersion: "2" },
+    { idempotencyKey: `${runId}-release`, expectedResourceVersion: '"2"' },
   );
   if (released.payment_export.state !== "released") throw new Error("The approved export was not released");
   const authority: PaymentExportContentAuthority = {
