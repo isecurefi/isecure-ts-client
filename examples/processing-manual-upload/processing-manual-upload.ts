@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import * as openpgp from "openpgp";
 import { WSChannel, type ApiResponse, type IWSChannel } from "../../src/index.js";
 import {
@@ -21,12 +22,12 @@ const COUNTRY_CODE = /^[A-Z]{2}$/u;
 const BIC = /^[A-Z0-9]{8}(?:[A-Z0-9]{3})?$/u;
 let uploadAttemptStarted = false;
 
-interface ChannelClients {
+export interface ChannelClients {
   readonly admin: WSChannel;
   readonly data: WSChannel;
 }
 
-interface SigningMaterial {
+export interface SigningMaterial {
   readonly armoredPublicKey: string;
   readonly privateKey: openpgp.PrivateKey;
   readonly publicKey: openpgp.PublicKey;
@@ -42,29 +43,29 @@ function assertSuccess<T extends Pick<ApiResponse, "ResponseCode" | "ResponseTex
   return response;
 }
 
-function exactEnv(name: string, pattern: RegExp): string {
+export function exactEnv(name: string, pattern: RegExp): string {
   const value = requiredEnv(name);
   if (!pattern.test(value)) throw new Error(`${name} is invalid`);
   return value;
 }
 
-function optionalEnv(name: string, fallback: string): string {
+export function optionalEnv(name: string, fallback: string): string {
   return process.env[name] ?? fallback;
 }
 
-function requireExplicitUploadConfirmation(): void {
+export function requireExplicitUploadConfirmation(): void {
   if (process.env.ISECURE_CONFIRM_MANUAL_UPLOAD !== UPLOAD_CONFIRMATION) {
     throw new Error(`Set ISECURE_CONFIRM_MANUAL_UPLOAD=${UPLOAD_CONFIRMATION} for this one upload attempt`);
   }
 }
 
-async function publicRsaKey(): Promise<string> {
+export async function publicRsaKey(): Promise<string> {
   const configuredPath = process.env.ISECURE_PUBLIC_KEY_PEM_FILE;
   if (configuredPath) return readFile(path.resolve(configuredPath), "utf8");
   return requiredEnv("ISECURE_PUBLIC_KEY_PEM");
 }
 
-async function channelClients(publicKey: string): Promise<ChannelClients> {
+export async function channelClients(publicKey: string): Promise<ChannelClients> {
   const shared: Partial<IWSChannel> = {
     Bank: requiredEnv("ISECURE_BANK"),
     BaseUrl: requiredEnv("ISECURE_BASE_URL"),
@@ -85,7 +86,7 @@ function bootstrapAuthentication(channel: WSChannel): ProcessingBootstrapAuthent
   return { apiKey, idToken };
 }
 
-async function processingClient(channel: WSChannel): Promise<Iso20022Client> {
+export async function processingClient(channel: WSChannel): Promise<Iso20022Client> {
   const transport = new Iso20022HttpTransport({
     baseUrl: requiredEnv("ISECURE_PROCESSING_BASE_URL"),
     bootstrapAuthentication: () => bootstrapAuthentication(channel),
@@ -133,7 +134,7 @@ function executionDate(): string {
   return tomorrow.toISOString().slice(0, 10);
 }
 
-async function createApprovedExport(
+export async function createApprovedExport(
   submitter: Iso20022Client,
   approver: Iso20022Client,
   runId: string,
@@ -279,7 +280,7 @@ async function createApprovedExport(
   return { authority, paymentExportId: released.payment_export.payment_export_id };
 }
 
-async function signingMaterial(): Promise<SigningMaterial> {
+export async function signingMaterial(): Promise<SigningMaterial> {
   const armoredPublicKey = await readFile(path.resolve(requiredEnv("ISECURE_PGP_PUBLIC_KEY_FILE")), "utf8");
   const armoredPrivateKey = await readFile(path.resolve(requiredEnv("ISECURE_PGP_PRIVATE_KEY_FILE")), "utf8");
   const publicKey = await openpgp.readKey({ armoredKey: armoredPublicKey });
@@ -294,7 +295,7 @@ async function signingMaterial(): Promise<SigningMaterial> {
   return { armoredPublicKey, privateKey, publicKey };
 }
 
-async function ensureAuthorizeKey(admin: WSChannel, material: SigningMaterial): Promise<void> {
+export async function ensureAuthorizeKey(admin: WSChannel, material: SigningMaterial): Promise<void> {
   const keyId = material.publicKey.getKeyID().toHex().slice(-8).toUpperCase();
   const listed = assertSuccess(await admin.listKeys(), "list OpenPGP keys");
   const exists = listed.PgpKeys.some(
@@ -338,11 +339,14 @@ async function main(): Promise<void> {
   console.log("Approved Processing export was integrity-verified, signed, and accepted by ISECure REST for upload.");
 }
 
-main().catch(() => {
-  console.error(
-    uploadAttemptStarted
-      ? "Manual Processing-to-ISECure upload stopped after the upload attempt began. Do not retry until an authorized operator reconciles it."
-      : "Manual Processing-to-ISECure workflow stopped before upload; no bank upload was attempted.",
-  );
-  process.exitCode = 1;
-});
+const invokedPath = process.argv[1];
+if (invokedPath && path.resolve(invokedPath) === fileURLToPath(import.meta.url)) {
+  main().catch(() => {
+    console.error(
+      uploadAttemptStarted
+        ? "Manual Processing-to-ISECure upload stopped after the upload attempt began. Do not retry until an authorized operator reconciles it."
+        : "Manual Processing-to-ISECure workflow stopped before upload; no bank upload was attempted.",
+    );
+    process.exitCode = 1;
+  });
+}

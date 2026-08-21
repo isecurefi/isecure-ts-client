@@ -70,6 +70,11 @@ initial and payment-derived `camt.053` files—see the
 [bank simulator end-to-end example](examples/bank-simulator/README.md) or run
 `yarn example:simulator`.
 
+To generate and independently approve the payment through the hosted Processing API before the
+same local signing/upload step, then correlate and verify all three simulator outputs, use the
+[Processing-to-simulator journey](examples/processing-simulator-journey/README.md) or run
+`yarn example:processing-simulator`.
+
 ## First Registration
 
 ```ts
