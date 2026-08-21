@@ -7,5 +7,5 @@
     "declarationMap": false
   },
   "include": ["./src/**/*", "./examples/**/*.ts"],
-  "exclude": ["./src/**/*.test.ts", "./examples/**/*.test.ts"]
+  "exclude": ["./src/**/*.test.ts", "./examples/**/*.test.ts", "./examples/processing-simulator-journey/fixtures.ts"]
 }
