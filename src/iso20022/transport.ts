@@ -16,6 +16,18 @@ const MAX_BOOTSTRAP_CREDENTIAL_LENGTH = 16 * 1024;
 const PROCESSING_SESSION_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/u;
 const SHA256_PATTERN = /^sha256:[0-9a-f]{64}$/u;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
+const FORBIDDEN_LOCAL_SECRET_FIELDS = new Set([
+  "armoredprivatekey",
+  "detachedsignature",
+  "keypassword",
+  "passphrase",
+  "password",
+  "pgpprivatekey",
+  "privatekey",
+  "privatekeybytes",
+  "secretkey",
+  "signaturebytes",
+]);
 
 export interface Iso20022Transport {
   invoke<Input, Result>(
@@ -116,6 +128,16 @@ export class Iso20022HttpError extends Error {
   }
 }
 
+/** The authenticated tenant has no active commercial entitlement for the requested Processing operation. */
+export class ProcessingEntitlementDeniedError extends Iso20022HttpError {
+  readonly code = "processing_entitlement_denied" as const;
+
+  constructor(body: unknown) {
+    super(403, body);
+    this.name = "ProcessingEntitlementDeniedError";
+  }
+}
+
 /**
  * Fetch adapter for the selected generated ISO client operations. It serializes the
  * generated REST binding exactly once and deliberately adds no retry,
@@ -173,7 +195,7 @@ export class Iso20022HttpTransport implements Iso20022Transport {
         signal: controller.signal,
       });
       const body = await parseResponse(response, this.maxResponseBytes);
-      if (!response.ok) throw new Iso20022HttpError(response.status, body);
+      if (!response.ok) throw processingHttpError(response.status, body);
       const session = parseProcessingSession(body, authentication.apiKey, this.processingAudience);
       this.processingSession = session;
       return sessionMetadata(session);
@@ -224,7 +246,7 @@ export class Iso20022HttpTransport implements Iso20022Transport {
       try {
         const response = await this.fetchImplementation(url, request);
         const responseBody = await parseResponse(response, this.maxResponseBytes);
-        if (!response.ok) throw new Iso20022HttpError(response.status, responseBody);
+        if (!response.ok) throw processingHttpError(response.status, responseBody);
         return responseBody as Result;
       } catch (cause) {
         if (cause instanceof Iso20022TransportError || cause instanceof Iso20022HttpError) throw cause;
@@ -309,7 +331,7 @@ export class Iso20022HttpTransport implements Iso20022Transport {
       });
       if (!response.ok) {
         const body = await parseResponse(response, this.maxResponseBytes);
-        throw new Iso20022HttpError(response.status, body);
+        throw processingHttpError(response.status, body);
       }
       const verified = await parseVerifiedBinaryResponse(response, responseLimit, operation.successResponse, expected);
       return verified;
@@ -614,7 +636,10 @@ function serializeQueryValue(field: string, value: unknown): string {
 function serializeRequestBody(input: Record<string, unknown>, maxBytes: number): string {
   let body: string | undefined;
   try {
-    body = JSON.stringify(input, (_key, value: unknown) => {
+    body = JSON.stringify(input, (key, value: unknown) => {
+      if (FORBIDDEN_LOCAL_SECRET_FIELDS.has(key.replaceAll(/[^A-Za-z0-9]/gu, "").toLowerCase())) {
+        throw new TypeError("request contains local secret material");
+      }
       if (
         typeof value === "bigint" ||
         typeof value === "function" ||
@@ -659,6 +684,27 @@ async function parseResponse(response: Response, maxBytes: number): Promise<Reco
     throw new Iso20022TransportError("malformed_response", "The Processing API response must be an object");
   }
   return body as Record<string, unknown>;
+}
+
+function processingHttpError(status: number, body: Record<string, unknown>): Iso20022HttpError {
+  if (status === 403 && hasIssueCode(body, "processing_entitlement_denied")) {
+    return new ProcessingEntitlementDeniedError(body);
+  }
+  return new Iso20022HttpError(status, body);
+}
+
+function hasIssueCode(body: Record<string, unknown>, expected: string): boolean {
+  const issues = body.issues;
+  return (
+    Array.isArray(issues) &&
+    issues.some(
+      (issue) =>
+        issue !== null &&
+        typeof issue === "object" &&
+        !Array.isArray(issue) &&
+        (issue as Record<string, unknown>).issue_code === expected,
+    )
+  );
 }
 
 async function readBoundedResponse(response: Response, maxBytes: number): Promise<Uint8Array> {

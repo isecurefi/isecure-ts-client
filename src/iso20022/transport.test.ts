@@ -4,6 +4,7 @@ import {
   Iso20022HttpError,
   Iso20022HttpTransport,
   Iso20022TransportError,
+  ProcessingEntitlementDeniedError,
   type Iso20022HttpTransportOptions,
   type PaymentExportContentAuthority,
 } from "./transport.js";
@@ -166,7 +167,7 @@ describe("ISO 20022 HTTP transport", () => {
     { audience: "wrong-audience" },
     { processingSession: "not-a-token" },
     { expiresAtEpochSeconds: 1 },
-    { expiresAtEpochSeconds: Math.floor(Date.now() / 1000) + 901 },
+    { expiresAtEpochSeconds: Math.floor(Date.now() / 1000) + 3_600 },
     { schemaVersion: 2 },
     { tokenType: "Bearer" },
     { extra: "rejected" },
@@ -214,6 +215,58 @@ describe("ISO 20022 HTTP transport", () => {
     expect(operationFetch).toHaveBeenCalledTimes(1);
   });
 
+  it("exposes commercial entitlement denial as one typed Processing error", async () => {
+    const issue = {
+      issues: [
+        {
+          issue_code: "processing_entitlement_denied",
+          category: "authorization",
+          severity: "error",
+          safe_message: "The Processing request could not be completed safely.",
+        },
+      ],
+    };
+    const operationFetch = vi.fn(async () => jsonResponse(issue, { status: 403 }));
+    const { adapter } = await readyTransport(operationFetch);
+
+    const error = await createIso20022Client(adapter)
+      .paymentSubmissions.list({ page: {} })
+      .catch((cause: unknown) => cause);
+
+    expect(error).toBeInstanceOf(ProcessingEntitlementDeniedError);
+    expect(error).toMatchObject({ code: "processing_entitlement_denied", status: 403, body: issue });
+    expect((error as Error).message).not.toContain(issue.issues[0]?.safe_message);
+    expect(operationFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses private-key, password, and detached-signature shaped submission input locally", async () => {
+    const operationFetch = vi.fn(async () => jsonResponse({ ok: true }));
+    const { adapter } = await readyTransport(operationFetch);
+    const client = createIso20022Client(adapter);
+    const privateValue = "private-local-material";
+
+    for (const forbidden of ["private_key", "keyPassword", "detached_signature"]) {
+      const error = await client.paymentSubmissions
+        .reportUpload(
+          {
+            execution_attempt_id: RESOURCE_ID,
+            fulfillment_claim_id: ARTIFACT_ID,
+            outcome: "submitted",
+            [forbidden]: privateValue,
+          } as never,
+          { idempotencyKey: "synthetic-report" },
+        )
+        .catch((cause: unknown) => cause);
+
+      expect(error).toMatchObject({
+        code: "serialization_failed",
+        message: "The operation input is not valid JSON",
+      });
+      expect(JSON.stringify(error)).not.toContain(privateValue);
+    }
+    expect(operationFetch).not.toHaveBeenCalled();
+  });
+
   it("does not retry network failure or timeout", async () => {
     const networkFetch = vi.fn(async () => Promise.reject(new Error("network detail")));
     const network = await readyTransport(networkFetch);
@@ -252,13 +305,34 @@ describe("ISO 20022 HTTP transport", () => {
     }
   });
 
+  it("preserves an indeterminate submission without simplifying or retrying it", async () => {
+    const response = {
+      context: { operation_id: "payment_execution_attempts.get" },
+      execution_attempt: {
+        state: "indeterminate",
+        fulfillment: { state: "indeterminate" },
+        bank_outcome_state: "indeterminate",
+      },
+    };
+    const operationFetch = vi.fn(async () => jsonResponse(response));
+    const { adapter } = await readyTransport(operationFetch);
+
+    const result = await createIso20022Client(adapter).paymentSubmissions.get({ execution_attempt_id: RESOURCE_ID });
+
+    expect(result).toEqual(response);
+    expect(result.execution_attempt.state).toBe("indeterminate");
+    expect(result.execution_attempt.fulfillment.state).toBe("indeterminate");
+    expect(result.execution_attempt.bank_outcome_state).toBe("indeterminate");
+    expect(operationFetch).toHaveBeenCalledTimes(1);
+  });
+
   it("downloads and returns only exact, bounded, integrity-verified XML bytes", async () => {
     const bytes = new TextEncoder().encode("<Document>synthetic</Document>");
     const authority = await contentAuthority(bytes);
     const operationFetch = vi.fn(async () => xmlResponse(bytes, authority));
     const { adapter } = await readyTransport(operationFetch);
 
-    const result = await createIso20022Client(adapter).paymentExports.download(
+    const result = await createIso20022Client(adapter).paymentSubmissions.download(
       { payment_export_id: RESOURCE_ID },
       authority,
       { idempotencyKey: "synthetic-download" },

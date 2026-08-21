@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@2e782970f64bb2b6b1b534bbe653b1518d80d73c
-// model: Bankfiles@0.94.0
-// source-digest: sha256:0bb6d73f8e69e6ab9f32c42adfe24cb4a00a40f1df5624953d9d07f608ae83b9
+// source: isecurefi/bankfiles-platform@00a7c7abed377d6a476d1561246747088a5d2c86
+// model: Bankfiles@0.100.0
+// source-digest: sha256:7a6d0391667a2becd988a3b5cb81c1e39304cee8a899faafcfeb71e36b6b045f
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = "approve" | "reject";
@@ -21,6 +21,8 @@ export type ProcessingRunKind = "detect" | "transform" | "parse" | "validate" | 
 export type ProfileResolutionOutcome = "selected" | "no_match" | "ambiguous" | "rejected" | "human_resolved";
 
 export type TaskState = "queued" | "running" | "succeeded" | "failed" | "indeterminate" | "cancelled";
+
+export type PaymentExecutionObservationOutcome = "submitted" | "refused" | "indeterminate";
 
 export type AccountCapabilityAvailability = "available" | "pending" | "unavailable" | "expired" | "uncertain";
 
@@ -54,6 +56,8 @@ export type PaymentChargeBearer = "shared" | "debtor" | "creditor" | "service_le
 
 export type PaymentDestinationScope = "domestic" | "cross_border" | "any_qualified";
 
+export type PaymentExecutionFulfillmentState = "awaiting_claim" | "claimed" | "submitted" | "refused" | "indeterminate" | "expired";
+
 export type PaymentExecutionSummaryState = "not_started" | "planned" | "in_progress" | "completed" | "failed" | "indeterminate" | "cancelled";
 
 export type PaymentExportProfileAvailabilityStatus = "available" | "unavailable";
@@ -75,6 +79,8 @@ export type PaymentPriority = "normal" | "high" | "express";
 export type PaymentRecoveryKind = "select_capability" | "revise_order" | "complete_approval" | "complete_strong_authentication" | "wait_for_outcome" | "investigate_indeterminate" | "request_recall";
 
 export type PaymentRemittanceKind = "none" | "unstructured" | "structured_creditor_reference" | "structured_document";
+
+export type PaymentTransferOutcomeState = "not_observed" | "pending" | "accepted" | "rejected" | "settled" | "returned" | "reversed" | "indeterminate" | "contradictory";
 
 export type PaymentValidationOutcome = "not_evaluated" | "valid" | "invalid" | "indeterminate";
 
@@ -394,6 +400,11 @@ export interface TaskReference {
     readonly cancellation_boundary: CancellationBoundary;
 }
 
+export interface AppendPaymentOrderTransfersInput {
+    readonly payment_order_id: string;
+    readonly transfers: readonly PaymentTransferInput[];
+}
+
 export interface BicPaymentAgent {
     readonly bic: string;
 }
@@ -589,6 +600,112 @@ export interface PaymentCurrencyTotal {
     readonly transfer_count: number;
 }
 
+export interface PaymentExecutionArtifactBinding {
+    readonly payment_export_id: string;
+    readonly release_id: string;
+    readonly artifact_id: string;
+    readonly artifact_digest: string;
+    readonly artifact_byte_length: string;
+    readonly artifact_media_type: string;
+}
+
+export interface PaymentExecutionAttemptGetInput {
+    readonly execution_attempt_id: string;
+}
+
+export interface PaymentExecutionAttemptGetResult {
+    readonly context: OperationContext;
+    readonly execution_attempt: PaymentExecutionAttemptResource;
+}
+
+export interface PaymentExecutionAttemptListInput {
+    readonly payment_order_id?: string;
+    readonly state?: PaymentExecutionSummaryState;
+    readonly page: PageRequest;
+}
+
+export interface PaymentExecutionAttemptListResult {
+    readonly context: OperationContext;
+    readonly execution_attempts: readonly PaymentExecutionAttemptResource[];
+    readonly page: PageResult;
+}
+
+export interface PaymentExecutionAttemptResource {
+    readonly payment_order_reference: ResourceReference;
+    readonly revision_id: string;
+    readonly attempt: AttemptReference;
+    readonly state: PaymentExecutionSummaryState;
+    readonly task: TaskReference;
+    readonly fulfillment: PaymentExecutionFulfillmentResource;
+    readonly connector_observation?: PaymentExecutionConnectorObservationResource;
+    readonly authorization_state: PaymentAuthorizationState;
+    readonly bank_outcome_state: PaymentBankOutcomeState;
+    readonly started_at?: string;
+    readonly completed_at?: string;
+    readonly issue_codes: readonly string[];
+}
+
+export interface PaymentExecutionConnectorBinding {
+    readonly connector_id: string;
+    readonly connector_configuration_revision: string;
+    readonly connector_configuration_digest: string;
+    readonly connector_type_id: string;
+    readonly plugin_version: string;
+    readonly package_digest: string;
+    readonly manifest_digest: string;
+    readonly required_credential_evidence_digest?: string;
+}
+
+export interface PaymentExecutionConnectorObservationInput {
+    readonly execution_attempt_id: string;
+    readonly fulfillment_claim_id: string;
+    readonly outcome: PaymentExecutionObservationOutcome;
+    readonly provider_reference?: string;
+    readonly signing_key_fingerprint?: string;
+    readonly declared_credential_evidence_digest?: string;
+}
+
+export interface PaymentExecutionConnectorObservationResource {
+    readonly connector_observation_id: string;
+    readonly execution_attempt_id: string;
+    readonly fulfillment_claim_id: string;
+    readonly outcome: PaymentExecutionObservationOutcome;
+    readonly provider_reference?: string;
+    readonly signing_key_fingerprint?: string;
+    readonly declared_credential_evidence_digest?: string;
+    readonly observed_at: string;
+}
+
+export interface PaymentExecutionConnectorObservationResult {
+    readonly context: OperationContext;
+    readonly fulfillment: PaymentExecutionFulfillmentResource;
+    readonly observation: PaymentExecutionConnectorObservationResource;
+    readonly issues: readonly OperationIssue[];
+}
+
+export interface PaymentExecutionFulfillmentClaimInput {
+    readonly execution_attempt_id: string;
+}
+
+export interface PaymentExecutionFulfillmentResource {
+    readonly fulfillment_id: string;
+    readonly attempt: AttemptReference;
+    readonly state: PaymentExecutionFulfillmentState;
+    readonly artifact: PaymentExecutionArtifactBinding;
+    readonly connector: PaymentExecutionConnectorBinding;
+    readonly fulfillment_claim_id?: string;
+    readonly created_at: string;
+    readonly claim_expires_at: string;
+    readonly claimed_at?: string;
+    readonly observed_at?: string;
+}
+
+export interface PaymentExecutionFulfillmentResult {
+    readonly context: OperationContext;
+    readonly fulfillment: PaymentExecutionFulfillmentResource;
+    readonly issues: readonly OperationIssue[];
+}
+
 export interface PaymentExecutionSummary {
     readonly state: PaymentExecutionSummaryState;
     readonly current_attempt?: AttemptReference;
@@ -741,6 +858,7 @@ export interface PaymentOrderExecuteResult {
     readonly revision_id: string;
     readonly execution_attempt: AttemptReference;
     readonly task: TaskReference;
+    readonly fulfillment: PaymentExecutionFulfillmentResource;
     readonly workflow_state: PaymentOrderWorkflowState;
     readonly required_actions: readonly RequiredAction[];
     readonly issues: readonly OperationIssue[];
@@ -791,6 +909,48 @@ export interface PaymentOrderMutationResult {
     readonly approval_state: PaymentApprovalBundleState;
     readonly required_actions: readonly RequiredAction[];
     readonly issues: readonly OperationIssue[];
+}
+
+export interface PaymentOrderOutcomeGetInput {
+    readonly payment_order_outcome_id: string;
+}
+
+export interface PaymentOrderOutcomeGetResult {
+    readonly context: OperationContext;
+    readonly payment_order_outcome: PaymentOrderOutcomeResource;
+}
+
+export interface PaymentOrderOutcomeListInput {
+    readonly payment_order_id?: string;
+    readonly bank_outcome_state?: PaymentBankOutcomeState;
+    readonly observed_from?: string;
+    readonly observed_to?: string;
+    readonly page: PageRequest;
+}
+
+export interface PaymentOrderOutcomeListResult {
+    readonly context: OperationContext;
+    readonly payment_order_outcomes: readonly PaymentOrderOutcomeSummary[];
+    readonly page: PageResult;
+}
+
+export interface PaymentOrderOutcomeResource {
+    readonly payment_order_outcome_id: string;
+    readonly payment_order_reference: ResourceReference;
+    readonly revision_id: string;
+    readonly bank_outcome: PaymentBankOutcomeSummary;
+    readonly transfer_outcomes: readonly PaymentTransferOutcomeSummary[];
+    readonly evidence_references: readonly ResourceReference[];
+    readonly observed_at: string;
+}
+
+export interface PaymentOrderOutcomeSummary {
+    readonly payment_order_outcome_id: string;
+    readonly payment_order_reference: ResourceReference;
+    readonly revision_id: string;
+    readonly bank_outcome_state: PaymentBankOutcomeState;
+    readonly transfer_outcome_count: number;
+    readonly observed_at: string;
 }
 
 export interface PaymentOrderResource {
@@ -943,6 +1103,14 @@ export interface PaymentTransferInput {
     readonly options: readonly PaymentTransferOption[];
 }
 
+export interface PaymentTransferOutcomeSummary {
+    readonly payment_transfer_id: string;
+    readonly state: PaymentTransferOutcomeState;
+    readonly bank_reference?: string;
+    readonly observed_at?: string;
+    readonly issue_codes: readonly string[];
+}
+
 export interface PaymentTransferRevision {
     readonly payment_transfer_id: string;
     readonly transfer_position: number;
@@ -967,9 +1135,20 @@ export interface ReleasePaymentExportInput {
     readonly exact_approval_subject_digest: string;
 }
 
+export interface RemovePaymentOrderTransfersInput {
+    readonly payment_order_id: string;
+    readonly payment_transfer_ids: readonly string[];
+}
+
 export interface RevisePaymentOrderInput {
     readonly payment_order_id: string;
     readonly draft: PaymentOrderDraftInput;
+}
+
+export interface RevisePaymentOrderTransferInput {
+    readonly payment_order_id: string;
+    readonly payment_transfer_id: string;
+    readonly transfer: PaymentTransferInput;
 }
 
 export interface RevokePaymentExportProfileInput {
@@ -1515,6 +1694,162 @@ export const iso20022Operations = {
     },
     "parameters": []
   },
+  "payment_execution_attempts.explain": {
+    "method": "GET",
+    "path": "/v1/payment-execution-attempts/{execution_attempt_id}/explanation",
+    "version": 1,
+    "contractDigest": "sha256:f4eaace0bde412782c037a13ecae73b2afc3bd0e3281bcc24779521be0b779ec",
+    "input": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+    "result": "isecure.bankfiles.observations.ExplanationResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "execution_attempt_id",
+        "location": "path",
+        "inputField": "execution_attempt_id",
+        "required": true,
+        "style": "simple",
+        "objectFields": []
+      }
+    ]
+  },
+  "payment_execution_attempts.get": {
+    "method": "GET",
+    "path": "/v1/payment-execution-attempts/{execution_attempt_id}",
+    "version": 1,
+    "contractDigest": "sha256:6fd1d3f1693b933c10db70342d16723b8aad27dd45aebeb0d4a55427728f4cd2",
+    "input": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "execution_attempt_id",
+        "location": "path",
+        "inputField": "execution_attempt_id",
+        "required": true,
+        "style": "simple",
+        "objectFields": []
+      }
+    ]
+  },
+  "payment_execution_attempts.list": {
+    "method": "GET",
+    "path": "/v1/payment-execution-attempts",
+    "version": 1,
+    "contractDigest": "sha256:d2c8f0a377be5274584d30495e803474f92d54596ed6231d86ec616bc146fcbf",
+    "input": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "payment_order_id",
+        "location": "query",
+        "inputField": "payment_order_id",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "state",
+        "location": "query",
+        "inputField": "state",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page",
+        "location": "query",
+        "inputField": "page",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "page_size",
+          "cursor"
+        ]
+      }
+    ]
+  },
+  "payment_execution_fulfillments.claim": {
+    "method": "POST",
+    "path": "/v1/payment-execution-fulfillments:claim",
+    "version": 1,
+    "contractDigest": "sha256:2d4bf454343f38ad3d19be57e55595d17e40df650a59a2841e724d0683d2b414",
+    "input": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payment_execution_observations.report": {
+    "method": "POST",
+    "path": "/v1/payment-execution-observations:report",
+    "version": 1,
+    "contractDigest": "sha256:a5acc23d3344a94fa3388bbf6af781e9f51146d1d5487ef4bf8894e42ed63d82",
+    "input": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
   "payment_export_profile_catalog.list": {
     "method": "GET",
     "path": "/v1/payment-export-profile-catalog",
@@ -1700,11 +2035,193 @@ export const iso20022Operations = {
     },
     "parameters": []
   },
+  "payment_order_outcomes.explain": {
+    "method": "GET",
+    "path": "/v1/payment-order-outcomes/{payment_order_outcome_id}/explanation",
+    "version": 1,
+    "contractDigest": "sha256:f3827ded84cef37e72babac0e5289b444546de41d3a7444f96dae0826d3104cd",
+    "input": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+    "result": "isecure.bankfiles.observations.ExplanationResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "payment_order_outcome_id",
+        "location": "path",
+        "inputField": "payment_order_outcome_id",
+        "required": true,
+        "style": "simple",
+        "objectFields": []
+      }
+    ]
+  },
+  "payment_order_outcomes.get": {
+    "method": "GET",
+    "path": "/v1/payment-order-outcomes/{payment_order_outcome_id}",
+    "version": 1,
+    "contractDigest": "sha256:473050fa821d372034a88bf1fc8c0f2b387019d426584b99cb90cb18ade19faa",
+    "input": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+    "result": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "payment_order_outcome_id",
+        "location": "path",
+        "inputField": "payment_order_outcome_id",
+        "required": true,
+        "style": "simple",
+        "objectFields": []
+      }
+    ]
+  },
+  "payment_order_outcomes.list": {
+    "method": "GET",
+    "path": "/v1/payment-order-outcomes",
+    "version": 1,
+    "contractDigest": "sha256:41b17169ad0b0285aa5ae9a3fe20ef1bf4467701634211b1c686c279cc1e04ab",
+    "input": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListInput",
+    "result": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "payment_order_id",
+        "location": "query",
+        "inputField": "payment_order_id",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "bank_outcome_state",
+        "location": "query",
+        "inputField": "bank_outcome_state",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "observed_from",
+        "location": "query",
+        "inputField": "observed_from",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "observed_to",
+        "location": "query",
+        "inputField": "observed_to",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page",
+        "location": "query",
+        "inputField": "page",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "page_size",
+          "cursor"
+        ]
+      }
+    ]
+  },
+  "payment_orders.append_transfers": {
+    "method": "POST",
+    "path": "/v1/payment-orders:append-transfers",
+    "version": 1,
+    "contractDigest": "sha256:6b9cd39e3f7e11cdf13c229fff00cd678fa3cf1d9859a3cd97d4b6089e18cdf6",
+    "input": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+    "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
   "payment_orders.cancel_draft": {
     "method": "POST",
     "path": "/v1/payment-orders:cancel-draft",
     "version": 1,
     "contractDigest": "sha256:14976041ee01abe2f7ba0a9b2294f5294976f9b497d8a43598d63a75345314ed",
+    "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+    "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payment_orders.correct": {
+    "method": "POST",
+    "path": "/v1/payment-orders:correct",
+    "version": 1,
+    "contractDigest": "sha256:4b88a7d1738a796f51f8eb4f5297f2bc33d5a59a4f757931d179bdff2bfcd10e",
     "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -1759,7 +2276,7 @@ export const iso20022Operations = {
     "method": "POST",
     "path": "/v1/payment-orders:execute",
     "version": 1,
-    "contractDigest": "sha256:2ffdb320acc24b98d352b0b3554335d305d1d786eafa802e8333d5f0ea3890c2",
+    "contractDigest": "sha256:ac6a4e5f6998e141f7303ab9e3d2047c39cc4bce801df6a3ba63da991770b96c",
     "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderExecuteResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -1969,12 +2486,72 @@ export const iso20022Operations = {
       }
     ]
   },
+  "payment_orders.remove_transfers": {
+    "method": "POST",
+    "path": "/v1/payment-orders:remove-transfers",
+    "version": 1,
+    "contractDigest": "sha256:9e6e2ca12abbc6e09b6274cc359cdff9c9b856ffaa0de7393d25ba860f4d716b",
+    "input": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+    "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
   "payment_orders.revise_draft": {
     "method": "POST",
     "path": "/v1/payment-orders:revise-draft",
     "version": 1,
     "contractDigest": "sha256:4f4f717f9a34ba59e99d070b02f9ccc589ea96d85c17ce3b1e037baa823112eb",
     "input": "isecure.bankfiles.payments_api.RevisePaymentOrderInput",
+    "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payment_orders.revise_transfer": {
+    "method": "POST",
+    "path": "/v1/payment-orders:revise-transfer",
+    "version": 1,
+    "contractDigest": "sha256:2577dd0e163120a35f7506125b767b048b210d18c372237ce1e9237c5bf35638",
+    "input": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
     "idempotency": "required",
