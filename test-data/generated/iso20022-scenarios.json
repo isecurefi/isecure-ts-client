@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "2e782970f64bb2b6b1b534bbe653b1518d80d73c",
-    "model": "Bankfiles@0.94.0",
-    "sourceDigest": "sha256:0bb6d73f8e69e6ab9f32c42adfe24cb4a00a40f1df5624953d9d07f608ae83b9",
+    "revision": "00a7c7abed377d6a476d1561246747088a5d2c86",
+    "model": "Bankfiles@0.100.0",
+    "sourceDigest": "sha256:7a6d0391667a2becd988a3b5cb81c1e39304cee8a899faafcfeb71e36b6b045f",
     "fixedClock": "2040-01-02T03:04:05.000Z",
     "safety": {
       "syntheticOnly": true,
@@ -2882,6 +2882,1833 @@
       ]
     },
     {
+      "operationId": "payment_execution_attempts.explain",
+      "version": 1,
+      "contractDigest": "sha256:f4eaace0bde412782c037a13ecae73b2afc3bd0e3281bcc24779521be0b779ec",
+      "eventClosureDigest": "sha256:04027b1a1cce2c2d85c5e844a468b64c55db385e5af675fc730849d7b10f2bea",
+      "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+      "resultContract": "isecure.bankfiles.observations.ExplanationResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/payment-execution-attempts/{execution_attempt_id}/explanation",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_execution_attempts.explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-execution-attempts explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_execution_attempts_explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_execution_attempts-explain",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_execution_attempts.explain.success",
+          "operationId": "payment_execution_attempts.explain",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ExplanationResult",
+          "input": {
+            "execution_attempt_id": "7ddd947e-eede-4498-9782-5dd57c84a4a3"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "852f30c3-5988-478e-9474-cb266ec09cf6",
+                "operation_id": "payment_execution_attempts.explain",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "6dda87b2-d701-4a79-a423-19c0b1168b38",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "subject_reference": {
+                "resource_type": "payment_execution_attempt",
+                "resource_id": "d9ae50f0-2a82-4170-9fd4-e615b9a1f10b"
+              },
+              "facts": [
+                {
+                  "fact_code": "payment_execution_attempts.expla",
+                  "safe_summary": "payment_execution_attempts.expla",
+                  "evidence_references": [
+                    {
+                      "resource_type": "payment_execution_attempts.expla",
+                      "resource_id": "c3557c48-055a-444c-945a-baadf03c7b68"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.explain.invalid_request",
+          "operationId": "payment_execution_attempts.explain",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.expla",
+                    "resource_id": "e001c96a-4d7c-417b-ba04-93b3d66fc5d8"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.explain"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.explain.unauthorized",
+          "operationId": "payment_execution_attempts.explain",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "7ddd947e-eede-4498-9782-5dd57c84a4a3"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.expla",
+                    "resource_id": "c18019b0-f68d-46be-a627-4159c8dee4d1"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.explain"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.explain.not_found",
+          "operationId": "payment_execution_attempts.explain",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "7ddd947e-eede-4498-9782-5dd57c84a4a3"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.expla",
+                    "resource_id": "6d15dd4a-76d3-41b2-accf-6a1baa7732db"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.explain"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.explain.retryable",
+          "operationId": "payment_execution_attempts.explain",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "7ddd947e-eede-4498-9782-5dd57c84a4a3"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.expla",
+                    "resource_id": "09b89d63-3987-4e88-a418-1eafdd19322a"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.explain"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payment_execution_attempts.get",
+      "version": 1,
+      "contractDigest": "sha256:6fd1d3f1693b933c10db70342d16723b8aad27dd45aebeb0d4a55427728f4cd2",
+      "eventClosureDigest": "sha256:d792ead215f76f8487f88825f4b0ef223444f75de88bea6e59ce39de506a8795",
+      "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/payment-execution-attempts/{execution_attempt_id}",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_execution_attempts.get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-execution-attempts get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_execution_attempts_get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_execution_attempts-get",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_execution_attempts.get.success",
+          "operationId": "payment_execution_attempts.get",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetResult",
+          "input": {
+            "execution_attempt_id": "360ef8a2-c59d-451c-9d69-de189720eafd"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "0879b9e7-bb80-4405-b8ff-49a4604194ab",
+                "operation_id": "payment_execution_attempts.get",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "9295554d-46f4-49e1-97fa-610809e4dd16",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "execution_attempt": {
+                "payment_order_reference": {
+                  "resource_type": "payment_execution_attempts.get-r",
+                  "resource_id": "998ecb60-3fcb-4b93-a38d-150c1bcf937f"
+                },
+                "revision_id": "14516532-9ebf-489e-8664-29da8724ecaa",
+                "attempt": {
+                  "attempt_type": "payment_execution_attempts.get-r",
+                  "attempt_id": "9825e673-0a00-4f97-8fa6-da3030ca7724",
+                  "attempt_ordinal": 1
+                },
+                "state": "not_started",
+                "task": {
+                  "task_id": "0fad9f63-7790-4fb4-9c3f-1681f4f1aa61",
+                  "attempt": {
+                    "attempt_type": "payment_execution_attempts.get-r",
+                    "attempt_id": "cd3e9230-74e9-4628-9773-bee1fc52ca09",
+                    "attempt_ordinal": 1
+                  },
+                  "state": "queued",
+                  "cancellation_boundary": "preventable"
+                },
+                "fulfillment": {
+                  "fulfillment_id": "e9676170-9412-4a98-8a85-6c0178eef73b",
+                  "attempt": {
+                    "attempt_type": "payment_execution_attempts.get-r",
+                    "attempt_id": "9d7be7e3-63db-4fbd-bfb8-b13289a93e78",
+                    "attempt_ordinal": 1
+                  },
+                  "state": "awaiting_claim",
+                  "artifact": {
+                    "payment_export_id": "19a5bab8-5f7a-4401-beed-b3b6058c67f9",
+                    "release_id": "98412a9f-2c6d-4593-ae60-9ba2ebe396cc",
+                    "artifact_id": "61fafea4-3fcc-4226-a59b-ebaefe97f427",
+                    "artifact_digest": "payment_execution_attempts.get-r",
+                    "artifact_byte_length": "1",
+                    "artifact_media_type": "payment_execution_attempts.get-r"
+                  },
+                  "connector": {
+                    "connector_id": "5b20d960-22ab-45a1-be84-a282b1ab70d6",
+                    "connector_configuration_revision": "1",
+                    "connector_configuration_digest": "payment_execution_attempts.get-r",
+                    "connector_type_id": "payment_execution_attempts.get-r",
+                    "plugin_version": "payment_execution_attempts.get-r",
+                    "package_digest": "payment_execution_attempts.get-r",
+                    "manifest_digest": "payment_execution_attempts.get-r"
+                  },
+                  "created_at": "2040-01-02T03:04:05.000Z",
+                  "claim_expires_at": "2040-01-02T03:04:05.000Z"
+                },
+                "authorization_state": "not_required",
+                "bank_outcome_state": "not_observed",
+                "issue_codes": [
+                  "payment_execution_attempts.get-r"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.get.invalid_request",
+          "operationId": "payment_execution_attempts.get",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.get-i",
+                    "resource_id": "1b381ec2-b321-4df3-82ef-7fcf38d24ac1"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.get"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.get.unauthorized",
+          "operationId": "payment_execution_attempts.get",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "360ef8a2-c59d-451c-9d69-de189720eafd"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.get-u",
+                    "resource_id": "291ae099-2b4c-4396-a975-142a94eca36c"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.get"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.get.not_found",
+          "operationId": "payment_execution_attempts.get",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "360ef8a2-c59d-451c-9d69-de189720eafd"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.get-n",
+                    "resource_id": "d6fb089d-125a-4acc-86ea-5995be77cf6a"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.get"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.get.retryable",
+          "operationId": "payment_execution_attempts.get",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "360ef8a2-c59d-451c-9d69-de189720eafd"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.get-r",
+                    "resource_id": "0bf1609e-468f-47de-bd66-f3a93cd12f20"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.get"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payment_execution_attempts.list",
+      "version": 1,
+      "contractDigest": "sha256:d2c8f0a377be5274584d30495e803474f92d54596ed6231d86ec616bc146fcbf",
+      "eventClosureDigest": "sha256:76e1cc5e36fc10d1d637b9baf3f57c8618bad6a2fd3c209ee5684f9a2bc726bf",
+      "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/payment-execution-attempts",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_execution_attempts.list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-execution-attempts list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_execution_attempts_list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_execution_attempts-list",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_execution_attempts.list.success",
+          "operationId": "payment_execution_attempts.list",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListResult",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "41f68946-2a62-4df3-b089-be6c8fbf25ec",
+                "operation_id": "payment_execution_attempts.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "5e3d8404-430c-4872-8b7b-5071f54d0d1f",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "execution_attempts": [
+                {
+                  "payment_order_reference": {
+                    "resource_type": "payment_execution_attempts.list-",
+                    "resource_id": "61c70ad4-eefe-4fe4-b5a0-15e6339a27f0"
+                  },
+                  "revision_id": "981e358c-8ec2-445f-aab1-6237cf6898b5",
+                  "attempt": {
+                    "attempt_type": "payment_execution_attempts.list-",
+                    "attempt_id": "a5d1e29f-5490-415f-8d44-cff91d35c141",
+                    "attempt_ordinal": 1
+                  },
+                  "state": "not_started",
+                  "task": {
+                    "task_id": "bbac3b79-3a3c-4dba-a9e5-d8829344c93b",
+                    "attempt": {
+                      "attempt_type": "payment_execution_attempts.list-",
+                      "attempt_id": "cf65df1f-f5d0-4b04-a1ed-a329ec43b319",
+                      "attempt_ordinal": 1
+                    },
+                    "state": "queued",
+                    "cancellation_boundary": "preventable"
+                  },
+                  "fulfillment": {
+                    "fulfillment_id": "7c7ae5be-be3e-40a6-ae82-7980d1ef6fe9",
+                    "attempt": {
+                      "attempt_type": "payment_execution_attempts.list-",
+                      "attempt_id": "c05004d2-9d63-437d-941c-e26db21024c8",
+                      "attempt_ordinal": 1
+                    },
+                    "state": "awaiting_claim",
+                    "artifact": {
+                      "payment_export_id": "fb034fd7-acb9-404e-9d3d-3c7c23107c41",
+                      "release_id": "63704985-73c1-4901-953b-8496661f6c3e",
+                      "artifact_id": "5071ca1e-42c2-47a4-8015-6a2b412546d6",
+                      "artifact_digest": "payment_execution_attempts.list-",
+                      "artifact_byte_length": "1",
+                      "artifact_media_type": "payment_execution_attempts.list-"
+                    },
+                    "connector": {
+                      "connector_id": "09e7144c-2293-4f2b-b8eb-7de505b4743c",
+                      "connector_configuration_revision": "1",
+                      "connector_configuration_digest": "payment_execution_attempts.list-",
+                      "connector_type_id": "payment_execution_attempts.list-",
+                      "plugin_version": "payment_execution_attempts.list-",
+                      "package_digest": "payment_execution_attempts.list-",
+                      "manifest_digest": "payment_execution_attempts.list-"
+                    },
+                    "created_at": "2040-01-02T03:04:05.000Z",
+                    "claim_expires_at": "2040-01-02T03:04:05.000Z"
+                  },
+                  "authorization_state": "not_required",
+                  "bank_outcome_state": "not_observed",
+                  "issue_codes": [
+                    "payment_execution_attempts.list-"
+                  ]
+                }
+              ],
+              "page": {
+                "snapshot_reference": "3599717c-42ac-4345-be19-2fe1c605cf43"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.list.empty",
+          "operationId": "payment_execution_attempts.list",
+          "scenario": "empty",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListResult",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "41f68946-2a62-4df3-b089-be6c8fbf25ec",
+                "operation_id": "payment_execution_attempts.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "5e3d8404-430c-4872-8b7b-5071f54d0d1f",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "execution_attempts": [],
+              "page": {
+                "snapshot_reference": "3599717c-42ac-4345-be19-2fe1c605cf43"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.list.pagination",
+          "operationId": "payment_execution_attempts.list",
+          "scenario": "pagination",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListResult",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "41f68946-2a62-4df3-b089-be6c8fbf25ec",
+                "operation_id": "payment_execution_attempts.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "5e3d8404-430c-4872-8b7b-5071f54d0d1f",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "execution_attempts": [
+                {
+                  "payment_order_reference": {
+                    "resource_type": "payment_execution_attempts.list-",
+                    "resource_id": "61c70ad4-eefe-4fe4-b5a0-15e6339a27f0"
+                  },
+                  "revision_id": "981e358c-8ec2-445f-aab1-6237cf6898b5",
+                  "attempt": {
+                    "attempt_type": "payment_execution_attempts.list-",
+                    "attempt_id": "a5d1e29f-5490-415f-8d44-cff91d35c141",
+                    "attempt_ordinal": 1
+                  },
+                  "state": "not_started",
+                  "task": {
+                    "task_id": "bbac3b79-3a3c-4dba-a9e5-d8829344c93b",
+                    "attempt": {
+                      "attempt_type": "payment_execution_attempts.list-",
+                      "attempt_id": "cf65df1f-f5d0-4b04-a1ed-a329ec43b319",
+                      "attempt_ordinal": 1
+                    },
+                    "state": "queued",
+                    "cancellation_boundary": "preventable"
+                  },
+                  "fulfillment": {
+                    "fulfillment_id": "7c7ae5be-be3e-40a6-ae82-7980d1ef6fe9",
+                    "attempt": {
+                      "attempt_type": "payment_execution_attempts.list-",
+                      "attempt_id": "c05004d2-9d63-437d-941c-e26db21024c8",
+                      "attempt_ordinal": 1
+                    },
+                    "state": "awaiting_claim",
+                    "artifact": {
+                      "payment_export_id": "fb034fd7-acb9-404e-9d3d-3c7c23107c41",
+                      "release_id": "63704985-73c1-4901-953b-8496661f6c3e",
+                      "artifact_id": "5071ca1e-42c2-47a4-8015-6a2b412546d6",
+                      "artifact_digest": "payment_execution_attempts.list-",
+                      "artifact_byte_length": "1",
+                      "artifact_media_type": "payment_execution_attempts.list-"
+                    },
+                    "connector": {
+                      "connector_id": "09e7144c-2293-4f2b-b8eb-7de505b4743c",
+                      "connector_configuration_revision": "1",
+                      "connector_configuration_digest": "payment_execution_attempts.list-",
+                      "connector_type_id": "payment_execution_attempts.list-",
+                      "plugin_version": "payment_execution_attempts.list-",
+                      "package_digest": "payment_execution_attempts.list-",
+                      "manifest_digest": "payment_execution_attempts.list-"
+                    },
+                    "created_at": "2040-01-02T03:04:05.000Z",
+                    "claim_expires_at": "2040-01-02T03:04:05.000Z"
+                  },
+                  "authorization_state": "not_required",
+                  "bank_outcome_state": "not_observed",
+                  "issue_codes": [
+                    "payment_execution_attempts.list-"
+                  ]
+                }
+              ],
+              "page": {
+                "snapshot_reference": "3599717c-42ac-4345-be19-2fe1c605cf43",
+                "next_cursor": "mock.cursor.payment_execution_attempts.list.page-2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.list.invalid_request",
+          "operationId": "payment_execution_attempts.list",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.list-",
+                    "resource_id": "0b61cd56-8f07-4e59-b3bb-90aad248af6b"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.list"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.list.unauthorized",
+          "operationId": "payment_execution_attempts.list",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.list-",
+                    "resource_id": "3178cd47-5c61-4f23-911e-b1457ea23d4d"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.list"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.list.retryable",
+          "operationId": "payment_execution_attempts.list",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.list-",
+                    "resource_id": "a128afd8-f3be-479e-8310-e3290b2acef5"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.list"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_attempts.list.stale_cursor",
+          "operationId": "payment_execution_attempts.list",
+          "scenario": "stale_cursor",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_CURSOR",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
+                  "retryable": false,
+                  "field_path": "cursor"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_attempts.list-",
+                    "resource_id": "b769d2f7-4628-432a-af13-85f5ecdee46c"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_attempts.list"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payment_execution_fulfillments.claim",
+      "version": 1,
+      "contractDigest": "sha256:2d4bf454343f38ad3d19be57e55595d17e40df650a59a2841e724d0683d2b414",
+      "eventClosureDigest": "sha256:b7ec782e4bdfb23901cef19dd7a1f26e341824148e4d796583f207c75062d475",
+      "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payment-execution-fulfillments:claim",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            409,
+            410,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_execution_fulfillments.claim",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-execution-fulfillments claim",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_execution_fulfillments-claim",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_execution_fulfillments.claim.success",
+          "operationId": "payment_execution_fulfillments.claim",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentResult",
+          "input": {
+            "execution_attempt_id": "4742c6a9-60d4-4a26-a23d-bdd9440ba06a"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "253d8666-75cf-4b29-94ed-a5bf69e2cf00",
+                "operation_id": "payment_execution_fulfillments.claim",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "31a33b34-5f16-4332-9eac-68f0c60168dc",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "applied",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "fulfillment": {
+                "fulfillment_id": "4ccf3435-2342-4540-acc0-86db5636fb66",
+                "attempt": {
+                  "attempt_type": "payment_execution_fulfillments.c",
+                  "attempt_id": "b89808dd-49b8-40b7-9e35-035fd8da9204",
+                  "attempt_ordinal": 1
+                },
+                "state": "awaiting_claim",
+                "artifact": {
+                  "payment_export_id": "af7ec969-7c86-430a-b03e-e39c569a458f",
+                  "release_id": "bce4d423-80a0-48a1-a781-89f476fc27b0",
+                  "artifact_id": "436e21b7-65e2-4ff9-ad7b-3a6c1dd494ee",
+                  "artifact_digest": "payment_execution_fulfillments.c",
+                  "artifact_byte_length": "1",
+                  "artifact_media_type": "payment_execution_fulfillments.c"
+                },
+                "connector": {
+                  "connector_id": "f6749291-1270-4f42-a897-8dc32c6543b0",
+                  "connector_configuration_revision": "1",
+                  "connector_configuration_digest": "payment_execution_fulfillments.c",
+                  "connector_type_id": "payment_execution_fulfillments.c",
+                  "plugin_version": "payment_execution_fulfillments.c",
+                  "package_digest": "payment_execution_fulfillments.c",
+                  "manifest_digest": "payment_execution_fulfillments.c"
+                },
+                "created_at": "2040-01-02T03:04:05.000Z",
+                "claim_expires_at": "2040-01-02T03:04:05.000Z"
+              },
+              "issues": [
+                {
+                  "issue_code": "payment_execution_fulfillments.c",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_execution_fulfillments.c",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_fulfillments.claim.invalid_request",
+          "operationId": "payment_execution_fulfillments.claim",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_fulfillments.c",
+                    "resource_id": "ee29819b-fa17-43e1-b7d2-12c9fb8ee814"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_fulfillments.claim"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_fulfillments.claim.unauthorized",
+          "operationId": "payment_execution_fulfillments.claim",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "4742c6a9-60d4-4a26-a23d-bdd9440ba06a"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_fulfillments.c",
+                    "resource_id": "fdc87f2e-ce1d-444e-a4e0-cf79c825b470"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_fulfillments.claim"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_fulfillments.claim.retryable",
+          "operationId": "payment_execution_fulfillments.claim",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "4742c6a9-60d4-4a26-a23d-bdd9440ba06a"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_fulfillments.c",
+                    "resource_id": "4a1a7d6c-0ac9-4dda-8875-89fe77048b9e"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_fulfillments.claim"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_fulfillments.claim.idempotency_replay",
+          "operationId": "payment_execution_fulfillments.claim",
+          "scenario": "idempotency_replay",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentResult",
+          "input": {
+            "execution_attempt_id": "4742c6a9-60d4-4a26-a23d-bdd9440ba06a"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "253d8666-75cf-4b29-94ed-a5bf69e2cf00",
+                "operation_id": "payment_execution_fulfillments.claim",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "31a33b34-5f16-4332-9eac-68f0c60168dc",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "replayed",
+                  "original_request_id": "470912ee-7f08-43af-bf53-5cd61fd3b19d",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "fulfillment": {
+                "fulfillment_id": "4ccf3435-2342-4540-acc0-86db5636fb66",
+                "attempt": {
+                  "attempt_type": "payment_execution_fulfillments.c",
+                  "attempt_id": "b89808dd-49b8-40b7-9e35-035fd8da9204",
+                  "attempt_ordinal": 1
+                },
+                "state": "awaiting_claim",
+                "artifact": {
+                  "payment_export_id": "af7ec969-7c86-430a-b03e-e39c569a458f",
+                  "release_id": "bce4d423-80a0-48a1-a781-89f476fc27b0",
+                  "artifact_id": "436e21b7-65e2-4ff9-ad7b-3a6c1dd494ee",
+                  "artifact_digest": "payment_execution_fulfillments.c",
+                  "artifact_byte_length": "1",
+                  "artifact_media_type": "payment_execution_fulfillments.c"
+                },
+                "connector": {
+                  "connector_id": "f6749291-1270-4f42-a897-8dc32c6543b0",
+                  "connector_configuration_revision": "1",
+                  "connector_configuration_digest": "payment_execution_fulfillments.c",
+                  "connector_type_id": "payment_execution_fulfillments.c",
+                  "plugin_version": "payment_execution_fulfillments.c",
+                  "package_digest": "payment_execution_fulfillments.c",
+                  "manifest_digest": "payment_execution_fulfillments.c"
+                },
+                "created_at": "2040-01-02T03:04:05.000Z",
+                "claim_expires_at": "2040-01-02T03:04:05.000Z"
+              },
+              "issues": [
+                {
+                  "issue_code": "payment_execution_fulfillments.c",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_execution_fulfillments.c",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_fulfillments.claim.idempotency_in_progress",
+          "operationId": "payment_execution_fulfillments.claim",
+          "scenario": "idempotency_in_progress",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "4742c6a9-60d4-4a26-a23d-bdd9440ba06a"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_IN_PROGRESS",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The original synthetic command is still in progress.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_fulfillments.c",
+                    "resource_id": "a86f72da-0c10-4000-b138-84a76edb3b36"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_fulfillments.claim"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_fulfillments.claim.idempotency_mismatch",
+          "operationId": "payment_execution_fulfillments.claim",
+          "scenario": "idempotency_mismatch",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "4742c6a9-60d4-4a26-a23d-bdd9440ba06a"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_MISMATCH",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The idempotency key was previously used with different normalized input.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_fulfillments.c",
+                    "resource_id": "69ae452f-d88d-46a2-8825-518ebf7cc120"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_fulfillments.claim"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_fulfillments.claim.idempotency_expired",
+          "operationId": "payment_execution_fulfillments.claim",
+          "scenario": "idempotency_expired",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "4742c6a9-60d4-4a26-a23d-bdd9440ba06a"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 410,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_EXPIRED",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The synthetic idempotency retention window has expired.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_fulfillments.c",
+                    "resource_id": "d5ed279c-08ed-4ed8-a13c-3802554ae152"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_fulfillments.claim"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payment_execution_observations.report",
+      "version": 1,
+      "contractDigest": "sha256:a5acc23d3344a94fa3388bbf6af781e9f51146d1d5487ef4bf8894e42ed63d82",
+      "eventClosureDigest": "sha256:43dcda2daf655c5b47b4a43ca2ba463f3d0150b166af47f37af5161937382b16",
+      "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payment-execution-observations:report",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            409,
+            410,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_execution_observations.report",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-execution-observations report",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_execution_observations-report",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_execution_observations.report.success",
+          "operationId": "payment_execution_observations.report",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationResult",
+          "input": {
+            "execution_attempt_id": "7e8ce9c8-2bf1-4766-87a7-cc985d816134",
+            "fulfillment_claim_id": "66acbf06-89dc-4e5f-adca-259fb2c4f236",
+            "outcome": "submitted"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "bd2f9aea-625b-41ab-a509-dc1f80cb8cf4",
+                "operation_id": "payment_execution_observations.report",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "912b89c8-ff0c-415a-bf90-b97775a96ed7",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "applied",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "fulfillment": {
+                "fulfillment_id": "cf68e969-66c8-4d7b-aaad-02c0b26f7fca",
+                "attempt": {
+                  "attempt_type": "payment_execution_observations.r",
+                  "attempt_id": "b2eb8ab1-5a6e-4e53-a81e-a902187ae24a",
+                  "attempt_ordinal": 1
+                },
+                "state": "awaiting_claim",
+                "artifact": {
+                  "payment_export_id": "aac0f08e-962b-4cf7-bb15-aba475aeb43b",
+                  "release_id": "11a3c547-d23e-492c-8056-8efa612b7962",
+                  "artifact_id": "c833da2b-9cef-41ba-80cb-717192524ba4",
+                  "artifact_digest": "payment_execution_observations.r",
+                  "artifact_byte_length": "1",
+                  "artifact_media_type": "payment_execution_observations.r"
+                },
+                "connector": {
+                  "connector_id": "8c02a208-b18e-48b3-b555-e9fbf3d08e51",
+                  "connector_configuration_revision": "1",
+                  "connector_configuration_digest": "payment_execution_observations.r",
+                  "connector_type_id": "payment_execution_observations.r",
+                  "plugin_version": "payment_execution_observations.r",
+                  "package_digest": "payment_execution_observations.r",
+                  "manifest_digest": "payment_execution_observations.r"
+                },
+                "created_at": "2040-01-02T03:04:05.000Z",
+                "claim_expires_at": "2040-01-02T03:04:05.000Z"
+              },
+              "observation": {
+                "connector_observation_id": "b21174c9-e7f9-4371-ae1a-b3a08c0ccab6",
+                "execution_attempt_id": "68994e27-c8d8-4f39-b66e-b21734af8486",
+                "fulfillment_claim_id": "8cbecdab-86b4-47c0-9a58-ffdc5889ecec",
+                "outcome": "submitted",
+                "observed_at": "2040-01-02T03:04:05.000Z"
+              },
+              "issues": [
+                {
+                  "issue_code": "payment_execution_observations.r",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_execution_observations.r",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_observations.report.invalid_request",
+          "operationId": "payment_execution_observations.report",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_observations.r",
+                    "resource_id": "25f672fd-d820-4d92-ae8b-5377515dd0ef"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_observations.report"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_observations.report.unauthorized",
+          "operationId": "payment_execution_observations.report",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "7e8ce9c8-2bf1-4766-87a7-cc985d816134",
+            "fulfillment_claim_id": "66acbf06-89dc-4e5f-adca-259fb2c4f236",
+            "outcome": "submitted"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_observations.r",
+                    "resource_id": "ebbb402a-f556-4b42-b78e-8c78e7f1e10e"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_observations.report"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_observations.report.retryable",
+          "operationId": "payment_execution_observations.report",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "7e8ce9c8-2bf1-4766-87a7-cc985d816134",
+            "fulfillment_claim_id": "66acbf06-89dc-4e5f-adca-259fb2c4f236",
+            "outcome": "submitted"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_observations.r",
+                    "resource_id": "22b56a2f-9bba-4e12-a0b1-1a0736a1ea64"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_observations.report"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_observations.report.idempotency_replay",
+          "operationId": "payment_execution_observations.report",
+          "scenario": "idempotency_replay",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationResult",
+          "input": {
+            "execution_attempt_id": "7e8ce9c8-2bf1-4766-87a7-cc985d816134",
+            "fulfillment_claim_id": "66acbf06-89dc-4e5f-adca-259fb2c4f236",
+            "outcome": "submitted"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "bd2f9aea-625b-41ab-a509-dc1f80cb8cf4",
+                "operation_id": "payment_execution_observations.report",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "912b89c8-ff0c-415a-bf90-b97775a96ed7",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "replayed",
+                  "original_request_id": "67c35354-fdf8-4cc1-93a6-275ecb7a98c7",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "fulfillment": {
+                "fulfillment_id": "cf68e969-66c8-4d7b-aaad-02c0b26f7fca",
+                "attempt": {
+                  "attempt_type": "payment_execution_observations.r",
+                  "attempt_id": "b2eb8ab1-5a6e-4e53-a81e-a902187ae24a",
+                  "attempt_ordinal": 1
+                },
+                "state": "awaiting_claim",
+                "artifact": {
+                  "payment_export_id": "aac0f08e-962b-4cf7-bb15-aba475aeb43b",
+                  "release_id": "11a3c547-d23e-492c-8056-8efa612b7962",
+                  "artifact_id": "c833da2b-9cef-41ba-80cb-717192524ba4",
+                  "artifact_digest": "payment_execution_observations.r",
+                  "artifact_byte_length": "1",
+                  "artifact_media_type": "payment_execution_observations.r"
+                },
+                "connector": {
+                  "connector_id": "8c02a208-b18e-48b3-b555-e9fbf3d08e51",
+                  "connector_configuration_revision": "1",
+                  "connector_configuration_digest": "payment_execution_observations.r",
+                  "connector_type_id": "payment_execution_observations.r",
+                  "plugin_version": "payment_execution_observations.r",
+                  "package_digest": "payment_execution_observations.r",
+                  "manifest_digest": "payment_execution_observations.r"
+                },
+                "created_at": "2040-01-02T03:04:05.000Z",
+                "claim_expires_at": "2040-01-02T03:04:05.000Z"
+              },
+              "observation": {
+                "connector_observation_id": "b21174c9-e7f9-4371-ae1a-b3a08c0ccab6",
+                "execution_attempt_id": "68994e27-c8d8-4f39-b66e-b21734af8486",
+                "fulfillment_claim_id": "8cbecdab-86b4-47c0-9a58-ffdc5889ecec",
+                "outcome": "submitted",
+                "observed_at": "2040-01-02T03:04:05.000Z"
+              },
+              "issues": [
+                {
+                  "issue_code": "payment_execution_observations.r",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_execution_observations.r",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_observations.report.idempotency_in_progress",
+          "operationId": "payment_execution_observations.report",
+          "scenario": "idempotency_in_progress",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "7e8ce9c8-2bf1-4766-87a7-cc985d816134",
+            "fulfillment_claim_id": "66acbf06-89dc-4e5f-adca-259fb2c4f236",
+            "outcome": "submitted"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_IN_PROGRESS",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The original synthetic command is still in progress.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_observations.r",
+                    "resource_id": "fd1f6a28-012f-4cfc-a15b-25682cc988e8"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_observations.report"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_observations.report.idempotency_mismatch",
+          "operationId": "payment_execution_observations.report",
+          "scenario": "idempotency_mismatch",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "7e8ce9c8-2bf1-4766-87a7-cc985d816134",
+            "fulfillment_claim_id": "66acbf06-89dc-4e5f-adca-259fb2c4f236",
+            "outcome": "submitted"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_MISMATCH",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The idempotency key was previously used with different normalized input.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_observations.r",
+                    "resource_id": "e703dd50-3f85-4f4d-8531-6df15a2bd496"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_observations.report"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_execution_observations.report.idempotency_expired",
+          "operationId": "payment_execution_observations.report",
+          "scenario": "idempotency_expired",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "execution_attempt_id": "7e8ce9c8-2bf1-4766-87a7-cc985d816134",
+            "fulfillment_claim_id": "66acbf06-89dc-4e5f-adca-259fb2c4f236",
+            "outcome": "submitted"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 410,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_EXPIRED",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The synthetic idempotency retention window has expired.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_execution_observations.r",
+                    "resource_id": "33f6b2f6-c991-4797-9157-503a0d4b7689"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_execution_observations.report"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "operationId": "payment_export_profile_catalog.list",
       "version": 1,
       "contractDigest": "sha256:52608f6a88fc8fe1d0c81396572590e8200f9af1689ce8a11be472e8650f7f02",
@@ -5350,6 +7177,1452 @@
       ]
     },
     {
+      "operationId": "payment_order_outcomes.explain",
+      "version": 1,
+      "contractDigest": "sha256:f3827ded84cef37e72babac0e5289b444546de41d3a7444f96dae0826d3104cd",
+      "eventClosureDigest": "sha256:bd5b33b6b4e2c740b12256c0eb3b5bce34e387708fcf497d07dfe9345edcb4e6",
+      "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+      "resultContract": "isecure.bankfiles.observations.ExplanationResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/payment-order-outcomes/{payment_order_outcome_id}/explanation",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_order_outcomes.explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-order-outcomes explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_order_outcomes_explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_order_outcomes-explain",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_order_outcomes.explain.success",
+          "operationId": "payment_order_outcomes.explain",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+          "outcomeContract": "isecure.bankfiles.observations.ExplanationResult",
+          "input": {
+            "payment_order_outcome_id": "1804f961-bb98-4e99-9afe-f9557ce59359"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "d2c836c4-6cf0-47c9-9a76-1a8b81a5230d",
+                "operation_id": "payment_order_outcomes.explain",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "aa61b190-1959-4679-9a6e-4c95031a2050",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "subject_reference": {
+                "resource_type": "payment_order_outcome",
+                "resource_id": "1f3038b6-c5f0-4087-b3b3-7989cde9a0ba"
+              },
+              "facts": [
+                {
+                  "fact_code": "payment_order_outcomes.explain-r",
+                  "safe_summary": "payment_order_outcomes.explain-r",
+                  "evidence_references": [
+                    {
+                      "resource_type": "payment_order_outcomes.explain-r",
+                      "resource_id": "6d1108b3-c845-4d20-a0cb-88fd4472f296"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.explain.invalid_request",
+          "operationId": "payment_order_outcomes.explain",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.explain-i",
+                    "resource_id": "545d16bb-f771-446e-9a6f-2a1e4530b22b"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.explain"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.explain.unauthorized",
+          "operationId": "payment_order_outcomes.explain",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_outcome_id": "1804f961-bb98-4e99-9afe-f9557ce59359"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.explain-u",
+                    "resource_id": "9ac5ae28-1a9a-4a95-8c38-26d49fcfd5fc"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.explain"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.explain.not_found",
+          "operationId": "payment_order_outcomes.explain",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_outcome_id": "1804f961-bb98-4e99-9afe-f9557ce59359"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.explain-n",
+                    "resource_id": "03ad78ec-f664-4e26-96c8-93edf55774ee"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.explain"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.explain.retryable",
+          "operationId": "payment_order_outcomes.explain",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_outcome_id": "1804f961-bb98-4e99-9afe-f9557ce59359"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.explain-r",
+                    "resource_id": "9c581c57-05d5-4e8c-bc5c-f95f885678a4"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.explain"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payment_order_outcomes.get",
+      "version": 1,
+      "contractDigest": "sha256:473050fa821d372034a88bf1fc8c0f2b387019d426584b99cb90cb18ade19faa",
+      "eventClosureDigest": "sha256:b66e0cbada54a341f839e6b124f976f08f07d43a6537d9cf646617b1a5163974",
+      "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/payment-order-outcomes/{payment_order_outcome_id}",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_order_outcomes.get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-order-outcomes get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_order_outcomes_get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_order_outcomes-get",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_order_outcomes.get.success",
+          "operationId": "payment_order_outcomes.get",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetResult",
+          "input": {
+            "payment_order_outcome_id": "5510abcd-ccc5-4166-8891-c7b09480b1ff"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "841d112f-925c-4deb-bd32-91266ef965a3",
+                "operation_id": "payment_order_outcomes.get",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "330deb3a-2f64-41c1-a050-b94144e7faaa",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_outcome": {
+                "payment_order_outcome_id": "1f3038b6-c5f0-4087-b3b3-7989cde9a0ba",
+                "payment_order_reference": {
+                  "resource_type": "payment_order_outcomes.get-resul",
+                  "resource_id": "c6b25057-58a4-47a9-b07c-e3eb251b6177"
+                },
+                "revision_id": "2a3431e7-3b62-4b07-b278-9338127376d6",
+                "bank_outcome": {
+                  "state": "not_observed",
+                  "issue_codes": [
+                    "payment_order_outcomes.get-resul"
+                  ]
+                },
+                "transfer_outcomes": [
+                  {
+                    "payment_transfer_id": "1c1d0bba-da20-459f-a52b-0446c7679ef7",
+                    "state": "not_observed",
+                    "issue_codes": [
+                      "payment_order_outcomes.get-resul"
+                    ]
+                  }
+                ],
+                "evidence_references": [
+                  {
+                    "resource_type": "payment_order_outcomes.get-resul",
+                    "resource_id": "9ac731a1-6994-4492-b3cc-7d3b3914dd28"
+                  }
+                ],
+                "observed_at": "2040-01-02T03:04:05.000Z"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.get.invalid_request",
+          "operationId": "payment_order_outcomes.get",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.get-inval",
+                    "resource_id": "47953ab9-bf36-45a4-8fa3-6d143dd73de4"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.get"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.get.unauthorized",
+          "operationId": "payment_order_outcomes.get",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_outcome_id": "5510abcd-ccc5-4166-8891-c7b09480b1ff"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.get-unaut",
+                    "resource_id": "b9a72a04-a300-45ed-958d-261914c80267"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.get"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.get.not_found",
+          "operationId": "payment_order_outcomes.get",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_outcome_id": "5510abcd-ccc5-4166-8891-c7b09480b1ff"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.get-not_f",
+                    "resource_id": "def84957-0719-46a3-a576-8e186d566d23"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.get"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.get.retryable",
+          "operationId": "payment_order_outcomes.get",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_outcome_id": "5510abcd-ccc5-4166-8891-c7b09480b1ff"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.get-retry",
+                    "resource_id": "e88408e6-c1e1-4eaa-be64-ee74b95a0c15"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.get"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payment_order_outcomes.list",
+      "version": 1,
+      "contractDigest": "sha256:41b17169ad0b0285aa5ae9a3fe20ef1bf4467701634211b1c686c279cc1e04ab",
+      "eventClosureDigest": "sha256:77e52c96f0a9abbbed0c6e6cfd13ca7f2a32636344f09ed262bfee05b9f64d8a",
+      "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/payment-order-outcomes",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_order_outcomes.list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-order-outcomes list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_order_outcomes_list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_order_outcomes-list",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_order_outcomes.list.success",
+          "operationId": "payment_order_outcomes.list",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListResult",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "54a84a89-5047-4b16-be15-8a093081d171",
+                "operation_id": "payment_order_outcomes.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "1af004ad-55e4-4a34-8bea-1880b136cf0f",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_outcomes": [
+                {
+                  "payment_order_outcome_id": "1f3038b6-c5f0-4087-b3b3-7989cde9a0ba",
+                  "payment_order_reference": {
+                    "resource_type": "payment_order_outcomes.list-resu",
+                    "resource_id": "098248d1-e4e4-4699-baf0-63690cfe3f48"
+                  },
+                  "revision_id": "ffcf0e68-2075-4102-a05b-e500ccaecf07",
+                  "bank_outcome_state": "not_observed",
+                  "transfer_outcome_count": 1,
+                  "observed_at": "2040-01-02T03:04:05.000Z"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "47478459-41f6-4d0a-96b8-43efdd6252de"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.list.empty",
+          "operationId": "payment_order_outcomes.list",
+          "scenario": "empty",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListResult",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "54a84a89-5047-4b16-be15-8a093081d171",
+                "operation_id": "payment_order_outcomes.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "1af004ad-55e4-4a34-8bea-1880b136cf0f",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_outcomes": [],
+              "page": {
+                "snapshot_reference": "47478459-41f6-4d0a-96b8-43efdd6252de"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.list.pagination",
+          "operationId": "payment_order_outcomes.list",
+          "scenario": "pagination",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListResult",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "54a84a89-5047-4b16-be15-8a093081d171",
+                "operation_id": "payment_order_outcomes.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "1af004ad-55e4-4a34-8bea-1880b136cf0f",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_outcomes": [
+                {
+                  "payment_order_outcome_id": "1f3038b6-c5f0-4087-b3b3-7989cde9a0ba",
+                  "payment_order_reference": {
+                    "resource_type": "payment_order_outcomes.list-resu",
+                    "resource_id": "098248d1-e4e4-4699-baf0-63690cfe3f48"
+                  },
+                  "revision_id": "ffcf0e68-2075-4102-a05b-e500ccaecf07",
+                  "bank_outcome_state": "not_observed",
+                  "transfer_outcome_count": 1,
+                  "observed_at": "2040-01-02T03:04:05.000Z"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "47478459-41f6-4d0a-96b8-43efdd6252de",
+                "next_cursor": "mock.cursor.payment_order_outcomes.list.page-2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.list.invalid_request",
+          "operationId": "payment_order_outcomes.list",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.list-inva",
+                    "resource_id": "259f5bd6-b621-46f4-941e-b3f09467c9f2"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.list"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.list.unauthorized",
+          "operationId": "payment_order_outcomes.list",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.list-unau",
+                    "resource_id": "c876ec81-a6ba-44af-b9a8-6b134256e34f"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.list"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.list.retryable",
+          "operationId": "payment_order_outcomes.list",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.list-retr",
+                    "resource_id": "a89bce67-1f12-41bd-9429-4b1963b20bb3"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.list"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_order_outcomes.list.stale_cursor",
+          "operationId": "payment_order_outcomes.list",
+          "scenario": "stale_cursor",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_CURSOR",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
+                  "retryable": false,
+                  "field_path": "cursor"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_order_outcomes.list-stal",
+                    "resource_id": "95ab7e74-c129-4d6a-be89-fe420217b9a6"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_order_outcomes.list"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payment_orders.append_transfers",
+      "version": 1,
+      "contractDigest": "sha256:6b9cd39e3f7e11cdf13c229fff00cd678fa3cf1d9859a3cd97d4b6089e18cdf6",
+      "eventClosureDigest": "sha256:4540ca517a7d85830b68bac85eab18ead89ebd0a1238ab6d7260f89afad9564b",
+      "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payment-orders:append-transfers",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            409,
+            410,
+            412,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_orders.append_transfers",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-orders append-transfers",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_orders_append_transfers",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_orders-append_transfers",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_orders.append_transfers.success",
+          "operationId": "payment_orders.append_transfers",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+          "input": {
+            "payment_order_id": "3828a099-06f5-4327-b170-32ead7385197",
+            "transfers": [
+              {
+                "money": {
+                  "amount": "1",
+                  "currency": "EUR"
+                },
+                "creditor": {
+                  "name": "payment_orders.append_transfers-",
+                  "identifiers": []
+                },
+                "creditor_account": {
+                  "account_type": "iban",
+                  "iban": "payment_orders.append_transfers-"
+                },
+                "options": []
+              }
+            ]
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "c6fa1c38-7513-4442-957e-ae38b4ff9def",
+                "operation_id": "payment_orders.append_transfers",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "7b547bfe-840f-4103-b72d-49a97b950398",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "applied",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_reference": {
+                "resource_type": "payment_orders.append_transfers-",
+                "resource_id": "a722ecaf-f7d9-4d12-addb-c396032ff608"
+              },
+              "revision_id": "e52643bc-e564-485a-afcf-8044c4a3d11b",
+              "revision_digest": "payment_orders.append_transfers-",
+              "resource_version": "1",
+              "payment_transfer_ids": [
+                "13c8a19b-889a-432f-8231-9ef7c569b489"
+              ],
+              "currency_totals": [
+                {
+                  "currency": "EUR",
+                  "amount": "1",
+                  "transfer_count": 1
+                }
+              ],
+              "workflow_state": "draft",
+              "validation_outcome": "not_evaluated",
+              "approval_state": "not_required",
+              "required_actions": [
+                {
+                  "action_type": "human_review",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.append_transfers-",
+                    "resource_id": "4f92b4ec-c2b7-4169-8864-4244f85f516f"
+                  },
+                  "reason_code": "payment_orders.append_transfers-"
+                }
+              ],
+              "issues": [
+                {
+                  "issue_code": "payment_orders.append_transfers-",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_orders.append_transfers-",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.append_transfers.invalid_request",
+          "operationId": "payment_orders.append_transfers",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.append_transfers-",
+                    "resource_id": "4ff64c77-1c8a-4106-b8dc-4b29b78a627e"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.append_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.append_transfers.unauthorized",
+          "operationId": "payment_orders.append_transfers",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "3828a099-06f5-4327-b170-32ead7385197",
+            "transfers": [
+              {
+                "money": {
+                  "amount": "1",
+                  "currency": "EUR"
+                },
+                "creditor": {
+                  "name": "payment_orders.append_transfers-",
+                  "identifiers": []
+                },
+                "creditor_account": {
+                  "account_type": "iban",
+                  "iban": "payment_orders.append_transfers-"
+                },
+                "options": []
+              }
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.append_transfers-",
+                    "resource_id": "14c383d6-e8ee-4ab7-b842-cafb82cccf24"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.append_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.append_transfers.retryable",
+          "operationId": "payment_orders.append_transfers",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "3828a099-06f5-4327-b170-32ead7385197",
+            "transfers": [
+              {
+                "money": {
+                  "amount": "1",
+                  "currency": "EUR"
+                },
+                "creditor": {
+                  "name": "payment_orders.append_transfers-",
+                  "identifiers": []
+                },
+                "creditor_account": {
+                  "account_type": "iban",
+                  "iban": "payment_orders.append_transfers-"
+                },
+                "options": []
+              }
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.append_transfers-",
+                    "resource_id": "622af0fa-f844-4dbd-948b-d1a6050a7eb7"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.append_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.append_transfers.idempotency_replay",
+          "operationId": "payment_orders.append_transfers",
+          "scenario": "idempotency_replay",
+          "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+          "input": {
+            "payment_order_id": "3828a099-06f5-4327-b170-32ead7385197",
+            "transfers": [
+              {
+                "money": {
+                  "amount": "1",
+                  "currency": "EUR"
+                },
+                "creditor": {
+                  "name": "payment_orders.append_transfers-",
+                  "identifiers": []
+                },
+                "creditor_account": {
+                  "account_type": "iban",
+                  "iban": "payment_orders.append_transfers-"
+                },
+                "options": []
+              }
+            ]
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "c6fa1c38-7513-4442-957e-ae38b4ff9def",
+                "operation_id": "payment_orders.append_transfers",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "7b547bfe-840f-4103-b72d-49a97b950398",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "replayed",
+                  "original_request_id": "19724a43-8d35-42c6-aebc-f66a63a8bd20",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_reference": {
+                "resource_type": "payment_orders.append_transfers-",
+                "resource_id": "a722ecaf-f7d9-4d12-addb-c396032ff608"
+              },
+              "revision_id": "e52643bc-e564-485a-afcf-8044c4a3d11b",
+              "revision_digest": "payment_orders.append_transfers-",
+              "resource_version": "1",
+              "payment_transfer_ids": [
+                "13c8a19b-889a-432f-8231-9ef7c569b489"
+              ],
+              "currency_totals": [
+                {
+                  "currency": "EUR",
+                  "amount": "1",
+                  "transfer_count": 1
+                }
+              ],
+              "workflow_state": "draft",
+              "validation_outcome": "not_evaluated",
+              "approval_state": "not_required",
+              "required_actions": [
+                {
+                  "action_type": "human_review",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.append_transfers-",
+                    "resource_id": "4f92b4ec-c2b7-4169-8864-4244f85f516f"
+                  },
+                  "reason_code": "payment_orders.append_transfers-"
+                }
+              ],
+              "issues": [
+                {
+                  "issue_code": "payment_orders.append_transfers-",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_orders.append_transfers-",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.append_transfers.idempotency_in_progress",
+          "operationId": "payment_orders.append_transfers",
+          "scenario": "idempotency_in_progress",
+          "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "3828a099-06f5-4327-b170-32ead7385197",
+            "transfers": [
+              {
+                "money": {
+                  "amount": "1",
+                  "currency": "EUR"
+                },
+                "creditor": {
+                  "name": "payment_orders.append_transfers-",
+                  "identifiers": []
+                },
+                "creditor_account": {
+                  "account_type": "iban",
+                  "iban": "payment_orders.append_transfers-"
+                },
+                "options": []
+              }
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_IN_PROGRESS",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The original synthetic command is still in progress.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.append_transfers-",
+                    "resource_id": "d060bb74-00e0-4ef4-bd14-5aeb1c5df9ce"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.append_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.append_transfers.idempotency_mismatch",
+          "operationId": "payment_orders.append_transfers",
+          "scenario": "idempotency_mismatch",
+          "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "3828a099-06f5-4327-b170-32ead7385197",
+            "transfers": [
+              {
+                "money": {
+                  "amount": "1",
+                  "currency": "EUR"
+                },
+                "creditor": {
+                  "name": "payment_orders.append_transfers-",
+                  "identifiers": []
+                },
+                "creditor_account": {
+                  "account_type": "iban",
+                  "iban": "payment_orders.append_transfers-"
+                },
+                "options": []
+              }
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_MISMATCH",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The idempotency key was previously used with different normalized input.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.append_transfers-",
+                    "resource_id": "8e5959e0-60e6-4251-a307-7797d3d6e76a"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.append_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.append_transfers.idempotency_expired",
+          "operationId": "payment_orders.append_transfers",
+          "scenario": "idempotency_expired",
+          "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "3828a099-06f5-4327-b170-32ead7385197",
+            "transfers": [
+              {
+                "money": {
+                  "amount": "1",
+                  "currency": "EUR"
+                },
+                "creditor": {
+                  "name": "payment_orders.append_transfers-",
+                  "identifiers": []
+                },
+                "creditor_account": {
+                  "account_type": "iban",
+                  "iban": "payment_orders.append_transfers-"
+                },
+                "options": []
+              }
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 410,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_EXPIRED",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The synthetic idempotency retention window has expired.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.append_transfers-",
+                    "resource_id": "5e02f034-a259-49ad-8191-5a3c2c50be13"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.append_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.append_transfers.stale_version",
+          "operationId": "payment_orders.append_transfers",
+          "scenario": "stale_version",
+          "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "3828a099-06f5-4327-b170-32ead7385197",
+            "transfers": [
+              {
+                "money": {
+                  "amount": "1",
+                  "currency": "EUR"
+                },
+                "creditor": {
+                  "name": "payment_orders.append_transfers-",
+                  "identifiers": []
+                },
+                "creditor_account": {
+                  "account_type": "iban",
+                  "iban": "payment_orders.append_transfers-"
+                },
+                "options": []
+              }
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 412,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_RESOURCE_VERSION",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The expected synthetic resource version does not match.",
+                  "retryable": false,
+                  "field_path": "expected_resource_version"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.append_transfers-",
+                    "resource_id": "baa3c85d-9dd8-40a0-b418-15f9e2838780"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.append_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "operationId": "payment_orders.cancel_draft",
       "version": 1,
       "contractDigest": "sha256:14976041ee01abe2f7ba0a9b2294f5294976f9b497d8a43598d63a75345314ed",
@@ -5808,6 +9081,479 @@
                   "next_operations": [
                     {
                       "operation_id": "payment_orders.cancel_draft"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payment_orders.correct",
+      "version": 1,
+      "contractDigest": "sha256:4b88a7d1738a796f51f8eb4f5297f2bc33d5a59a4f757931d179bdff2bfcd10e",
+      "eventClosureDigest": "sha256:c9c45f6daa59252d365881ae4c7852e7d8f2f5d5221dd7d4e3f9f0230fd5b01e",
+      "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payment-orders:correct",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            409,
+            410,
+            412,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_orders.correct",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-orders correct",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_orders_correct",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_orders-correct",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_orders.correct.success",
+          "operationId": "payment_orders.correct",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+          "input": {
+            "payment_order_id": "30f9b143-8c41-4fd9-b27b-5408a19757ef"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "dd3c60e1-1e20-4632-a6b9-d707781befc4",
+                "operation_id": "payment_orders.correct",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "66c1d34a-899d-41e2-a4c4-15819b35cb63",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "applied",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_reference": {
+                "resource_type": "payment_orders.correct-result-pa",
+                "resource_id": "e307684a-04af-4b82-866d-07ae98fdaa1c"
+              },
+              "revision_id": "fadef49c-e774-4cde-8c69-47eebd341f04",
+              "revision_digest": "payment_orders.correct-result-re",
+              "resource_version": "1",
+              "payment_transfer_ids": [
+                "1dd5c0a1-7374-47a6-ae14-8cf0d3862111"
+              ],
+              "currency_totals": [
+                {
+                  "currency": "EUR",
+                  "amount": "1",
+                  "transfer_count": 1
+                }
+              ],
+              "workflow_state": "draft",
+              "validation_outcome": "not_evaluated",
+              "approval_state": "not_required",
+              "required_actions": [
+                {
+                  "action_type": "human_review",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.correct-result-re",
+                    "resource_id": "88bdbbda-0b5f-4fc5-a3f1-114e8131c10c"
+                  },
+                  "reason_code": "payment_orders.correct-result-re"
+                }
+              ],
+              "issues": [
+                {
+                  "issue_code": "payment_orders.correct-result-is",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_orders.correct-result-is",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.correct.invalid_request",
+          "operationId": "payment_orders.correct",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.correct-invalid_r",
+                    "resource_id": "344eb76d-bd99-4371-9a7d-fb8997b116b6"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.correct"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.correct.unauthorized",
+          "operationId": "payment_orders.correct",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "30f9b143-8c41-4fd9-b27b-5408a19757ef"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.correct-unauthori",
+                    "resource_id": "b1b5a41f-551b-4850-bf39-4291a3e1b011"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.correct"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.correct.retryable",
+          "operationId": "payment_orders.correct",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "30f9b143-8c41-4fd9-b27b-5408a19757ef"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.correct-retryable",
+                    "resource_id": "7f5c928a-61e8-444c-bddf-7de1071f5ee1"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.correct"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.correct.idempotency_replay",
+          "operationId": "payment_orders.correct",
+          "scenario": "idempotency_replay",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+          "input": {
+            "payment_order_id": "30f9b143-8c41-4fd9-b27b-5408a19757ef"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "dd3c60e1-1e20-4632-a6b9-d707781befc4",
+                "operation_id": "payment_orders.correct",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "66c1d34a-899d-41e2-a4c4-15819b35cb63",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "replayed",
+                  "original_request_id": "2ab032d2-14c4-4edc-9536-a01b365e2997",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_reference": {
+                "resource_type": "payment_orders.correct-result-pa",
+                "resource_id": "e307684a-04af-4b82-866d-07ae98fdaa1c"
+              },
+              "revision_id": "fadef49c-e774-4cde-8c69-47eebd341f04",
+              "revision_digest": "payment_orders.correct-result-re",
+              "resource_version": "1",
+              "payment_transfer_ids": [
+                "1dd5c0a1-7374-47a6-ae14-8cf0d3862111"
+              ],
+              "currency_totals": [
+                {
+                  "currency": "EUR",
+                  "amount": "1",
+                  "transfer_count": 1
+                }
+              ],
+              "workflow_state": "draft",
+              "validation_outcome": "not_evaluated",
+              "approval_state": "not_required",
+              "required_actions": [
+                {
+                  "action_type": "human_review",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.correct-result-re",
+                    "resource_id": "88bdbbda-0b5f-4fc5-a3f1-114e8131c10c"
+                  },
+                  "reason_code": "payment_orders.correct-result-re"
+                }
+              ],
+              "issues": [
+                {
+                  "issue_code": "payment_orders.correct-result-is",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_orders.correct-result-is",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.correct.idempotency_in_progress",
+          "operationId": "payment_orders.correct",
+          "scenario": "idempotency_in_progress",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "30f9b143-8c41-4fd9-b27b-5408a19757ef"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_IN_PROGRESS",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The original synthetic command is still in progress.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.correct-idempoten",
+                    "resource_id": "61bb22f2-e6fe-4abc-924a-a30d3d9c7c83"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.correct"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.correct.idempotency_mismatch",
+          "operationId": "payment_orders.correct",
+          "scenario": "idempotency_mismatch",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "30f9b143-8c41-4fd9-b27b-5408a19757ef"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_MISMATCH",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The idempotency key was previously used with different normalized input.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.correct-idempoten",
+                    "resource_id": "8a1a3744-013e-468d-8d58-9b5534d26cd2"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.correct"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.correct.idempotency_expired",
+          "operationId": "payment_orders.correct",
+          "scenario": "idempotency_expired",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "30f9b143-8c41-4fd9-b27b-5408a19757ef"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 410,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_EXPIRED",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The synthetic idempotency retention window has expired.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.correct-idempoten",
+                    "resource_id": "041f2a12-2e07-4d99-b3d1-649f187e1b07"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.correct"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.correct.stale_version",
+          "operationId": "payment_orders.correct",
+          "scenario": "stale_version",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "30f9b143-8c41-4fd9-b27b-5408a19757ef"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 412,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_RESOURCE_VERSION",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The expected synthetic resource version does not match.",
+                  "retryable": false,
+                  "field_path": "expected_resource_version"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.correct-stale_ver",
+                    "resource_id": "ae57d4fc-c306-4c9d-a5c8-a15ab2886a18"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.correct"
                     }
                   ]
                 }
@@ -6301,8 +10047,8 @@
     {
       "operationId": "payment_orders.execute",
       "version": 1,
-      "contractDigest": "sha256:2ffdb320acc24b98d352b0b3554335d305d1d786eafa802e8333d5f0ea3890c2",
-      "eventClosureDigest": "sha256:344b6299770ff5b726562a8938221e91520c102db5dac3355a1b6f7243201d38",
+      "contractDigest": "sha256:ac6a4e5f6998e141f7303ab9e3d2047c39cc4bce801df6a3ba63da991770b96c",
+      "eventClosureDigest": "sha256:8f56a34849dfba3d6c9308bf5b0dcb7acd32c910de9936fe99f4ce6f894d532e",
       "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderExecuteResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -6386,6 +10132,34 @@
                 },
                 "state": "queued",
                 "cancellation_boundary": "preventable"
+              },
+              "fulfillment": {
+                "fulfillment_id": "4a6b6ffd-e303-4d8d-8966-82135da319ac",
+                "attempt": {
+                  "attempt_type": "payment_orders.execute-result-fu",
+                  "attempt_id": "491cf6d0-bbee-4ec8-838a-e4c7b541968a",
+                  "attempt_ordinal": 1
+                },
+                "state": "awaiting_claim",
+                "artifact": {
+                  "payment_export_id": "426300e6-67bb-4bd3-b20f-8139e22d6506",
+                  "release_id": "2ae469f3-0304-4a9f-92a3-914de4ede625",
+                  "artifact_id": "8190a8fe-682c-4f09-a25a-f41aebf57c71",
+                  "artifact_digest": "payment_orders.execute-result-fu",
+                  "artifact_byte_length": "1",
+                  "artifact_media_type": "payment_orders.execute-result-fu"
+                },
+                "connector": {
+                  "connector_id": "5c9836a4-688c-40df-b2a9-b82dfb36877b",
+                  "connector_configuration_revision": "1",
+                  "connector_configuration_digest": "payment_orders.execute-result-fu",
+                  "connector_type_id": "payment_orders.execute-result-fu",
+                  "plugin_version": "payment_orders.execute-result-fu",
+                  "package_digest": "payment_orders.execute-result-fu",
+                  "manifest_digest": "payment_orders.execute-result-fu"
+                },
+                "created_at": "2040-01-02T03:04:05.000Z",
+                "claim_expires_at": "2040-01-02T03:04:05.000Z"
               },
               "workflow_state": "draft",
               "required_actions": [
@@ -6579,6 +10353,34 @@
                 },
                 "state": "queued",
                 "cancellation_boundary": "preventable"
+              },
+              "fulfillment": {
+                "fulfillment_id": "4a6b6ffd-e303-4d8d-8966-82135da319ac",
+                "attempt": {
+                  "attempt_type": "payment_orders.execute-result-fu",
+                  "attempt_id": "491cf6d0-bbee-4ec8-838a-e4c7b541968a",
+                  "attempt_ordinal": 1
+                },
+                "state": "awaiting_claim",
+                "artifact": {
+                  "payment_export_id": "426300e6-67bb-4bd3-b20f-8139e22d6506",
+                  "release_id": "2ae469f3-0304-4a9f-92a3-914de4ede625",
+                  "artifact_id": "8190a8fe-682c-4f09-a25a-f41aebf57c71",
+                  "artifact_digest": "payment_orders.execute-result-fu",
+                  "artifact_byte_length": "1",
+                  "artifact_media_type": "payment_orders.execute-result-fu"
+                },
+                "connector": {
+                  "connector_id": "5c9836a4-688c-40df-b2a9-b82dfb36877b",
+                  "connector_configuration_revision": "1",
+                  "connector_configuration_digest": "payment_orders.execute-result-fu",
+                  "connector_type_id": "payment_orders.execute-result-fu",
+                  "plugin_version": "payment_orders.execute-result-fu",
+                  "package_digest": "payment_orders.execute-result-fu",
+                  "manifest_digest": "payment_orders.execute-result-fu"
+                },
+                "created_at": "2040-01-02T03:04:05.000Z",
+                "claim_expires_at": "2040-01-02T03:04:05.000Z"
               },
               "workflow_state": "draft",
               "required_actions": [
@@ -8224,6 +12026,503 @@
       ]
     },
     {
+      "operationId": "payment_orders.remove_transfers",
+      "version": 1,
+      "contractDigest": "sha256:9e6e2ca12abbc6e09b6274cc359cdff9c9b856ffaa0de7393d25ba860f4d716b",
+      "eventClosureDigest": "sha256:1dc09408a02203dc8a960e9ad4450653187d20d5cb813bcfd6e09cc034e43d8c",
+      "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payment-orders:remove-transfers",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            409,
+            410,
+            412,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_orders.remove_transfers",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-orders remove-transfers",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_orders_remove_transfers",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_orders-remove_transfers",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_orders.remove_transfers.success",
+          "operationId": "payment_orders.remove_transfers",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+          "input": {
+            "payment_order_id": "cd5c6d0f-08c8-4d3c-8efa-f2aecff645f0",
+            "payment_transfer_ids": [
+              "da6254a3-7a9c-4dac-b291-17d4a3d38467"
+            ]
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "9abe747f-4dd7-44d2-bf50-580e6d4fb826",
+                "operation_id": "payment_orders.remove_transfers",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "7b8a89a3-8cd5-4c00-886b-61ddffde78b6",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "applied",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_reference": {
+                "resource_type": "payment_orders.remove_transfers-",
+                "resource_id": "4e21b967-2c98-4354-9e06-a4bd023ef0e7"
+              },
+              "revision_id": "622476e9-986d-4e2d-a8ac-e2b59b77ab80",
+              "revision_digest": "payment_orders.remove_transfers-",
+              "resource_version": "1",
+              "payment_transfer_ids": [
+                "81c813f1-f7cd-4414-89da-358b38eb342f"
+              ],
+              "currency_totals": [
+                {
+                  "currency": "EUR",
+                  "amount": "1",
+                  "transfer_count": 1
+                }
+              ],
+              "workflow_state": "draft",
+              "validation_outcome": "not_evaluated",
+              "approval_state": "not_required",
+              "required_actions": [
+                {
+                  "action_type": "human_review",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.remove_transfers-",
+                    "resource_id": "a415c6fc-0d21-474b-8cfa-543c9d0cdde4"
+                  },
+                  "reason_code": "payment_orders.remove_transfers-"
+                }
+              ],
+              "issues": [
+                {
+                  "issue_code": "payment_orders.remove_transfers-",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_orders.remove_transfers-",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.remove_transfers.invalid_request",
+          "operationId": "payment_orders.remove_transfers",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.remove_transfers-",
+                    "resource_id": "37707e97-d91e-4e8e-ad34-56e5eb45fe99"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.remove_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.remove_transfers.unauthorized",
+          "operationId": "payment_orders.remove_transfers",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "cd5c6d0f-08c8-4d3c-8efa-f2aecff645f0",
+            "payment_transfer_ids": [
+              "da6254a3-7a9c-4dac-b291-17d4a3d38467"
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.remove_transfers-",
+                    "resource_id": "efe7cc1c-8e7b-4f10-b713-631fbee7cc0a"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.remove_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.remove_transfers.retryable",
+          "operationId": "payment_orders.remove_transfers",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "cd5c6d0f-08c8-4d3c-8efa-f2aecff645f0",
+            "payment_transfer_ids": [
+              "da6254a3-7a9c-4dac-b291-17d4a3d38467"
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.remove_transfers-",
+                    "resource_id": "09006435-af84-47a8-8c32-8dc9b649078e"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.remove_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.remove_transfers.idempotency_replay",
+          "operationId": "payment_orders.remove_transfers",
+          "scenario": "idempotency_replay",
+          "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+          "input": {
+            "payment_order_id": "cd5c6d0f-08c8-4d3c-8efa-f2aecff645f0",
+            "payment_transfer_ids": [
+              "da6254a3-7a9c-4dac-b291-17d4a3d38467"
+            ]
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "9abe747f-4dd7-44d2-bf50-580e6d4fb826",
+                "operation_id": "payment_orders.remove_transfers",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "7b8a89a3-8cd5-4c00-886b-61ddffde78b6",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "replayed",
+                  "original_request_id": "edbe00ab-331b-4ef3-9c25-aa0e829f18ca",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_reference": {
+                "resource_type": "payment_orders.remove_transfers-",
+                "resource_id": "4e21b967-2c98-4354-9e06-a4bd023ef0e7"
+              },
+              "revision_id": "622476e9-986d-4e2d-a8ac-e2b59b77ab80",
+              "revision_digest": "payment_orders.remove_transfers-",
+              "resource_version": "1",
+              "payment_transfer_ids": [
+                "81c813f1-f7cd-4414-89da-358b38eb342f"
+              ],
+              "currency_totals": [
+                {
+                  "currency": "EUR",
+                  "amount": "1",
+                  "transfer_count": 1
+                }
+              ],
+              "workflow_state": "draft",
+              "validation_outcome": "not_evaluated",
+              "approval_state": "not_required",
+              "required_actions": [
+                {
+                  "action_type": "human_review",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.remove_transfers-",
+                    "resource_id": "a415c6fc-0d21-474b-8cfa-543c9d0cdde4"
+                  },
+                  "reason_code": "payment_orders.remove_transfers-"
+                }
+              ],
+              "issues": [
+                {
+                  "issue_code": "payment_orders.remove_transfers-",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_orders.remove_transfers-",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.remove_transfers.idempotency_in_progress",
+          "operationId": "payment_orders.remove_transfers",
+          "scenario": "idempotency_in_progress",
+          "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "cd5c6d0f-08c8-4d3c-8efa-f2aecff645f0",
+            "payment_transfer_ids": [
+              "da6254a3-7a9c-4dac-b291-17d4a3d38467"
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_IN_PROGRESS",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The original synthetic command is still in progress.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.remove_transfers-",
+                    "resource_id": "486099c6-6f20-4124-b3c7-1a062b1a2341"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.remove_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.remove_transfers.idempotency_mismatch",
+          "operationId": "payment_orders.remove_transfers",
+          "scenario": "idempotency_mismatch",
+          "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "cd5c6d0f-08c8-4d3c-8efa-f2aecff645f0",
+            "payment_transfer_ids": [
+              "da6254a3-7a9c-4dac-b291-17d4a3d38467"
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_MISMATCH",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The idempotency key was previously used with different normalized input.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.remove_transfers-",
+                    "resource_id": "07b1ce45-590c-4ed0-99d0-9469a18087e9"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.remove_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.remove_transfers.idempotency_expired",
+          "operationId": "payment_orders.remove_transfers",
+          "scenario": "idempotency_expired",
+          "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "cd5c6d0f-08c8-4d3c-8efa-f2aecff645f0",
+            "payment_transfer_ids": [
+              "da6254a3-7a9c-4dac-b291-17d4a3d38467"
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 410,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_EXPIRED",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The synthetic idempotency retention window has expired.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.remove_transfers-",
+                    "resource_id": "c1c9c17c-876a-48d6-aaa0-b0f1893d16ee"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.remove_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.remove_transfers.stale_version",
+          "operationId": "payment_orders.remove_transfers",
+          "scenario": "stale_version",
+          "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "cd5c6d0f-08c8-4d3c-8efa-f2aecff645f0",
+            "payment_transfer_ids": [
+              "da6254a3-7a9c-4dac-b291-17d4a3d38467"
+            ]
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 412,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_RESOURCE_VERSION",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The expected synthetic resource version does not match.",
+                  "retryable": false,
+                  "field_path": "expected_resource_version"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.remove_transfers-",
+                    "resource_id": "dab26163-946d-4edc-8e98-baf6d7e6f52e"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.remove_transfers"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "operationId": "payment_orders.revise_draft",
       "version": 1,
       "contractDigest": "sha256:4f4f717f9a34ba59e99d070b02f9ccc589ea96d85c17ce3b1e037baa823112eb",
@@ -8767,6 +13066,607 @@
                   "next_operations": [
                     {
                       "operation_id": "payment_orders.revise_draft"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payment_orders.revise_transfer",
+      "version": 1,
+      "contractDigest": "sha256:2577dd0e163120a35f7506125b767b048b210d18c372237ce1e9237c5bf35638",
+      "eventClosureDigest": "sha256:85d5417880d23c6c6d7acb43ea73dcc162ac66224b6bb70a5baa91b49ae87b1f",
+      "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payment-orders:revise-transfer",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            409,
+            410,
+            412,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_orders.revise_transfer",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-orders revise-transfer",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_orders_revise_transfer",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_orders-revise_transfer",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_orders.revise_transfer.success",
+          "operationId": "payment_orders.revise_transfer",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+          "input": {
+            "payment_order_id": "91f3d1f1-54e9-402a-bd18-1a21e6f00af1",
+            "payment_transfer_id": "774b8798-02e2-44d0-9ca2-8bc3154a816b",
+            "transfer": {
+              "money": {
+                "amount": "1",
+                "currency": "EUR"
+              },
+              "creditor": {
+                "name": "payment_orders.revise_transfer-i",
+                "identifiers": []
+              },
+              "creditor_account": {
+                "account_type": "iban",
+                "iban": "payment_orders.revise_transfer-i"
+              },
+              "options": []
+            }
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "41f8f0fc-95fa-464e-a5ea-a8e0a5638a85",
+                "operation_id": "payment_orders.revise_transfer",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "aead3ccf-a9e7-4b58-a65f-3577f5740d39",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "applied",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_reference": {
+                "resource_type": "payment_orders.revise_transfer-r",
+                "resource_id": "edfb4ba5-cddf-407c-897f-304e98fdaa12"
+              },
+              "revision_id": "64171bf4-ba25-46fe-8ab9-d507cb7f249b",
+              "revision_digest": "payment_orders.revise_transfer-r",
+              "resource_version": "1",
+              "payment_transfer_ids": [
+                "65e04b48-9f45-45f3-8ecb-40d193ce55bf"
+              ],
+              "currency_totals": [
+                {
+                  "currency": "EUR",
+                  "amount": "1",
+                  "transfer_count": 1
+                }
+              ],
+              "workflow_state": "draft",
+              "validation_outcome": "not_evaluated",
+              "approval_state": "not_required",
+              "required_actions": [
+                {
+                  "action_type": "human_review",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.revise_transfer-r",
+                    "resource_id": "2159fec2-a406-45cc-b7f2-2c8f0187b8d7"
+                  },
+                  "reason_code": "payment_orders.revise_transfer-r"
+                }
+              ],
+              "issues": [
+                {
+                  "issue_code": "payment_orders.revise_transfer-r",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_orders.revise_transfer-r",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.revise_transfer.invalid_request",
+          "operationId": "payment_orders.revise_transfer",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.revise_transfer-i",
+                    "resource_id": "3f997053-681e-4162-bcc1-968f944cc74a"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.revise_transfer"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.revise_transfer.unauthorized",
+          "operationId": "payment_orders.revise_transfer",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "91f3d1f1-54e9-402a-bd18-1a21e6f00af1",
+            "payment_transfer_id": "774b8798-02e2-44d0-9ca2-8bc3154a816b",
+            "transfer": {
+              "money": {
+                "amount": "1",
+                "currency": "EUR"
+              },
+              "creditor": {
+                "name": "payment_orders.revise_transfer-i",
+                "identifiers": []
+              },
+              "creditor_account": {
+                "account_type": "iban",
+                "iban": "payment_orders.revise_transfer-i"
+              },
+              "options": []
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.revise_transfer-u",
+                    "resource_id": "012d624e-9a86-42ed-a7e1-549df2f28cf7"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.revise_transfer"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.revise_transfer.retryable",
+          "operationId": "payment_orders.revise_transfer",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "91f3d1f1-54e9-402a-bd18-1a21e6f00af1",
+            "payment_transfer_id": "774b8798-02e2-44d0-9ca2-8bc3154a816b",
+            "transfer": {
+              "money": {
+                "amount": "1",
+                "currency": "EUR"
+              },
+              "creditor": {
+                "name": "payment_orders.revise_transfer-i",
+                "identifiers": []
+              },
+              "creditor_account": {
+                "account_type": "iban",
+                "iban": "payment_orders.revise_transfer-i"
+              },
+              "options": []
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.revise_transfer-r",
+                    "resource_id": "c8b2970d-a0fb-4574-9169-05a78d8743eb"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.revise_transfer"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.revise_transfer.idempotency_replay",
+          "operationId": "payment_orders.revise_transfer",
+          "scenario": "idempotency_replay",
+          "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
+          "input": {
+            "payment_order_id": "91f3d1f1-54e9-402a-bd18-1a21e6f00af1",
+            "payment_transfer_id": "774b8798-02e2-44d0-9ca2-8bc3154a816b",
+            "transfer": {
+              "money": {
+                "amount": "1",
+                "currency": "EUR"
+              },
+              "creditor": {
+                "name": "payment_orders.revise_transfer-i",
+                "identifiers": []
+              },
+              "creditor_account": {
+                "account_type": "iban",
+                "iban": "payment_orders.revise_transfer-i"
+              },
+              "options": []
+            }
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "41f8f0fc-95fa-464e-a5ea-a8e0a5638a85",
+                "operation_id": "payment_orders.revise_transfer",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "aead3ccf-a9e7-4b58-a65f-3577f5740d39",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "replayed",
+                  "original_request_id": "03dfd3c3-24a2-43ad-8a41-8c43950cd877",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "payment_order_reference": {
+                "resource_type": "payment_orders.revise_transfer-r",
+                "resource_id": "edfb4ba5-cddf-407c-897f-304e98fdaa12"
+              },
+              "revision_id": "64171bf4-ba25-46fe-8ab9-d507cb7f249b",
+              "revision_digest": "payment_orders.revise_transfer-r",
+              "resource_version": "1",
+              "payment_transfer_ids": [
+                "65e04b48-9f45-45f3-8ecb-40d193ce55bf"
+              ],
+              "currency_totals": [
+                {
+                  "currency": "EUR",
+                  "amount": "1",
+                  "transfer_count": 1
+                }
+              ],
+              "workflow_state": "draft",
+              "validation_outcome": "not_evaluated",
+              "approval_state": "not_required",
+              "required_actions": [
+                {
+                  "action_type": "human_review",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.revise_transfer-r",
+                    "resource_id": "2159fec2-a406-45cc-b7f2-2c8f0187b8d7"
+                  },
+                  "reason_code": "payment_orders.revise_transfer-r"
+                }
+              ],
+              "issues": [
+                {
+                  "issue_code": "payment_orders.revise_transfer-r",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "payment_orders.revise_transfer-r",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.revise_transfer.idempotency_in_progress",
+          "operationId": "payment_orders.revise_transfer",
+          "scenario": "idempotency_in_progress",
+          "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "91f3d1f1-54e9-402a-bd18-1a21e6f00af1",
+            "payment_transfer_id": "774b8798-02e2-44d0-9ca2-8bc3154a816b",
+            "transfer": {
+              "money": {
+                "amount": "1",
+                "currency": "EUR"
+              },
+              "creditor": {
+                "name": "payment_orders.revise_transfer-i",
+                "identifiers": []
+              },
+              "creditor_account": {
+                "account_type": "iban",
+                "iban": "payment_orders.revise_transfer-i"
+              },
+              "options": []
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_IN_PROGRESS",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The original synthetic command is still in progress.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.revise_transfer-i",
+                    "resource_id": "282240c2-bc44-4eca-b7b0-a353b1926e86"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.revise_transfer"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.revise_transfer.idempotency_mismatch",
+          "operationId": "payment_orders.revise_transfer",
+          "scenario": "idempotency_mismatch",
+          "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "91f3d1f1-54e9-402a-bd18-1a21e6f00af1",
+            "payment_transfer_id": "774b8798-02e2-44d0-9ca2-8bc3154a816b",
+            "transfer": {
+              "money": {
+                "amount": "1",
+                "currency": "EUR"
+              },
+              "creditor": {
+                "name": "payment_orders.revise_transfer-i",
+                "identifiers": []
+              },
+              "creditor_account": {
+                "account_type": "iban",
+                "iban": "payment_orders.revise_transfer-i"
+              },
+              "options": []
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_MISMATCH",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The idempotency key was previously used with different normalized input.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.revise_transfer-i",
+                    "resource_id": "4c410d74-5ba4-44e9-b4b8-6422e7cba694"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.revise_transfer"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.revise_transfer.idempotency_expired",
+          "operationId": "payment_orders.revise_transfer",
+          "scenario": "idempotency_expired",
+          "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "91f3d1f1-54e9-402a-bd18-1a21e6f00af1",
+            "payment_transfer_id": "774b8798-02e2-44d0-9ca2-8bc3154a816b",
+            "transfer": {
+              "money": {
+                "amount": "1",
+                "currency": "EUR"
+              },
+              "creditor": {
+                "name": "payment_orders.revise_transfer-i",
+                "identifiers": []
+              },
+              "creditor_account": {
+                "account_type": "iban",
+                "iban": "payment_orders.revise_transfer-i"
+              },
+              "options": []
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 410,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_EXPIRED",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The synthetic idempotency retention window has expired.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.revise_transfer-i",
+                    "resource_id": "5e9fb0b0-e85b-4101-bc8b-b4c7a402969a"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.revise_transfer"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_orders.revise_transfer.stale_version",
+          "operationId": "payment_orders.revise_transfer",
+          "scenario": "stale_version",
+          "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "payment_order_id": "91f3d1f1-54e9-402a-bd18-1a21e6f00af1",
+            "payment_transfer_id": "774b8798-02e2-44d0-9ca2-8bc3154a816b",
+            "transfer": {
+              "money": {
+                "amount": "1",
+                "currency": "EUR"
+              },
+              "creditor": {
+                "name": "payment_orders.revise_transfer-i",
+                "identifiers": []
+              },
+              "creditor_account": {
+                "account_type": "iban",
+                "iban": "payment_orders.revise_transfer-i"
+              },
+              "options": []
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 412,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_RESOURCE_VERSION",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The expected synthetic resource version does not match.",
+                  "retryable": false,
+                  "field_path": "expected_resource_version"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_orders.revise_transfer-s",
+                    "resource_id": "7c6aaa63-f564-4457-8f42-842c777a1d86"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_orders.revise_transfer"
                     }
                   ]
                 }

@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "2e782970f64bb2b6b1b534bbe653b1518d80d73c",
-    "processingClientSha256": "ccbdeea3e28c7df5873d7c13d0c29cf91a79037b8975dd15b6c92392cdd2dacf",
-    "processingOpenApiSha256": "b4b7015a55a394016c8eeba63439a79a57f3c7b1c39096c486ccd768f28da3b1",
-    "processingMockSha256": "b8eb77d0a14f9ee51ad059c88355db0c5fb120ba6d39cacd510ec746cae332a3"
+    "revision": "00a7c7abed377d6a476d1561246747088a5d2c86",
+    "processingClientSha256": "12d9f266638035ceeec34060868eb864e8e5247c697cb025128ebaa166fea072",
+    "processingOpenApiSha256": "e06844d0c7d3eaefe182e54ce6c8ec057610362502b40edea625210591f3ac01",
+    "processingMockSha256": "a8edacc3ee988d625073322ca829a53cb23116248a4984d11e96404dbbda1f64"
   },
   "generated": {
     "path": "src/generated/iso20022-contracts.ts",
-    "sha256": "7e614025f5e558a2a1cb5406a375188b838368e9cb83a036c0a292eb4e30a74f",
+    "sha256": "5c22fdd69571da4d8c7792f7a1c30776153ef526a0f502d6df41df4d89c23c46",
     "operationIds": [
       "balances.explain",
       "balances.get",
@@ -22,6 +22,11 @@
       "payment_capabilities.get",
       "payment_capabilities.list",
       "payment_capabilities.resolve",
+      "payment_execution_attempts.explain",
+      "payment_execution_attempts.get",
+      "payment_execution_attempts.list",
+      "payment_execution_fulfillments.claim",
+      "payment_execution_observations.report",
       "payment_export_profile_catalog.list",
       "payment_export_profiles.configure",
       "payment_export_profiles.get",
@@ -29,14 +34,21 @@
       "payment_exports.download_content",
       "payment_exports.get",
       "payment_exports.release",
+      "payment_order_outcomes.explain",
+      "payment_order_outcomes.get",
+      "payment_order_outcomes.list",
+      "payment_orders.append_transfers",
       "payment_orders.cancel_draft",
+      "payment_orders.correct",
       "payment_orders.create_draft",
       "payment_orders.execute",
       "payment_orders.explain",
       "payment_orders.finalize_draft",
       "payment_orders.get",
       "payment_orders.list",
+      "payment_orders.remove_transfers",
       "payment_orders.revise_draft",
+      "payment_orders.revise_transfer",
       "payment_orders.simulate",
       "payment_orders.submit_for_review",
       "payment_orders.validate",
@@ -53,6 +65,6 @@
   },
   "generatedMock": {
     "path": "test-data/generated/iso20022-scenarios.json",
-    "sha256": "c63f27b98e6988ec884b88042c180918ebfd829e3c3eafabf5745a2990739b1c"
+    "sha256": "2a63f4176fd6d55df72ba69f34840d0b68c88d88070349f55c31c1a345ec8c27"
   }
 }

@@ -45,6 +45,7 @@ describe("experimental ISO 20022 client", () => {
     const resource = { resource_id: "00000000-0000-4000-8000-000000000001" };
     const paymentExportId = "00000000-0000-4000-8000-000000000002";
     const profileId = "00000000-0000-4000-8000-000000000003";
+    const claimId = "00000000-0000-4000-8000-000000000005";
     const contentAuthority = {
       artifact_id: "00000000-0000-4000-8000-000000000004",
       artifact_digest: `sha256:${"0".repeat(64)}`,
@@ -75,6 +76,21 @@ describe("experimental ISO 20022 client", () => {
         business_type: "credit_transfer",
         required_option_kinds: [],
       }),
+      client.paymentSubmissions.explain({ execution_attempt_id: resource.resource_id }),
+      client.paymentSubmissions.get({ execution_attempt_id: resource.resource_id }),
+      client.paymentSubmissions.list({ page: {} }),
+      client.paymentSubmissions.claim(
+        { execution_attempt_id: resource.resource_id },
+        { idempotencyKey: "synthetic-claim" },
+      ),
+      client.paymentSubmissions.reportUpload(
+        {
+          execution_attempt_id: resource.resource_id,
+          fulfillment_claim_id: claimId,
+          outcome: "indeterminate",
+        },
+        { idempotencyKey: "synthetic-report" },
+      ),
       client.paymentExportProfiles.list(),
       client.paymentExportProfiles.configure({} as never, { idempotencyKey: "synthetic-profile" }),
       client.paymentExportProfiles.get(),
@@ -82,7 +98,7 @@ describe("experimental ISO 20022 client", () => {
         { payment_export_profile_id: profileId, profile_revision: "1" },
         { idempotencyKey: "synthetic-revoke", expectedResourceVersion: '"1"' },
       ),
-      client.paymentExports.download({ payment_export_id: paymentExportId }, contentAuthority, {
+      client.paymentBatches.download({ payment_export_id: paymentExportId }, contentAuthority, {
         idempotencyKey: "synthetic-download",
       }),
       client.paymentExports.get({ payment_export_id: paymentExportId }),
@@ -90,32 +106,55 @@ describe("experimental ISO 20022 client", () => {
         { payment_export_id: paymentExportId, exact_approval_subject_digest: `sha256:${"1".repeat(64)}` },
         { idempotencyKey: "synthetic-release", expectedResourceVersion: '"1"' },
       ),
-      client.paymentOrders.cancelDraft(
+      client.paymentOutcomes.explain({ payment_order_outcome_id: resource.resource_id }),
+      client.paymentOutcomes.get({ payment_order_outcome_id: resource.resource_id }),
+      client.paymentOutcomes.list({ page: {} }),
+      client.paymentBatches.addPayments(
+        { payment_order_id: resource.resource_id, transfers: [] },
+        { idempotencyKey: "synthetic-add", expectedResourceVersion: '"1"' },
+      ),
+      client.paymentBatches.cancelDraft(
         { payment_order_id: resource.resource_id },
         { idempotencyKey: "synthetic-cancel", expectedResourceVersion: '"1"' },
       ),
-      client.paymentOrders.createDraft({} as never, { idempotencyKey: "synthetic-create" }),
-      client.paymentOrders.execute(
+      client.paymentBatches.createCorrection(
+        { payment_order_id: resource.resource_id },
+        { idempotencyKey: "synthetic-correct", expectedResourceVersion: '"1"' },
+      ),
+      client.paymentBatches.createDraft({} as never, { idempotencyKey: "synthetic-create" }),
+      client.paymentSubmissions.createAttempt(
         { payment_order_id: resource.resource_id },
         { idempotencyKey: "synthetic-execute", expectedResourceVersion: '"1"' },
       ),
-      client.paymentOrders.explain({ payment_order_id: resource.resource_id }),
-      client.paymentOrders.finalizeDraft(
+      client.paymentBatches.explain({ payment_order_id: resource.resource_id }),
+      client.paymentBatches.finalize(
         { payment_order_id: resource.resource_id },
         { idempotencyKey: "synthetic-finalize", expectedResourceVersion: "1" },
       ),
-      client.paymentOrders.get({ payment_order_id: resource.resource_id }),
-      client.paymentOrders.list({ page: {} }),
-      client.paymentOrders.reviseDraft({} as never, {
+      client.paymentBatches.get({ payment_order_id: resource.resource_id }),
+      client.paymentBatches.list({ page: {} }),
+      client.paymentBatches.removePayments(
+        { payment_order_id: resource.resource_id, payment_transfer_ids: [] },
+        { idempotencyKey: "synthetic-remove", expectedResourceVersion: '"1"' },
+      ),
+      client.paymentBatches.replaceDraft({} as never, {
         idempotencyKey: "synthetic-revise",
         expectedResourceVersion: '"1"',
       }),
-      client.paymentOrders.simulate({ payment_order_id: resource.resource_id, revision_id: resource.resource_id }),
-      client.paymentOrders.submitForReview(
+      client.paymentBatches.updatePayment(
+        {
+          payment_order_id: resource.resource_id,
+          payment_transfer_id: profileId,
+          transfer: {} as never,
+        },
+        { idempotencyKey: "synthetic-update", expectedResourceVersion: '"1"' },
+      ),
+      client.paymentBatches.simulate({ payment_order_id: resource.resource_id, revision_id: resource.resource_id }),
+      client.paymentBatches.submitForReview(
         { payment_order_id: resource.resource_id },
         { idempotencyKey: "synthetic-submit", expectedResourceVersion: '"1"' },
       ),
-      client.paymentOrders.validate({ payment_order_id: resource.resource_id, revision_id: resource.resource_id }),
+      client.paymentBatches.validate({ payment_order_id: resource.resource_id, revision_id: resource.resource_id }),
       client.statements.explain(resource),
       client.statements.get(resource),
       client.statements.list({ page_size: 25 }),
@@ -127,7 +166,7 @@ describe("experimental ISO 20022 client", () => {
       client.validations.list({ run_kind: "validate" }),
     ]);
 
-    expect(transport.calls).toHaveLength(38);
+    expect(transport.calls).toHaveLength(50);
     expect(transport.calls.map((call) => call.operationId)).toEqual(Object.keys(iso20022Operations));
     for (const call of transport.calls) {
       const operation = iso20022Operations[call.operationId as keyof typeof iso20022Operations];
@@ -157,12 +196,22 @@ describe("experimental ISO 20022 client", () => {
     const input = {} as never;
     const options = { idempotencyKey: "synthetic-replay" };
 
-    await client.paymentOrders.createDraft(input, options);
-    await client.paymentOrders.createDraft(input, options);
+    await client.paymentBatches.createDraft(input, options);
+    await client.paymentBatches.createDraft(input, options);
 
     expect(transport.calls).toEqual([
       { operationId: "payment_orders.create_draft", input, metadata: { contractVersion: 1, ...options } },
       { operationId: "payment_orders.create_draft", input, metadata: { contractVersion: 1, ...options } },
     ]);
+  });
+
+  it("uses plain-English namespaces without duplicating contracts or inventing bank feedback", () => {
+    const client = createIso20022Client(new RecordingTransport());
+
+    expect(client.paymentOrders.createDraft).toBe(client.paymentBatches.createDraft);
+    expect(client.paymentOrders.execute).toBe(client.paymentSubmissions.createAttempt);
+    expect(client.paymentOrders.finalizeDraft).toBe(client.paymentBatches.finalize);
+    expect(client.paymentOrders.reviseDraft).toBe(client.paymentBatches.replaceDraft);
+    expect(client).not.toHaveProperty("paymentFeedbacks");
   });
 });
