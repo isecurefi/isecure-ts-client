@@ -10,7 +10,9 @@ This runnable Node example proves the current synthetic, bank-channel-independen
    `Bank: "simulator"`.
 4. It downloads exact `pain.002.001.10`, `camt.054.001.02` and updated `camt.053.001.02` files,
    correlates their message/payment/transaction identifiers and verifies the exact debtor balance
-   transition without floating-point arithmetic.
+   transition without floating-point arithmetic. When pain.001 omits optional `InstrId`, the
+   returned simulator instruction reference must equal the original `EndToEndId`, matching the
+   simulator's specified fallback exactly.
 
 This is synthetic `gpgtest` evidence, not a real bank, settlement, production-channel or automatic
 feedback-reconciliation claim. The example does not add server-side signing, upload orchestration,
@@ -18,9 +20,11 @@ retry, simulator-specific SDK methods or unattended execution.
 
 ## Run
 
-Set the same account, Processing, payment-profile, debtor, creditor and local OpenPGP variables
-listed by the [manual Processing upload example](../processing-manual-upload/README.md). In
-particular, the bank and explicit safety acknowledgements must be:
+Set the Processing identities, Admin-paired Data uploader, payment profile, debtor, creditor and
+local OpenPGP variables listed by the
+[manual Processing upload example](../processing-manual-upload/README.md). The uploader is the only
+identity that reads or uploads File Exchange artifacts. In particular, the bank and explicit safety
+acknowledgements must be:
 
 ```sh
 export ISECURE_BANK='simulator'
@@ -47,6 +51,11 @@ but no credential, private key, payload, signature or payload-derived hash. If t
 after that point, rerunning the same run ID only reconciles authoritative File Exchange reads. It
 never uploads again. If exact correlated outputs do not appear before the bound, the result remains
 explicitly uncertain.
+
+If a failure occurs before the checkpoint exists, no bank upload was attempted, but the Processing
+workflow may already be released. Inspect that workflow and use a deliberately new run ID after
+correcting the cause; do not assume every earlier multi-step transition can be replayed from the
+beginning.
 
 Verified downloads are written once with mode `0600` under a run-specific directory in
 `isecure-processing-simulator-downloads/`. Override the private checkpoint and output roots with

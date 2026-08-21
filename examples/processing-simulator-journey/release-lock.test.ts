@@ -16,8 +16,11 @@ describe("Processing-to-simulator release lock", () => {
       processingApiDeployment: "a69i6i",
       simulatorPlatformRevision: "0cdbb38fec1322cc2e52443feb89c2d8963a4139",
       simulatorHostRelease: "release-0d071358",
-      isecureRestGpgtestRevision: "ea6dd2e8f960ae8cbc4d9a9d888f272eb3c25f39",
-      isecureRestGpgtestVersion: "604",
+      isecureRestGpgtestRevision: "90541e22b951054115185b9455204c255464821d",
+      isecureRestGpgtestVersion: "607",
+      isecureRestGpgtestCodeSha256: "YJIc0R96A6H/rPgWcIyYQiaMCfBU4kFO8upIsITL9y0=",
+      isecureRenewalGpgtestVersion: "94",
+      isecureRenewalGpgtestCodeSha256: "eZaOkDE/5SfAc+j+zbfos8XRvo9pm6qwQpzh50TSSQc=",
     });
   });
 });

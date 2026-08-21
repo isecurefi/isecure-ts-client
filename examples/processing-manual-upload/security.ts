@@ -22,6 +22,44 @@ export class ManualUploadRefusedError extends Error {
   }
 }
 
+export function roleCredentials(
+  mode: "admin" | "data",
+  values: Readonly<Record<string, string | undefined>>,
+): { readonly Email: string; readonly Password: string } {
+  const prefix = `ISECURE_${mode.toUpperCase()}`;
+  const Email = values[`${prefix}_EMAIL`] ?? values.ISECURE_EMAIL;
+  const Password = values[`${prefix}_PASSWORD`] ?? values.ISECURE_PASSWORD;
+  if (!Email || !Password) throw new Error(`Missing ${mode} email or password`);
+  return { Email, Password };
+}
+
+export function uploaderCredentials(values: Readonly<Record<string, string | undefined>>): {
+  readonly Email: string;
+  readonly Password: string;
+} {
+  const Email = values.ISECURE_UPLOAD_DATA_EMAIL;
+  const Password = values.ISECURE_UPLOAD_DATA_PASSWORD;
+  if ((Email === undefined) !== (Password === undefined) || Email === "" || Password === "") {
+    throw new Error("Set both uploader email and password");
+  }
+  return Email === undefined || Password === undefined ? roleCredentials("data", values) : { Email, Password };
+}
+
+export function hasAuthorizeKey(
+  publicKey: openpgp.PublicKey,
+  keys: readonly { readonly PgpKeyId: string; readonly PgpKeyPurpose?: string }[],
+): boolean {
+  const keyId = publicKey.getKeyID().toHex().slice(-8).toUpperCase();
+  return keys.some((key) => key.PgpKeyPurpose === "authorize" && key.PgpKeyId.toUpperCase() === keyId);
+}
+
+export function requireSharedApiKeyDomain(apiKeys: readonly (string | undefined)[]): void {
+  const expected = apiKeys[0];
+  if (!expected || apiKeys.length < 2 || apiKeys.some((apiKey) => apiKey !== expected)) {
+    throw new Error("The authenticated identities do not share one API-key domain");
+  }
+}
+
 export function requirePain001(bytes: Uint8Array): void {
   const xml = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   if (!PAIN_001_ROOT.test(xml) || xml.includes("<!DOCTYPE") || xml.includes("<!ENTITY")) {

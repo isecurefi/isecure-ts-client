@@ -25,6 +25,10 @@ function text(value: unknown, field: string): string {
   return value;
 }
 
+function optionalText(value: unknown, field: string): string | null {
+  return value === null ? null : text(value, field);
+}
+
 function direction(value: unknown, field: string): "CRDT" | "DBIT" {
   const resolved = text(value, field);
   if (resolved !== "CRDT" && resolved !== "DBIT") throw new Error(`Invalid checkpoint ${field}`);
@@ -59,7 +63,7 @@ function checkpoint(value: unknown, expectedRunId: string): JourneyCheckpoint {
     correlation: {
       messageId: text(correlation.messageId, "message ID"),
       paymentInformationId: text(correlation.paymentInformationId, "payment information ID"),
-      instructionId: text(correlation.instructionId, "instruction ID"),
+      instructionId: optionalText(correlation.instructionId, "instruction ID"),
       endToEndId: text(correlation.endToEndId, "end-to-end ID"),
       debtorIban: text(correlation.debtorIban, "debtor IBAN"),
       amount: text(correlation.amount, "amount"),

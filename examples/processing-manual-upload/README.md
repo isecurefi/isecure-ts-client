@@ -30,9 +30,14 @@ export ISECURE_CONFIRM_SIMULATOR_PROFILE_BRIDGE='1'
 export ISECURE_API_KEY='...'
 export ISECURE_COMPANY='Invented Test Company'
 export ISECURE_NAME='Invented Test User'
-export ISECURE_EMAIL='user@example.test'
+export ISECURE_ADMIN_EMAIL='admin-user@example.test'
+export ISECURE_DATA_EMAIL='approver-user@example.test'
 export ISECURE_PHONE='+358401234567'
-export ISECURE_PASSWORD='...'
+export ISECURE_ADMIN_PASSWORD='...'
+export ISECURE_DATA_PASSWORD='...'
+# Optional when the Processing approver is not Admin's paired ISECure Data identity.
+export ISECURE_UPLOAD_DATA_EMAIL='admin-user@example.test'
+export ISECURE_UPLOAD_DATA_PASSWORD='...'
 export ISECURE_PUBLIC_KEY_PEM_FILE='/absolute/path/to/ws-api-rsa-public.pem'
 
 export ISECURE_PGP_PUBLIC_KEY_FILE='/absolute/path/to/authorize-public.asc'
@@ -70,4 +75,8 @@ yarn example:processing-upload
 MFA and verification codes are prompted interactively or read from the existing mode-specific
 `ISECURE_ADMIN_*` and `ISECURE_DATA_*` variables described by the simulator example. Keep all
 credentials, codes and key material outside Git and ordinary logs. Reuse the same run ID only for
-safe Processing API replay before an upload attempt; it is not an ISECure upload idempotency key.
+an individually verified Processing retry; do not restart the whole multi-step workflow after it may
+have advanced. It is not an ISECure upload idempotency key.
+The uploader variables fall back to the Data approver credentials when they are omitted. Common
+`ISECURE_EMAIL` and `ISECURE_PASSWORD` remain an explicit fallback when both modes intentionally
+share them.

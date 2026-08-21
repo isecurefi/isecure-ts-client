@@ -13,7 +13,7 @@ const NAMESPACES: Readonly<Record<"pain.001.001.09" | SimulatorOutputType, strin
 export interface PaymentCorrelation {
   readonly messageId: string;
   readonly paymentInformationId: string;
-  readonly instructionId: string;
+  readonly instructionId: string | null;
   readonly endToEndId: string;
   readonly debtorIban: string;
   readonly amount: string;
@@ -91,6 +91,13 @@ function exactlyOne(values: readonly string[], field: string): string {
   return values[0];
 }
 
+function optionalOne(values: readonly string[], field: string): string | null {
+  if (values.length > 1 || values.some((value) => value.length === 0)) {
+    throw new Error(`Expected at most one ${field}`);
+  }
+  return values[0] ?? null;
+}
+
 function oneBlock(xml: string, tag: string): string {
   return exactlyOne(blocks(xml, tag), tag);
 }
@@ -107,6 +114,29 @@ function exactAmount(block: string, tag: string): { readonly amount: string; rea
   return { amount, currency };
 }
 
+function entryAmountAndDirection(entry: string): {
+  readonly amount: string;
+  readonly currency: string;
+  readonly direction: "CRDT" | "DBIT";
+} {
+  const match =
+    /^\s*(?:<NtryRef>[^<]*<\/NtryRef>\s*)?<Amt\s+Ccy=["']([A-Z]{3})["']>([^<]+)<\/Amt>\s*<CdtDbtInd>(CRDT|DBIT)<\/CdtDbtInd>/u.exec(
+      entry,
+    );
+  const currency = match?.[1];
+  const amount = match?.[2];
+  const direction = match?.[3];
+  if (
+    !currency ||
+    !amount ||
+    (direction !== "CRDT" && direction !== "DBIT") ||
+    !/^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/u.test(amount)
+  ) {
+    throw new Error("Expected direct entry amount, currency, and direction");
+  }
+  return { amount, currency, direction };
+}
+
 export function paymentCorrelation(bytes: Uint8Array): PaymentCorrelation {
   const xml = exactXml(bytes, "pain.001.001.09");
   const header = oneBlock(xml, "GrpHdr");
@@ -117,12 +147,16 @@ export function paymentCorrelation(bytes: Uint8Array): PaymentCorrelation {
   return {
     messageId: exactlyOne(texts(header, "MsgId"), "payment message ID"),
     paymentInformationId: exactlyOne(texts(payment, "PmtInfId"), "payment information ID"),
-    instructionId: exactlyOne(texts(transfer, "InstrId"), "instruction ID"),
+    instructionId: optionalOne(texts(transfer, "InstrId"), "instruction ID"),
     endToEndId: exactlyOne(texts(transfer, "EndToEndId"), "end-to-end ID"),
     debtorIban: exactlyOne(texts(debtorAccount, "IBAN"), "debtor IBAN"),
     amount: instructed.amount,
     currency: instructed.currency,
   };
+}
+
+function simulatorInstructionId(expected: PaymentCorrelation): string {
+  return expected.instructionId ?? expected.endToEndId;
 }
 
 export function verifyPain002(bytes: Uint8Array, expected: PaymentCorrelation): void {
@@ -133,7 +167,7 @@ export function verifyPain002(bytes: Uint8Array, expected: PaymentCorrelation): 
   if (
     exactlyOne(texts(originalGroup, "OrgnlMsgId"), "original message ID") !== expected.messageId ||
     exactlyOne(texts(payment, "OrgnlPmtInfId"), "original payment information ID") !== expected.paymentInformationId ||
-    exactlyOne(texts(transfer, "OrgnlInstrId"), "original instruction ID") !== expected.instructionId ||
+    exactlyOne(texts(transfer, "OrgnlInstrId"), "original instruction ID") !== simulatorInstructionId(expected) ||
     exactlyOne(texts(transfer, "OrgnlEndToEndId"), "original end-to-end ID") !== expected.endToEndId
   ) {
     throw new EvidenceCorrelationMismatchError("pain.002 does not correlate to the exact payment");
@@ -148,10 +182,10 @@ function correlatedEntry(xml: string, expected: PaymentCorrelation): void {
     const references = blocks(entry, "Refs");
     return references.some(
       (reference) =>
-        texts(reference, "MsgId").includes(expected.messageId) &&
-        texts(reference, "PmtInfId").includes(expected.paymentInformationId) &&
-        texts(reference, "InstrId").includes(expected.instructionId) &&
-        texts(reference, "EndToEndId").includes(expected.endToEndId),
+        optionalOne(texts(reference, "MsgId"), "message reference") === expected.messageId &&
+        optionalOne(texts(reference, "PmtInfId"), "payment-information reference") === expected.paymentInformationId &&
+        optionalOne(texts(reference, "InstrId"), "instruction reference") === simulatorInstructionId(expected) &&
+        optionalOne(texts(reference, "EndToEndId"), "end-to-end reference") === expected.endToEndId,
     );
   });
   if (matching.length === 0) {
@@ -160,11 +194,11 @@ function correlatedEntry(xml: string, expected: PaymentCorrelation): void {
   if (matching.length !== 1 || matching[0] === undefined) {
     throw new Error("Expected exactly one cash entry correlated to the payment");
   }
-  const amount = exactAmount(matching[0], "Amt");
+  const amount = entryAmountAndDirection(matching[0]);
   if (
-    amount.amount !== expected.amount ||
+    !equal(decimal(amount.amount), decimal(expected.amount)) ||
     amount.currency !== expected.currency ||
-    exactlyOne(texts(matching[0], "CdtDbtInd"), "entry direction") !== "DBIT"
+    amount.direction !== "DBIT"
   ) {
     throw new Error("The correlated cash entry has the wrong amount, currency, or direction");
   }
@@ -193,8 +227,11 @@ function balance(block: string, code: "OPBD" | "CLBD"): BalanceObservation {
 export function statementBalance(bytes: Uint8Array, accountIban: string): StatementBalance {
   const xml = exactXml(bytes, "camt.053.001.02");
   const matching = blocks(xml, "Stmt").filter((statement) => {
-    const account = blocks(statement, "Acct")[0];
-    return account !== undefined && texts(account, "IBAN").includes(accountIban);
+    const accounts = blocks(statement, "Acct");
+    if (accounts.length !== 1 || accounts[0] === undefined) throw new Error("Expected exactly one statement account");
+    const ibans = texts(accounts[0], "IBAN");
+    if (ibans.length > 1) throw new Error("Expected at most one statement IBAN");
+    return ibans[0] === accountIban;
   });
   if (matching.length !== 1 || matching[0] === undefined) {
     throw new EvidenceCorrelationMismatchError("Expected exactly one statement for the debtor account");
