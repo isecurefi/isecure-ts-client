@@ -185,7 +185,7 @@ async function createApprovedExport(
     throw new Error("No exact payment capability was resolved");
   }
 
-  const created = await submitter.paymentOrders.createDraft(
+  const created = await submitter.paymentBatches.createDraft(
     {
       capability: capability.selected,
       external_id: runId,
@@ -220,20 +220,20 @@ async function createApprovedExport(
     throw new Error("The Processing API did not return a new draft");
   }
   const paymentOrderId = created.payment_order_reference.resource_id;
-  const validated = await submitter.paymentOrders.validate({
+  const validated = await submitter.paymentBatches.validate({
     payment_order_id: paymentOrderId,
     revision_id: created.revision_id,
   });
   if (validated.validation.outcome !== "valid") throw new Error("The payment batch is not valid");
 
-  const finalized = await submitter.paymentOrders.finalizeDraft(
+  const finalized = await submitter.paymentBatches.finalize(
     { payment_order_id: paymentOrderId },
     { idempotencyKey: `${runId}-finalize`, expectedResourceVersion: "1" },
   );
   if (finalized.mutation.workflow_state !== "finalized" || finalized.mutation.resource_version !== "2") {
     throw new Error("The payment batch was not finalized");
   }
-  const submitted = await submitter.paymentOrders.submitForReview(
+  const submitted = await submitter.paymentBatches.submitForReview(
     { payment_order_id: paymentOrderId },
     { idempotencyKey: `${runId}-submit-review`, expectedResourceVersion: "2" },
   );
@@ -323,7 +323,7 @@ async function main(): Promise<void> {
   const submitter = await processingClient(channels[submitterMode]);
   const approver = await processingClient(channels[approverMode]);
   const pending = await createApprovedExport(submitter, approver, runId);
-  const downloaded = await submitter.paymentExports.download(
+  const downloaded = await submitter.paymentBatches.download(
     { payment_export_id: pending.paymentExportId },
     pending.authority,
     { idempotencyKey: `${runId}-download` },

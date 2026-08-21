@@ -246,20 +246,27 @@ The runnable terminal implementation lives in [`examples/full-workflow/full-work
 
 ## Experimental ISO 20022 Processing Client
 
-The separate `isecure-ts-client/iso20022` entry point exposes the platform's generated, read-only
-balance, entry, statement, transaction, and validation observation operations plus the generated
-payment-capability and `PaymentOrder` families. It does not change the permanent WS Channel/File
-Exchange client above.
+The separate `isecure-ts-client/iso20022` entry point exposes the platform's generated observation,
+payment-batch, payment-submission and payment-outcome operations. It does not change the permanent
+WS Channel/File Exchange client above.
 
 ```ts
-import { createIso20022Client, Iso20022HttpTransport, Iso20022HttpError } from "isecure-ts-client/iso20022";
+import {
+  createIso20022Client,
+  Iso20022HttpTransport,
+  ProcessingEntitlementDeniedError,
+} from "isecure-ts-client/iso20022";
 
-const iso20022 = createIso20022Client(
-  new Iso20022HttpTransport({
-    baseUrl: "https://customer-selected-processing-api.example/",
-    accessToken: async () => obtainShortLivedAccessToken(),
+const transport = new Iso20022HttpTransport({
+  baseUrl: "https://release-selected-processing-api.example/",
+  processingAudience: "isecure-processing-example-v1",
+  bootstrapAuthentication: async () => ({
+    apiKey: await currentApiKey(),
+    idToken: await currentIdToken(),
   }),
-);
+});
+await transport.exchangeProcessingSession();
+const iso20022 = createIso20022Client(transport);
 
 try {
   const page = await iso20022.statements.list({
@@ -274,9 +281,8 @@ try {
   });
   console.log(capabilities.capabilities);
 } catch (error) {
-  if (error instanceof Iso20022HttpError) {
-    // error.body is the generated, server-supplied issue envelope.
-    console.error(error.status);
+  if (error instanceof ProcessingEntitlementDeniedError) {
+    // Authentication succeeded, but this tenant has no active entitlement for the operation.
   }
 }
 ```
@@ -291,10 +297,28 @@ generated contract version; request URLs, JSON request/response bytes, and durat
 and responses must be JSON. The HTTP adapter never retries a request and rejects plaintext
 non-loopback endpoints.
 
-The `paymentOrders.execute` method mirrors a generated contract-only operation. Its presence is not
-evidence of a deployed execution handler, bank connection, payment authority, or qualified payment
-support. The server remains responsible for authentication, authorization, exact revision,
-approval, policy, rendering, channel transfer, and indeterminate-outcome handling.
+The plain-English payment surface separates four concepts:
+
+- `paymentBatches` builds, validates, finalizes, reviews and downloads a batch containing multiple
+  payments;
+- `paymentSubmissions` creates and observes one authorized attempt to send an exact approved file;
+- `paymentOutcomes` exposes conclusions derived by the server from retained bank evidence; and
+- the unchanged File Exchange client remains the separate channel upload boundary.
+
+For compatibility, `paymentOrders` retains aliases over the same generated operations. In
+particular, its older `execute` name creates an attempt only; it does not sign, upload or contact a
+bank. The clearer equivalent is `paymentSubmissions.createAttempt`.
+
+A local Connector uses `paymentSubmissions.claim`, downloads the exact attempt-bound file through
+`paymentSubmissions.download`, signs those unchanged bytes inside its protected local key boundary,
+uploads through its separately qualified channel client, and calls
+`paymentSubmissions.reportUpload`. The Processing client accepts no private key, password or
+detached-signature field and performs no automatic retry or upload orchestration. An upload report
+never proves bank acceptance.
+
+There is deliberately no `paymentFeedbacks` client namespace yet. The current Processing contract
+exposes evidence references and derived `paymentOutcomes`, but no independently addressable bank-
+feedback resource. The SDK does not rename an outcome as feedback or invent a client-only contract.
 
 The runnable [manual Processing-to-ISECure upload example](examples/processing-manual-upload/README.md)
 shows the currently available bridge: two separately authenticated users create and approve a

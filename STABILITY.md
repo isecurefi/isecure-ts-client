@@ -26,7 +26,8 @@ Adding a new `status` to `AuthState`, a new `AuthErrorReason`, or a new error su
 The error hierarchy (`ISecureError` and subclasses) is part of the public API. New subclasses may be added in minor releases; existing classes and their documented fields are stable within a major version.
 
 `Iso20022TransportError` and `Iso20022HttpError` belong only to the experimental `./iso20022`
-surface. They do not replace or change the permanent WS Channel error hierarchy.
+surface. `ProcessingEntitlementDeniedError` is its typed commercial-entitlement refusal. These do
+not replace or change the permanent WS Channel error hierarchy.
 
 ## Runtime support
 
