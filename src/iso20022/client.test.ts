@@ -66,7 +66,7 @@ describe("experimental ISO 20022 client", () => {
           exact_subject_digest: `sha256:${"2".repeat(64)}`,
           decision: "approve",
         },
-        { idempotencyKey: "synthetic-approve", expectedResourceVersion: "1" },
+        { idempotencyKey: "synthetic-approve", expectedResourceVersion: '"1"' },
       ),
       client.paymentCapabilities.explain({ account_capability_id: resource.resource_id }),
       client.paymentCapabilities.get({ account_capability_id: resource.resource_id }),
@@ -129,7 +129,7 @@ describe("experimental ISO 20022 client", () => {
       client.paymentBatches.explain({ payment_order_id: resource.resource_id }),
       client.paymentBatches.finalize(
         { payment_order_id: resource.resource_id },
-        { idempotencyKey: "synthetic-finalize", expectedResourceVersion: "1" },
+        { idempotencyKey: "synthetic-finalize", expectedResourceVersion: '"1"' },
       ),
       client.paymentBatches.get({ payment_order_id: resource.resource_id }),
       client.paymentBatches.list({ page: {} }),
@@ -174,6 +174,16 @@ describe("experimental ISO 20022 client", () => {
       expect("idempotencyKey" in (call.metadata as object)).toBe(operation.idempotency === "required");
       expect("expectedResourceVersion" in (call.metadata as object)).toBe(operation.expectedVersion === "required");
     }
+    expect(transport.calls.find((call) => call.operationId === "payment_approval_requests.decide")?.metadata).toEqual({
+      contractVersion: 1,
+      idempotencyKey: "synthetic-approve",
+      expectedResourceVersion: '"1"',
+    });
+    expect(transport.calls.find((call) => call.operationId === "payment_orders.finalize_draft")?.metadata).toEqual({
+      contractVersion: 1,
+      idempotencyKey: "synthetic-finalize",
+      expectedResourceVersion: '"1"',
+    });
   });
 
   it("does not add idempotency or replay behavior to repeated read calls", async () => {
