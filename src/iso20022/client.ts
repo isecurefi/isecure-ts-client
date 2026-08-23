@@ -17,6 +17,11 @@ import {
   type PaymentCapabilityListResult,
   type PaymentCapabilityResolution,
   type ConfigurePaymentExportProfileInput,
+  type ControlSimulationClockInput,
+  type CreateSimulationBranchInput,
+  type CreateSimulationCheckpointInput,
+  type CreateSimulationScenarioInput,
+  type CreateSimulationWorkspaceInput,
   type DecidePaymentApprovalRequestInput,
   type DownloadPaymentExportContentInput,
   type PaymentApprovalDecisionResult,
@@ -57,15 +62,43 @@ import {
   type ProcessingRevisionCommandOptions,
   type ReleasePaymentExportInput,
   type RemovePaymentOrderTransfersInput,
+  type ResetSimulationWorkspaceInput,
   type RevokePaymentExportProfileInput,
+  type ReviseSimulationScenarioInput,
+  type ReviseSimulationWorkspaceInput,
   type RevisePaymentOrderInput,
   type RevisePaymentOrderTransferInput,
+  type SimulationArtifactListInput,
+  type SimulationArtifactListResult,
+  type SimulationBranchResult,
+  type SimulationCapabilityListInput,
+  type SimulationCapabilityListResult,
+  type SimulationCheckpointResult,
+  type SimulationClockControlResult,
+  type SimulationEventListInput,
+  type SimulationEventListResult,
+  type SimulationResourceGetInput,
+  type SimulationRunGetResult,
+  type SimulationRunListInput,
+  type SimulationRunListResult,
+  type SimulationRunMutationResult,
+  type SimulationScenarioGetResult,
+  type SimulationScenarioListInput,
+  type SimulationScenarioListResult,
+  type SimulationScenarioMutationResult,
+  type SimulationWorkspaceGetResult,
+  type SimulationWorkspaceListInput,
+  type SimulationWorkspaceListResult,
+  type SimulationWorkspaceMutationResult,
+  type SimulationWorkspaceResetResult,
+  type StartSimulationRunInput,
   type StatementGetResult,
   type StatementListInput,
   type StatementListResult,
   type TransactionGetResult,
   type TransactionListInput,
   type TransactionListResult,
+  type TransitionSimulationWorkspaceInput,
   type ValidationGetResult,
   type ValidationListInput,
   type ValidationListResult,
@@ -79,7 +112,7 @@ import type {
 } from "./transport.js";
 
 /**
- * Creates the experimental ISO 20022 observation and payment surface.
+ * Creates the experimental ISO 20022 observation, payment, and Bank Simulation surface.
  *
  * The methods are a thin projection of the generated platform operations. All
  * authorization, qualification, validation, lineage, and financial semantics
@@ -241,6 +274,18 @@ export function createIso20022Client(transport: Iso20022Transport) {
       ),
   } as const;
 
+  const simulationWorkspaceTransition = (
+    operationId: "simulation_workspaces.activate" | "simulation_workspaces.close" | "simulation_workspaces.suspend",
+    input: TransitionSimulationWorkspaceInput,
+    options: ProcessingRevisionCommandOptions,
+  ) =>
+    invoke<TransitionSimulationWorkspaceInput, SimulationWorkspaceMutationResult>(
+      transport,
+      operationId,
+      input,
+      options,
+    );
+
   return {
     balances: {
       explain: (input: ObservationExplainInput) =>
@@ -328,6 +373,127 @@ export function createIso20022Client(transport: Iso20022Transport) {
       reviseDraft: paymentBatches.replaceDraft,
     },
     paymentSubmissions,
+    simulationArtifacts: {
+      list: (input: SimulationArtifactListInput) =>
+        invoke<SimulationArtifactListInput, SimulationArtifactListResult>(
+          transport,
+          "simulation_artifacts.list",
+          input,
+        ),
+    },
+    simulationBranches: {
+      create: (input: CreateSimulationBranchInput, options: ProcessingCommandOptions) =>
+        invoke<CreateSimulationBranchInput, SimulationBranchResult>(
+          transport,
+          "simulation_branches.create",
+          input,
+          options,
+        ),
+    },
+    simulationCapabilities: {
+      list: (input: SimulationCapabilityListInput) =>
+        invoke<SimulationCapabilityListInput, SimulationCapabilityListResult>(
+          transport,
+          "simulation_capabilities.list",
+          input,
+        ),
+    },
+    simulationCheckpoints: {
+      create: (input: CreateSimulationCheckpointInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<CreateSimulationCheckpointInput, SimulationCheckpointResult>(
+          transport,
+          "simulation_checkpoints.create",
+          input,
+          options,
+        ),
+    },
+    simulationClocks: {
+      control: (input: ControlSimulationClockInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<ControlSimulationClockInput, SimulationClockControlResult>(
+          transport,
+          "simulation_clocks.control",
+          input,
+          options,
+        ),
+    },
+    simulationEvents: {
+      list: (input: SimulationEventListInput) =>
+        invoke<SimulationEventListInput, SimulationEventListResult>(transport, "simulation_events.list", input),
+    },
+    simulationRuns: {
+      get: (input: SimulationResourceGetInput) =>
+        invoke<SimulationResourceGetInput, SimulationRunGetResult>(transport, "simulation_runs.get", input),
+      list: (input: SimulationRunListInput) =>
+        invoke<SimulationRunListInput, SimulationRunListResult>(transport, "simulation_runs.list", input),
+      start: (input: StartSimulationRunInput, options: ProcessingCommandOptions) =>
+        invoke<StartSimulationRunInput, SimulationRunMutationResult>(
+          transport,
+          "simulation_runs.start",
+          input,
+          options,
+        ),
+    },
+    simulationScenarios: {
+      create: (input: CreateSimulationScenarioInput, options: ProcessingCommandOptions) =>
+        invoke<CreateSimulationScenarioInput, SimulationScenarioMutationResult>(
+          transport,
+          "simulation_scenarios.create",
+          input,
+          options,
+        ),
+      get: (input: SimulationResourceGetInput) =>
+        invoke<SimulationResourceGetInput, SimulationScenarioGetResult>(transport, "simulation_scenarios.get", input),
+      list: (input: SimulationScenarioListInput) =>
+        invoke<SimulationScenarioListInput, SimulationScenarioListResult>(
+          transport,
+          "simulation_scenarios.list",
+          input,
+        ),
+      revise: (input: ReviseSimulationScenarioInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<ReviseSimulationScenarioInput, SimulationScenarioMutationResult>(
+          transport,
+          "simulation_scenarios.revise",
+          input,
+          options,
+        ),
+    },
+    simulationWorkspaces: {
+      activate: (input: TransitionSimulationWorkspaceInput, options: ProcessingRevisionCommandOptions) =>
+        simulationWorkspaceTransition("simulation_workspaces.activate", input, options),
+      close: (input: TransitionSimulationWorkspaceInput, options: ProcessingRevisionCommandOptions) =>
+        simulationWorkspaceTransition("simulation_workspaces.close", input, options),
+      create: (input: CreateSimulationWorkspaceInput, options: ProcessingCommandOptions) =>
+        invoke<CreateSimulationWorkspaceInput, SimulationWorkspaceMutationResult>(
+          transport,
+          "simulation_workspaces.create",
+          input,
+          options,
+        ),
+      get: (input: SimulationResourceGetInput) =>
+        invoke<SimulationResourceGetInput, SimulationWorkspaceGetResult>(transport, "simulation_workspaces.get", input),
+      list: (input: SimulationWorkspaceListInput) =>
+        invoke<SimulationWorkspaceListInput, SimulationWorkspaceListResult>(
+          transport,
+          "simulation_workspaces.list",
+          input,
+        ),
+      reset: (input: ResetSimulationWorkspaceInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<ResetSimulationWorkspaceInput, SimulationWorkspaceResetResult>(
+          transport,
+          "simulation_workspaces.reset",
+          input,
+          options,
+        ),
+      revise: (input: ReviseSimulationWorkspaceInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<ReviseSimulationWorkspaceInput, SimulationWorkspaceMutationResult>(
+          transport,
+          "simulation_workspaces.revise",
+          input,
+          options,
+        ),
+      suspend: (input: TransitionSimulationWorkspaceInput, options: ProcessingRevisionCommandOptions) =>
+        simulationWorkspaceTransition("simulation_workspaces.suspend", input, options),
+    },
     statements: {
       explain: (input: ObservationExplainInput) =>
         invoke<ObservationExplainInput, ExplanationResult>(transport, "statements.explain", input),

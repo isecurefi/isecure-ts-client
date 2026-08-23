@@ -587,10 +587,12 @@ function buildUrl(baseUrl: URL, operation: Iso20022Operation, input: Record<stri
       continue;
     }
     if (parameter.location === "path") {
-      if (typeof value !== "string" || value.length === 0) {
-        throw new Iso20022TransportError("serialization_failed", `Path field ${parameter.inputField} must be a string`);
-      }
-      path = path.replace(`{${parameter.name}}`, encodeURIComponent(value));
+      path = path.replace(
+        `{${parameter.name}}`,
+        parameter.objectFields.length === 0
+          ? serializePathScalar(parameter.inputField, value)
+          : serializeSimplePathObject(parameter.inputField, parameter.objectFields, value),
+      );
     } else if (parameter.style === "deepObject") {
       appendDeepObject(url, parameter.name, parameter.inputField, parameter.objectFields, value);
     } else {
@@ -602,6 +604,38 @@ function buildUrl(baseUrl: URL, operation: Iso20022Operation, input: Record<stri
     throw new Iso20022TransportError("serialization_failed", "The generated request URL exceeds the byte limit");
   }
   return url;
+}
+
+function serializePathScalar(field: string, value: unknown): string {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Iso20022TransportError("serialization_failed", `Path field ${field} must be a string`);
+  }
+  return encodeURIComponent(value);
+}
+
+function serializeSimplePathObject(field: string, objectFields: readonly string[], value: unknown): string {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new Iso20022TransportError("serialization_failed", `Path field ${field} must be an object`);
+  }
+  const record = value as Record<string, unknown>;
+  const allowed = new Set(objectFields);
+  if (Object.keys(record).some((member) => !allowed.has(member))) {
+    throw new Iso20022TransportError("serialization_failed", `Path field ${field} has an unknown member`);
+  }
+  const components: string[] = [];
+  for (const member of objectFields) {
+    const memberValue = record[member];
+    if (memberValue !== undefined) {
+      components.push(
+        encodeURIComponent(member),
+        encodeURIComponent(serializeQueryValue(`${field}.${member}`, memberValue)),
+      );
+    }
+  }
+  if (components.length === 0) {
+    throw new Iso20022TransportError("serialization_failed", `Path field ${field} must not be empty`);
+  }
+  return components.join(",");
 }
 
 function appendDeepObject(
