@@ -236,7 +236,7 @@ describe("experimental ISO 20022 client", () => {
       expectedResourceVersion: '"1"',
     });
     expect(transport.calls.find((call) => call.operationId === "simulation_workspaces.reset")?.metadata).toEqual({
-      contractVersion: 3,
+      contractVersion: 4,
       idempotencyKey: "synthetic-workspace-reset",
       expectedResourceVersion: '"1"',
     });

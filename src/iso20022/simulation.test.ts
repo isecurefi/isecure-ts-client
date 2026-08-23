@@ -178,7 +178,7 @@ describe("experimental Bank Simulation Processing client", () => {
       method: "POST",
       headers: {
         Authorization: `Processing ${PROCESSING_TOKEN}`,
-        "ISECure-Contract-Version": "3",
+        "ISECure-Contract-Version": "4",
         "Idempotency-Key": "clock-step-11",
         "If-Match": '"7"',
         "x-api-key": API_KEY,

@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "bd228531a00356c51aee43bcf46067be39da1aaa",
-    "model": "Bankfiles@0.103.0",
-    "sourceDigest": "sha256:cbc2f377446f7c2ede1e0eaaac86f379e7005e44e851b7fd1497b4de93cc2b87",
+    "revision": "3795299a2a506b27bc17c69ffbffad9cd3647f9f",
+    "model": "Bankfiles@0.104.0",
+    "sourceDigest": "sha256:c147608d5514c3e3d3586becb62ca13d13cb9326134a50df5878a9235fbbcde0",
     "fixedClock": "2040-01-02T03:04:05.000Z",
     "safety": {
       "syntheticOnly": true,
@@ -14640,9 +14640,9 @@
     },
     {
       "operationId": "simulation_artifacts.list",
-      "version": 2,
-      "contractDigest": "sha256:11068487fb4c2d7dec34e66517b61c0f7ad96303bfa52d046156925e3bb5c5dc",
-      "eventClosureDigest": "sha256:a8b02820bacab066d87500ffabc7073c4cb0f8f452ddacd69babc22ce5a40fb9",
+      "version": 3,
+      "contractDigest": "sha256:d1812e62ef688b7c85570774600e775d9ba8bc9522fd43e1299c98ca42aadce3",
+      "eventClosureDigest": "sha256:167061bd1ac9a0279f5743662163779a52778de2b8d7a721e45e73ac4d012f34",
       "inputContract": "isecure.bankfiles.simulation.SimulationArtifactListInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationArtifactListResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -14668,11 +14668,6 @@
         {
           "adapter": "cli",
           "identifier": "simulation-artifacts list",
-          "responseStatuses": []
-        },
-        {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_artifacts_list",
           "responseStatuses": []
         },
         {
@@ -14702,7 +14697,7 @@
               "context": {
                 "request_id": "d620eae0-8358-4079-b17e-da116ef2ff96",
                 "operation_id": "simulation_artifacts.list",
-                "contract_version": "2",
+                "contract_version": "3",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "ee73497e-a4ad-412a-a95c-847dfcb755b7",
@@ -14751,7 +14746,7 @@
               "context": {
                 "request_id": "d620eae0-8358-4079-b17e-da116ef2ff96",
                 "operation_id": "simulation_artifacts.list",
-                "contract_version": "2",
+                "contract_version": "3",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "ee73497e-a4ad-412a-a95c-847dfcb755b7",
@@ -14785,7 +14780,7 @@
               "context": {
                 "request_id": "d620eae0-8358-4079-b17e-da116ef2ff96",
                 "operation_id": "simulation_artifacts.list",
-                "contract_version": "2",
+                "contract_version": "3",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "ee73497e-a4ad-412a-a95c-847dfcb755b7",
@@ -14937,9 +14932,9 @@
     },
     {
       "operationId": "simulation_branches.create",
-      "version": 3,
-      "contractDigest": "sha256:eaf59ccdc15c370fdcc30bbe963a38567251de3aa8d1226615fb9f68f81da020",
-      "eventClosureDigest": "sha256:912793704bcd7f93f5cbd2bf141f886e35143f0d4f206d01acd999a40ba2dc14",
+      "version": 4,
+      "contractDigest": "sha256:0269ca0f855c23a90212cc8ca2c1869b371cb8833d6f2bfb0c63fec61aa9c20a",
+      "eventClosureDigest": "sha256:de004943acd9fb5d2330bf2f7dcb83cb2295f9a927ea99f4a3d8167bc1a97d68",
       "inputContract": "isecure.bankfiles.simulation.CreateSimulationBranchInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationBranchResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -14967,11 +14962,6 @@
         {
           "adapter": "cli",
           "identifier": "simulation-branches create",
-          "responseStatuses": []
-        },
-        {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_branches_create",
           "responseStatuses": []
         },
         {
@@ -15004,7 +14994,7 @@
               "context": {
                 "request_id": "77dba2c8-a32d-4310-b318-b2231ed3d956",
                 "operation_id": "simulation_branches.create",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "c8ebd02f-93aa-489b-825b-9c318faaa9c8",
@@ -15147,7 +15137,7 @@
               "context": {
                 "request_id": "77dba2c8-a32d-4310-b318-b2231ed3d956",
                 "operation_id": "simulation_branches.create",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "c8ebd02f-93aa-489b-825b-9c318faaa9c8",
@@ -15280,9 +15270,9 @@
     },
     {
       "operationId": "simulation_capabilities.list",
-      "version": 3,
-      "contractDigest": "sha256:61c7f446935d5db7f3105db065bb8416b4097d27974fe6b14bcf60d526609fea",
-      "eventClosureDigest": "sha256:ee843a308b323843df6619a849f1a711ac88dce919796afffb6cf4026f60ceef",
+      "version": 4,
+      "contractDigest": "sha256:1d1f9fd27e61c91e2c8908147fe27741e1f47d008a37ef6af6fb44e647c46b14",
+      "eventClosureDigest": "sha256:f83856367771fc96fab595229d9f50a65486e2514b3782700ee4622b98b7b1b8",
       "inputContract": "isecure.bankfiles.simulation.SimulationCapabilityListInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationCapabilityListResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -15311,11 +15301,6 @@
           "responseStatuses": []
         },
         {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_capabilities_list",
-          "responseStatuses": []
-        },
-        {
           "adapter": "admin",
           "identifier": "simulation_capabilities-list",
           "responseStatuses": []
@@ -15338,7 +15323,7 @@
               "context": {
                 "request_id": "cacaba0e-7d14-4477-8e7c-e867a061e9d6",
                 "operation_id": "simulation_capabilities.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "9eca0e71-7e62-4e84-98d3-b1f4919a7654",
@@ -15456,7 +15441,7 @@
               "context": {
                 "request_id": "cacaba0e-7d14-4477-8e7c-e867a061e9d6",
                 "operation_id": "simulation_capabilities.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "9eca0e71-7e62-4e84-98d3-b1f4919a7654",
@@ -15486,7 +15471,7 @@
               "context": {
                 "request_id": "cacaba0e-7d14-4477-8e7c-e867a061e9d6",
                 "operation_id": "simulation_capabilities.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "9eca0e71-7e62-4e84-98d3-b1f4919a7654",
@@ -15699,9 +15684,9 @@
     },
     {
       "operationId": "simulation_checkpoints.create",
-      "version": 3,
-      "contractDigest": "sha256:022690e54e95d74bbe08f8f4786b82212d30732e847178cb93962bed3ca8b975",
-      "eventClosureDigest": "sha256:0eff53fcb3f8f9bc0864355c26efbcc364477a5c056f15d0ad1ccd6398918f2e",
+      "version": 4,
+      "contractDigest": "sha256:97fdef985c5897e19f0b43aec41a0e539cb5edc8aa292740c777efe14029d5ac",
+      "eventClosureDigest": "sha256:1d7f1cbf9f7ec994bcc1d2f688736164337d63d266a62b39d2755d9f3db79136",
       "inputContract": "isecure.bankfiles.simulation.CreateSimulationCheckpointInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationCheckpointResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -15733,11 +15718,6 @@
           "responseStatuses": []
         },
         {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_checkpoints_create",
-          "responseStatuses": []
-        },
-        {
           "adapter": "admin",
           "identifier": "simulation_checkpoints-create",
           "responseStatuses": []
@@ -15764,7 +15744,7 @@
               "context": {
                 "request_id": "fee9c483-08ec-49ca-a350-b85b20312623",
                 "operation_id": "simulation_checkpoints.create",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "7c724e7d-8be1-473d-8e38-a20efe09040d",
@@ -15902,7 +15882,7 @@
               "context": {
                 "request_id": "fee9c483-08ec-49ca-a350-b85b20312623",
                 "operation_id": "simulation_checkpoints.create",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "7c724e7d-8be1-473d-8e38-a20efe09040d",
@@ -16060,9 +16040,9 @@
     },
     {
       "operationId": "simulation_clocks.control",
-      "version": 3,
-      "contractDigest": "sha256:5cd955883432d634f7878f5fd525d638acae68a3c4d52f0c9eeb014d306df8db",
-      "eventClosureDigest": "sha256:ba04180f04dcd02955b5e9c307cdb1630770ee3b0fed61cb5b1bbdf65a0d6b35",
+      "version": 4,
+      "contractDigest": "sha256:d683043752ece7bd18c0c834bdeccd3a75ffee86177a0579b4babb2ef0b776e5",
+      "eventClosureDigest": "sha256:e1a021e41d07de504264aea224d5294327e1e9fc68f8cc54e75b19d34f66a769",
       "inputContract": "isecure.bankfiles.simulation.ControlSimulationClockInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationClockControlResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -16094,11 +16074,6 @@
           "responseStatuses": []
         },
         {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_clocks_control",
-          "responseStatuses": []
-        },
-        {
           "adapter": "admin",
           "identifier": "simulation_clocks-control",
           "responseStatuses": []
@@ -16126,7 +16101,7 @@
               "context": {
                 "request_id": "340ca945-43e2-4216-8ad3-b87359d495b4",
                 "operation_id": "simulation_clocks.control",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "a2e7c41f-19e4-4cd9-9b8f-6dde11a63d23",
@@ -16264,7 +16239,7 @@
               "context": {
                 "request_id": "340ca945-43e2-4216-8ad3-b87359d495b4",
                 "operation_id": "simulation_clocks.control",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "a2e7c41f-19e4-4cd9-9b8f-6dde11a63d23",
@@ -16423,9 +16398,9 @@
     },
     {
       "operationId": "simulation_events.list",
-      "version": 2,
-      "contractDigest": "sha256:9d9965ecba12d600ebe8c2db0cbeb360fb239cbd431c15fc210d426b5af0a6ef",
-      "eventClosureDigest": "sha256:8d1a5336bce48810ccd20bd3b8f62369c63c2968218ab13b84856b1d2e3c374d",
+      "version": 3,
+      "contractDigest": "sha256:5d1e2eaa5d72e5d5baadf070dd6fdb14f1c97ea4f9bd01fd33a6b7c7c99c9412",
+      "eventClosureDigest": "sha256:d188f69b0dfba6bbeb888c97c6a1886aff1bd1c329fa99e0cb18289200607b5d",
       "inputContract": "isecure.bankfiles.simulation.SimulationEventListInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationEventListResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -16451,11 +16426,6 @@
         {
           "adapter": "cli",
           "identifier": "simulation-events list",
-          "responseStatuses": []
-        },
-        {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_events_list",
           "responseStatuses": []
         },
         {
@@ -16485,7 +16455,7 @@
               "context": {
                 "request_id": "927963a6-8076-4169-9771-5f0162b19161",
                 "operation_id": "simulation_events.list",
-                "contract_version": "2",
+                "contract_version": "3",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "e6661570-16d9-43d1-951e-1c3e45187539",
@@ -16546,7 +16516,7 @@
               "context": {
                 "request_id": "927963a6-8076-4169-9771-5f0162b19161",
                 "operation_id": "simulation_events.list",
-                "contract_version": "2",
+                "contract_version": "3",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "e6661570-16d9-43d1-951e-1c3e45187539",
@@ -16580,7 +16550,7 @@
               "context": {
                 "request_id": "927963a6-8076-4169-9771-5f0162b19161",
                 "operation_id": "simulation_events.list",
-                "contract_version": "2",
+                "contract_version": "3",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "e6661570-16d9-43d1-951e-1c3e45187539",
@@ -16744,9 +16714,9 @@
     },
     {
       "operationId": "simulation_runs.get",
-      "version": 3,
-      "contractDigest": "sha256:5772c97b906ce580396e7af9dc11d24349b8cbddaedd784103383c3fb69c38dd",
-      "eventClosureDigest": "sha256:1eb4b11121480c178f91c964f160943e01f6711e4b29621c3bf63a13590f680e",
+      "version": 4,
+      "contractDigest": "sha256:2d90360c4ad64bdd8cd35c1aadc4e8bddd1e00304412a4896c191f4cc87c691a",
+      "eventClosureDigest": "sha256:71e7bc8667295b4b3abcf8b6e39db7f3bdc928e3b4ba5a95ca3333cd850a676c",
       "inputContract": "isecure.bankfiles.simulation.SimulationResourceGetInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationRunGetResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -16775,11 +16745,6 @@
           "responseStatuses": []
         },
         {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_runs_get",
-          "responseStatuses": []
-        },
-        {
           "adapter": "admin",
           "identifier": "simulation_runs-get",
           "responseStatuses": []
@@ -16805,7 +16770,7 @@
               "context": {
                 "request_id": "abbe3756-56f6-48fc-a17e-2fa670d81d59",
                 "operation_id": "simulation_runs.get",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "5574b4dc-725d-4e63-a211-abc6c639f60e",
@@ -17009,9 +16974,9 @@
     },
     {
       "operationId": "simulation_runs.list",
-      "version": 3,
-      "contractDigest": "sha256:aa0e5379cc18f08bc120f4b777c1c4098e8d7db7593ff5c647cc105bd37861a4",
-      "eventClosureDigest": "sha256:98f7f1ac37e7ab348707da6e701c219e79e0366e19465d6da52d9f58fc1c8fb3",
+      "version": 4,
+      "contractDigest": "sha256:cf3c94d2af1a0bfd15a8b2a31899b3fc9003cf614d5d4556d56f6d2bed18a0ca",
+      "eventClosureDigest": "sha256:ae6c8c70687e1ea905da829a71e3ba096a9beebb60e887e8733d398e456207f6",
       "inputContract": "isecure.bankfiles.simulation.SimulationRunListInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationRunListResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -17037,11 +17002,6 @@
         {
           "adapter": "cli",
           "identifier": "simulation-runs list",
-          "responseStatuses": []
-        },
-        {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_runs_list",
           "responseStatuses": []
         },
         {
@@ -17071,7 +17031,7 @@
               "context": {
                 "request_id": "d18f9d22-9220-445d-bb60-5fddc7e9c95b",
                 "operation_id": "simulation_runs.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "45208841-c948-4097-9217-841a75b20bfd",
@@ -17181,7 +17141,7 @@
               "context": {
                 "request_id": "d18f9d22-9220-445d-bb60-5fddc7e9c95b",
                 "operation_id": "simulation_runs.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "45208841-c948-4097-9217-841a75b20bfd",
@@ -17215,7 +17175,7 @@
               "context": {
                 "request_id": "d18f9d22-9220-445d-bb60-5fddc7e9c95b",
                 "operation_id": "simulation_runs.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "45208841-c948-4097-9217-841a75b20bfd",
@@ -17428,9 +17388,9 @@
     },
     {
       "operationId": "simulation_runs.start",
-      "version": 3,
-      "contractDigest": "sha256:a3a7dbba14e34ff5d98dcd390aac3a4af949a98ff3490079e231e67431042a00",
-      "eventClosureDigest": "sha256:1e10f219622bd3987b58738c3ee220ff37fa990489d451e7e35e0b054033123e",
+      "version": 4,
+      "contractDigest": "sha256:4431e600655c7d1fd79e9434f846ead09783dbb6aa512d6c9db2dad9ecfc06be",
+      "eventClosureDigest": "sha256:2819fa1c93b12769c0bdc8be9fbbd234c4d1463247267600342c6a463589f37a",
       "inputContract": "isecure.bankfiles.simulation.StartSimulationRunInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationRunMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -17458,11 +17418,6 @@
         {
           "adapter": "cli",
           "identifier": "simulation-runs start",
-          "responseStatuses": []
-        },
-        {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_runs_start",
           "responseStatuses": []
         },
         {
@@ -17503,7 +17458,7 @@
               "context": {
                 "request_id": "97e328f6-2629-4aca-a7fa-016eba0b4cbd",
                 "operation_id": "simulation_runs.start",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "d7fd86c6-9bbd-47ed-86f0-351fa04734d2",
@@ -17743,7 +17698,7 @@
               "context": {
                 "request_id": "97e328f6-2629-4aca-a7fa-016eba0b4cbd",
                 "operation_id": "simulation_runs.start",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "d7fd86c6-9bbd-47ed-86f0-351fa04734d2",
@@ -17973,9 +17928,9 @@
     },
     {
       "operationId": "simulation_scenarios.create",
-      "version": 3,
-      "contractDigest": "sha256:821fb89f13ef6258b41f2c744f02416ea2fa54365fdc1d8732a66d91c799a0ba",
-      "eventClosureDigest": "sha256:b4b748caceac0b393f1f9779da3ebf9a0ad73a1ded8a04fb2807db0bd8edb5bc",
+      "version": 4,
+      "contractDigest": "sha256:25c2467181466e705ce673083355d784670873b779dcc2d29abebfab100b7667",
+      "eventClosureDigest": "sha256:995bf520f5b5836f18dc96a1561df192b9478ccea43b4218ef2ae49bd2b97b43",
       "inputContract": "isecure.bankfiles.simulation.CreateSimulationScenarioInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationScenarioMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -18003,11 +17958,6 @@
         {
           "adapter": "cli",
           "identifier": "simulation-scenarios create",
-          "responseStatuses": []
-        },
-        {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_scenarios_create",
           "responseStatuses": []
         },
         {
@@ -18040,7 +17990,7 @@
               "context": {
                 "request_id": "5fe3f70b-995e-46c0-972f-e5a22ca9f721",
                 "operation_id": "simulation_scenarios.create",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "611fbae2-93b9-49aa-aa66-44bd26e0d0da",
@@ -18199,7 +18149,7 @@
               "context": {
                 "request_id": "5fe3f70b-995e-46c0-972f-e5a22ca9f721",
                 "operation_id": "simulation_scenarios.create",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "611fbae2-93b9-49aa-aa66-44bd26e0d0da",
@@ -18348,9 +18298,9 @@
     },
     {
       "operationId": "simulation_scenarios.get",
-      "version": 2,
-      "contractDigest": "sha256:d475ec5de6afdd7d015e177e5c306698ba23855279fcfda53937290ae0a0838f",
-      "eventClosureDigest": "sha256:0a698a06100e6fa361d4e4612e6dcb7c64e1b9a4c7242d1a9a66e99b367e9f3a",
+      "version": 3,
+      "contractDigest": "sha256:60e576c8a33bca289e8d8bd8d2410bbed37a1a4ace14cc852b1bd141764cc1d3",
+      "eventClosureDigest": "sha256:3aebb353b1ec86c576a8a9198f40b4fccd4ae95c95eaedc6f6c09605cb614049",
       "inputContract": "isecure.bankfiles.simulation.SimulationResourceGetInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationScenarioGetResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -18379,11 +18329,6 @@
           "responseStatuses": []
         },
         {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_scenarios_get",
-          "responseStatuses": []
-        },
-        {
           "adapter": "admin",
           "identifier": "simulation_scenarios-get",
           "responseStatuses": []
@@ -18409,7 +18354,7 @@
               "context": {
                 "request_id": "bd0ad423-fd6b-484d-9a0c-ee1712fa802b",
                 "operation_id": "simulation_scenarios.get",
-                "contract_version": "2",
+                "contract_version": "3",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "167c8d9d-4629-47a3-b7a8-0007983c37fa",
@@ -18559,9 +18504,9 @@
     },
     {
       "operationId": "simulation_scenarios.list",
-      "version": 2,
-      "contractDigest": "sha256:9efe8788631721f60b68dae43efc39480484ddf63350601d374f99942612f46d",
-      "eventClosureDigest": "sha256:e5e6be8875b0436e541a4bcaf994bce848bf6b87801b7fcc45ad0f31df0f1f72",
+      "version": 3,
+      "contractDigest": "sha256:fed6e0dda70a1ce7e0ce4d92cfe2d3e7ba4f510dc45e77afe296d509e07e780e",
+      "eventClosureDigest": "sha256:002ce14699ea1b096a54599b69312e78fa5d2232a047e85dd274b94e59176003",
       "inputContract": "isecure.bankfiles.simulation.SimulationScenarioListInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationScenarioListResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -18587,11 +18532,6 @@
         {
           "adapter": "cli",
           "identifier": "simulation-scenarios list",
-          "responseStatuses": []
-        },
-        {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_scenarios_list",
           "responseStatuses": []
         },
         {
@@ -18621,7 +18561,7 @@
               "context": {
                 "request_id": "07624f7a-364c-4afb-876d-2105ffcca78e",
                 "operation_id": "simulation_scenarios.list",
-                "contract_version": "2",
+                "contract_version": "3",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "09e405fb-8eaa-46cc-a895-1b1ca0a8f95c",
@@ -18677,7 +18617,7 @@
               "context": {
                 "request_id": "07624f7a-364c-4afb-876d-2105ffcca78e",
                 "operation_id": "simulation_scenarios.list",
-                "contract_version": "2",
+                "contract_version": "3",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "09e405fb-8eaa-46cc-a895-1b1ca0a8f95c",
@@ -18711,7 +18651,7 @@
               "context": {
                 "request_id": "07624f7a-364c-4afb-876d-2105ffcca78e",
                 "operation_id": "simulation_scenarios.list",
-                "contract_version": "2",
+                "contract_version": "3",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "09e405fb-8eaa-46cc-a895-1b1ca0a8f95c",
@@ -18870,9 +18810,9 @@
     },
     {
       "operationId": "simulation_scenarios.revise",
-      "version": 3,
-      "contractDigest": "sha256:cb88d9e1353e4f5235dbeb92b0c532f747b9cb4ce730cee4408ec073f844e21b",
-      "eventClosureDigest": "sha256:fb1506fa3415dd630afa8c1453625cbfde4f7fda66cba0bba198fe3265692b4f",
+      "version": 4,
+      "contractDigest": "sha256:964dbf7234178c1a70f679afadc7cca15a3be538ac97a14f6e4a27488bf24767",
+      "eventClosureDigest": "sha256:bee66155693a7e28282d2dcd568ac53f5fcbe1457aec277689524ed3530ffff8",
       "inputContract": "isecure.bankfiles.simulation.ReviseSimulationScenarioInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationScenarioMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -18901,11 +18841,6 @@
         {
           "adapter": "cli",
           "identifier": "simulation-scenarios revise",
-          "responseStatuses": []
-        },
-        {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_scenarios_revise",
           "responseStatuses": []
         },
         {
@@ -18939,7 +18874,7 @@
               "context": {
                 "request_id": "491835e3-8fe0-48c0-9dca-ca5b033736c4",
                 "operation_id": "simulation_scenarios.revise",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "71aa323a-acdc-4994-8c8c-df5e12529e9e",
@@ -19101,7 +19036,7 @@
               "context": {
                 "request_id": "491835e3-8fe0-48c0-9dca-ca5b033736c4",
                 "operation_id": "simulation_scenarios.revise",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "71aa323a-acdc-4994-8c8c-df5e12529e9e",
@@ -19287,9 +19222,9 @@
     },
     {
       "operationId": "simulation_workspaces.activate",
-      "version": 3,
-      "contractDigest": "sha256:07e78aa85029137a2a324b20a13c1a9817be7972a2b49a66e082c99f6cfcaed5",
-      "eventClosureDigest": "sha256:e2aedce54eb97ef3ff963215dabb646834f04054342c90176381e7db497361ed",
+      "version": 4,
+      "contractDigest": "sha256:be864cfd6800ab2068c844c4ef1dbe0767184d6073bcaed0291ce24679a9086f",
+      "eventClosureDigest": "sha256:f1b409ccd7023897ed15cf60f01c1dede7378f77460a1d0fa7881ad0d3afada4",
       "inputContract": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -19347,7 +19282,7 @@
               "context": {
                 "request_id": "dcdc2968-a897-47ac-b8ec-e8d789c2eb4b",
                 "operation_id": "simulation_workspaces.activate",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "2985d91d-4d19-4d5e-bd76-0d573161a7b4",
@@ -19605,7 +19540,7 @@
               "context": {
                 "request_id": "dcdc2968-a897-47ac-b8ec-e8d789c2eb4b",
                 "operation_id": "simulation_workspaces.activate",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "2985d91d-4d19-4d5e-bd76-0d573161a7b4",
@@ -19883,9 +19818,9 @@
     },
     {
       "operationId": "simulation_workspaces.close",
-      "version": 3,
-      "contractDigest": "sha256:592dca66296ef62058d79024f143389bb0ef1e8c04ccb3859bccd0244234b589",
-      "eventClosureDigest": "sha256:04d730f1acf9ea68bfaa19eb047ae8eaa5bd486e7e7cc4a7d578d24de9738ded",
+      "version": 4,
+      "contractDigest": "sha256:1fcc04f9ab15e4c46c1e8d44a30cc374f8b1c243d3e455586dfa9bca49254282",
+      "eventClosureDigest": "sha256:2382aeeca56bc880d69eafb53ac1d7a8f757c48848f62c012aec1656fa3ee339",
       "inputContract": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -19943,7 +19878,7 @@
               "context": {
                 "request_id": "3d0936ff-9bb2-4f62-8bbc-868604e5e56a",
                 "operation_id": "simulation_workspaces.close",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "1c0523e7-7f3f-4209-ba6b-64b703237e74",
@@ -20201,7 +20136,7 @@
               "context": {
                 "request_id": "3d0936ff-9bb2-4f62-8bbc-868604e5e56a",
                 "operation_id": "simulation_workspaces.close",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "1c0523e7-7f3f-4209-ba6b-64b703237e74",
@@ -20479,9 +20414,9 @@
     },
     {
       "operationId": "simulation_workspaces.create",
-      "version": 3,
-      "contractDigest": "sha256:a896e534591258875c6cd7bb3003084edc3944437cb4f789a34317ac127c0363",
-      "eventClosureDigest": "sha256:9c38b17e905f585305cd48cb00f413a04ed488d98b1d111ffd8e15871daa8ae9",
+      "version": 4,
+      "contractDigest": "sha256:f5ead670aa55bdd04c26c3a5dc9bf3f2807d2a8dbcaaf014f39d2ff82809fe34",
+      "eventClosureDigest": "sha256:ccca8e39d3972b83f660e575cd45cfa3e960a32fa20f38ef42f5185086a5bea7",
       "inputContract": "isecure.bankfiles.simulation.CreateSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -20587,7 +20522,7 @@
               "context": {
                 "request_id": "532d7bbc-c349-44a9-8dda-b510d3ace09b",
                 "operation_id": "simulation_workspaces.create",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "8e4858b9-50f4-4367-8b60-07f086d471b2",
@@ -20992,7 +20927,7 @@
               "context": {
                 "request_id": "532d7bbc-c349-44a9-8dda-b510d3ace09b",
                 "operation_id": "simulation_workspaces.create",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "8e4858b9-50f4-4367-8b60-07f086d471b2",
@@ -21387,9 +21322,9 @@
     },
     {
       "operationId": "simulation_workspaces.get",
-      "version": 3,
-      "contractDigest": "sha256:7a39c3c1c3a3754eb54cc89dcddef8ea318ef80aa2cf67edd33fc2b0471f2cfc",
-      "eventClosureDigest": "sha256:17ed8e8427cbf12256ed5aba6b79d522d4da1c706104c62b8698e180d66f179c",
+      "version": 4,
+      "contractDigest": "sha256:9f02dd9041a9571cba758cb375bf40e762f66f5512d68a8875e2ba6aaae3d5b3",
+      "eventClosureDigest": "sha256:0e72d90a08fc579145d14a66e5f380a60436a560f2c1b9e7e27e4a5d6450ef94",
       "inputContract": "isecure.bankfiles.simulation.SimulationResourceGetInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceGetResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -21418,11 +21353,6 @@
           "responseStatuses": []
         },
         {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_workspaces_get",
-          "responseStatuses": []
-        },
-        {
           "adapter": "admin",
           "identifier": "simulation_workspaces-get",
           "responseStatuses": []
@@ -21448,7 +21378,7 @@
               "context": {
                 "request_id": "2622c891-744e-4c9a-bd3e-702355aac0e9",
                 "operation_id": "simulation_workspaces.get",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "988988cd-44c2-459f-89e8-184c0f4a91b7",
@@ -21706,9 +21636,9 @@
     },
     {
       "operationId": "simulation_workspaces.list",
-      "version": 3,
-      "contractDigest": "sha256:6b07e38a9f73a338660f291afc607324b4da59100bbc621eca25fff00c69f650",
-      "eventClosureDigest": "sha256:95fb23a1ea878e4dce6d76e7a705606c3464afa62ab10be1e5fd1ff05ce96986",
+      "version": 4,
+      "contractDigest": "sha256:44198d17e8c85bb22c36c68ddf35c2789ca96d345588a67118a0d9c227efcf16",
+      "eventClosureDigest": "sha256:98abec23c66768f9e7ba8fa346f154b8ccdec3a0530d3d29a2c4150cb2b9570e",
       "inputContract": "isecure.bankfiles.simulation.SimulationWorkspaceListInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceListResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -21737,11 +21667,6 @@
           "responseStatuses": []
         },
         {
-          "adapter": "runtime_mcp",
-          "identifier": "simulation_workspaces_list",
-          "responseStatuses": []
-        },
-        {
           "adapter": "admin",
           "identifier": "simulation_workspaces-list",
           "responseStatuses": []
@@ -21764,7 +21689,7 @@
               "context": {
                 "request_id": "b1f1e925-5795-4b17-ba80-a5c9b4dcabc8",
                 "operation_id": "simulation_workspaces.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "2a7de1e3-a92e-4cfa-90b1-2d081e30cff4",
@@ -21924,7 +21849,7 @@
               "context": {
                 "request_id": "b1f1e925-5795-4b17-ba80-a5c9b4dcabc8",
                 "operation_id": "simulation_workspaces.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "2a7de1e3-a92e-4cfa-90b1-2d081e30cff4",
@@ -21954,7 +21879,7 @@
               "context": {
                 "request_id": "b1f1e925-5795-4b17-ba80-a5c9b4dcabc8",
                 "operation_id": "simulation_workspaces.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "2a7de1e3-a92e-4cfa-90b1-2d081e30cff4",
@@ -22209,9 +22134,9 @@
     },
     {
       "operationId": "simulation_workspaces.reset",
-      "version": 3,
-      "contractDigest": "sha256:f2473c48934f4f132d69c3f60f432a5520d8522ff07186f594bf432a4cfc604b",
-      "eventClosureDigest": "sha256:66c72aa5928f48fdf01aefa2385b4003ccdba93a748a53ec965b258c1d7e6a75",
+      "version": 4,
+      "contractDigest": "sha256:04236b103473b279c6a42a83294c98227e7761836631471e7ba45cf2b54ddab3",
+      "eventClosureDigest": "sha256:44b4a5eee934670cc4fef668223c89036705bc14af7851ed8404949638825ee8",
       "inputContract": "isecure.bankfiles.simulation.ResetSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceResetResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -22271,7 +22196,7 @@
               "context": {
                 "request_id": "f518d4bf-9966-4ede-b560-ed01b919f9ce",
                 "operation_id": "simulation_workspaces.reset",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "7b2db52c-ffc6-4df1-a1b3-8aed1d71f2db",
@@ -22555,7 +22480,7 @@
               "context": {
                 "request_id": "f518d4bf-9966-4ede-b560-ed01b919f9ce",
                 "operation_id": "simulation_workspaces.reset",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "7b2db52c-ffc6-4df1-a1b3-8aed1d71f2db",
@@ -22861,9 +22786,9 @@
     },
     {
       "operationId": "simulation_workspaces.revise",
-      "version": 3,
-      "contractDigest": "sha256:b3c3b1f1989dc5224ccef2413f18ac6d9eda7e380a4155395b5ae435d8d08d57",
-      "eventClosureDigest": "sha256:ca58f8d4e4df3dccd74731405a2b18d96cc6a7c55174d4132a64c5afbf265f14",
+      "version": 4,
+      "contractDigest": "sha256:838ec9b30941405400f26fbbaa7623048b31ad4dc2cf2fee3914a27f799cc1ef",
+      "eventClosureDigest": "sha256:e010feae885fb8c8a768479299ac5af42e1f147a0e76d57202b89375456b9b6f",
       "inputContract": "isecure.bankfiles.simulation.ReviseSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -22975,7 +22900,7 @@
               "context": {
                 "request_id": "aa054e76-e35b-4e1f-b22c-414a93786c65",
                 "operation_id": "simulation_workspaces.revise",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "f128d2b1-57db-448e-951d-47a0b7b121cb",
@@ -23395,7 +23320,7 @@
               "context": {
                 "request_id": "aa054e76-e35b-4e1f-b22c-414a93786c65",
                 "operation_id": "simulation_workspaces.revise",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "f128d2b1-57db-448e-951d-47a0b7b121cb",
@@ -23889,9 +23814,9 @@
     },
     {
       "operationId": "simulation_workspaces.suspend",
-      "version": 3,
-      "contractDigest": "sha256:93a3f47f42e57101d50fe1a201c08105d16df2522045cdfdf457193fa04f1f7a",
-      "eventClosureDigest": "sha256:91eb1bfa324511df62d1159f5475616cf0fbe3561e58ba099a2d225e86694adf",
+      "version": 4,
+      "contractDigest": "sha256:1255a220d8695cfb46dcdb442aadaf310456d05468b0a915b4641b4740ba5b40",
+      "eventClosureDigest": "sha256:199e7a478310e22fd9354df012d83a4eeb951e767bffb87cb474a01ba70281a5",
       "inputContract": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -23949,7 +23874,7 @@
               "context": {
                 "request_id": "37eee725-393a-488b-9d49-d4498272f838",
                 "operation_id": "simulation_workspaces.suspend",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "7065573a-dc34-4621-a393-00e1db1a0cf0",
@@ -24207,7 +24132,7 @@
               "context": {
                 "request_id": "37eee725-393a-488b-9d49-d4498272f838",
                 "operation_id": "simulation_workspaces.suspend",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "7065573a-dc34-4621-a393-00e1db1a0cf0",
