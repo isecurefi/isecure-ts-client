@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added the complete generated Bank Simulation control plane to the isolated experimental
+  `./iso20022` Processing entry point. The client exposes capabilities, workspaces, scenarios, runs,
+  clocks, checkpoints, branches, events, and Artifact references while preserving exact contract
+  versions, separate Processing sessions, idempotency, optimistic concurrency, and snapshot
+  pagination. It adds no simulator rules, private Module route, retries, AWS access, checkpoint-byte
+  access, or changes to the permanent WS Channel/File Exchange API.
 - Added an isolated experimental `./iso20022` entry point for the platform's generated balance,
   entry, statement, transaction, validation, payment-capability, and `PaymentOrder` operations. The
   digest-pinned surface carries exact command idempotency/concurrency headers, uses an explicit

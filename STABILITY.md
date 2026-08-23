@@ -29,6 +29,10 @@ The error hierarchy (`ISecureError` and subclasses) is part of the public API. N
 surface. `ProcessingEntitlementDeniedError` is its typed commercial-entitlement refusal. These do
 not replace or change the permanent WS Channel error hierarchy.
 
+The Bank Simulation control namespaces also belong only to the experimental `./iso20022` surface.
+Their generated contracts, revisions, and names can evolve with the digest-pinned Processing
+contract; they do not change the permanent WS Channel/File Exchange API.
+
 ## Runtime support
 
 Node `>= 22` and modern browser bundlers are supported (see the README "Runtime Support" section). Dropping a supported runtime is a breaking change.

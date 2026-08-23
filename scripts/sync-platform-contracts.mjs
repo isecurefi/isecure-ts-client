@@ -59,6 +59,27 @@ const operationIds = [
   "payment_orders.simulate",
   "payment_orders.submit_for_review",
   "payment_orders.validate",
+  "simulation_artifacts.list",
+  "simulation_branches.create",
+  "simulation_capabilities.list",
+  "simulation_checkpoints.create",
+  "simulation_clocks.control",
+  "simulation_events.list",
+  "simulation_runs.get",
+  "simulation_runs.list",
+  "simulation_runs.start",
+  "simulation_scenarios.create",
+  "simulation_scenarios.get",
+  "simulation_scenarios.list",
+  "simulation_scenarios.revise",
+  "simulation_workspaces.activate",
+  "simulation_workspaces.close",
+  "simulation_workspaces.create",
+  "simulation_workspaces.get",
+  "simulation_workspaces.list",
+  "simulation_workspaces.reset",
+  "simulation_workspaces.revise",
+  "simulation_workspaces.suspend",
   "statements.explain",
   "statements.get",
   "statements.list",
@@ -73,15 +94,23 @@ const operationIds = [
 const arguments_ = process.argv.slice(2);
 const mode = arguments_.includes("--write") ? "write" : arguments_.includes("--check") ? "check" : undefined;
 if (mode === undefined || (arguments_.includes("--write") && arguments_.includes("--check"))) {
-  throw new Error("usage: node scripts/sync-platform-contracts.mjs (--write|--check) [--source <path>]");
+  throw new Error(
+    "usage: node scripts/sync-platform-contracts.mjs (--write|--check) [--source <path>] [--revision <full-commit>]",
+  );
 }
 const sourceIndex = arguments_.indexOf("--source");
 const platformRoot = resolve(sourceIndex === -1 ? defaultPlatformRoot() : requireArgument(arguments_, sourceIndex + 1));
+const revisionIndex = arguments_.indexOf("--revision");
+const requestedRevision = revisionIndex === -1 ? undefined : requireArgument(arguments_, revisionIndex + 1);
 const sourceRevision =
-  mode === "write"
+  requestedRevision ??
+  (mode === "write"
     ? execFileSync("git", ["-C", platformRoot, "rev-parse", "HEAD"], { encoding: "utf8" }).trim()
-    : JSON.parse(await readFile(lockPath, "utf8")).source.revision;
+    : JSON.parse(await readFile(lockPath, "utf8")).source.revision);
 requireRevision(sourceRevision);
+execFileSync("git", ["-C", platformRoot, "rev-parse", "--verify", `${sourceRevision}^{commit}`], {
+  encoding: "utf8",
+});
 const [sourceClient, sourceOpenApiText, sourceMockText] = [
   sourcePaths.client,
   sourcePaths.openApi,
@@ -281,7 +310,17 @@ function generateContract(sourceText, openApi, revision) {
 
 function generateParameter(openApi, parameter, operationId) {
   const style = parameter.style ?? (parameter.in === "query" ? "form" : "simple");
-  const objectFields = style === "deepObject" ? requireObjectFields(openApi, parameter.schema, operationId) : [];
+  if (
+    (parameter.in === "path" && (style !== "simple" || parameter.explode === true)) ||
+    (parameter.in === "query" && style !== "form" && style !== "deepObject") ||
+    (style === "deepObject" && parameter.explode !== true)
+  ) {
+    throw new Error(`${operationId} uses an unsupported parameter serialization`);
+  }
+  const objectFields =
+    style === "deepObject" || (parameter.in === "path" && parameter.schema?.$ref !== undefined)
+      ? requireObjectFields(openApi, parameter.schema, operationId)
+      : [];
   return {
     name: parameter.name,
     location: parameter.in,

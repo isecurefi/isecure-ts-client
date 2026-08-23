@@ -4,6 +4,31 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { iso20022Operations } from "../generated/iso20022-contracts.js";
 
+const PLATFORM_REVISION = "bd228531a00356c51aee43bcf46067be39da1aaa";
+const SIMULATION_OPERATION_IDS = [
+  "simulation_artifacts.list",
+  "simulation_branches.create",
+  "simulation_capabilities.list",
+  "simulation_checkpoints.create",
+  "simulation_clocks.control",
+  "simulation_events.list",
+  "simulation_runs.get",
+  "simulation_runs.list",
+  "simulation_runs.start",
+  "simulation_scenarios.create",
+  "simulation_scenarios.get",
+  "simulation_scenarios.list",
+  "simulation_scenarios.revise",
+  "simulation_workspaces.activate",
+  "simulation_workspaces.close",
+  "simulation_workspaces.create",
+  "simulation_workspaces.get",
+  "simulation_workspaces.list",
+  "simulation_workspaces.reset",
+  "simulation_workspaces.revise",
+  "simulation_workspaces.suspend",
+] as const;
+
 interface PlatformContractLock {
   schemaVersion: number;
   source: {
@@ -37,7 +62,7 @@ describe("generated platform contract parity", () => {
 
     expect(lock.schemaVersion).toBe(1);
     expect(lock.source.repository).toBe("isecurefi/bankfiles-platform");
-    expect(lock.source.revision).toMatch(/^[0-9a-f]{40}$/u);
+    expect(lock.source.revision).toBe(PLATFORM_REVISION);
     expect(lock.source.processingClientSha256).toMatch(/^[0-9a-f]{64}$/u);
     expect(lock.source.processingOpenApiSha256).toMatch(/^[0-9a-f]{64}$/u);
     expect(lock.source.processingMockSha256).toMatch(/^[0-9a-f]{64}$/u);
@@ -86,5 +111,48 @@ describe("generated platform contract parity", () => {
     expect(new Set(Object.values(iso20022Operations).map((operation) => operation.contractDigest)).size).toBe(
       lock.generated.operationIds.length,
     );
+  });
+
+  it("selects the complete public Bank Simulation control plane without the private Module operation", () => {
+    const selected = Object.keys(iso20022Operations).filter((operationId) => operationId.startsWith("simulation_"));
+
+    expect(selected).toEqual(SIMULATION_OPERATION_IDS);
+    expect(iso20022Operations).not.toHaveProperty("bank_simulation.apply_transition");
+    for (const operationId of SIMULATION_OPERATION_IDS) {
+      const operation = iso20022Operations[operationId];
+      expect(operation.successResponse).toMatchObject({ kind: "json" });
+      expect(operation.contractDigest).toMatch(/^sha256:[0-9a-f]{64}$/u);
+      expect(operation.idempotency).toBe(operation.method === "POST" ? "required" : "none");
+    }
+  });
+
+  it("retains generated revision-reference and snapshot-pagination schemas", () => {
+    const getOperations = [
+      iso20022Operations["simulation_runs.get"],
+      iso20022Operations["simulation_scenarios.get"],
+      iso20022Operations["simulation_workspaces.get"],
+    ];
+    for (const operation of getOperations) {
+      expect(operation.parameters).toEqual([
+        {
+          name: "resource_reference",
+          location: "path",
+          inputField: "resource_reference",
+          required: true,
+          style: "simple",
+          objectFields: ["resource_type", "resource_id", "resource_version", "revision_id"],
+        },
+      ]);
+    }
+
+    for (const operationId of SIMULATION_OPERATION_IDS.filter((operationId) => operationId.endsWith(".list"))) {
+      const page = iso20022Operations[operationId].parameters.find((parameter) => parameter.name === "page");
+      expect(page).toMatchObject({
+        location: "query",
+        required: true,
+        style: "deepObject",
+        objectFields: ["page_size", "cursor"],
+      });
+    }
   });
 });
