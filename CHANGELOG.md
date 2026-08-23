@@ -28,6 +28,23 @@
 - Added `parseMode` / `parseLogLevel` (and `isMode` / `isLogLevel`) input guards so untrusted values such as environment variables are validated instead of unchecked-cast.
 - Tightened the `classifyErrorReason` "unconfirmed" heuristic to avoid matching unrelated responses that merely contain the word "confirm".
 
+## [2.2.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.1.0...isecure-ts-client-v2.2.0) (2026-08-23)
+
+
+### Features
+
+* add manual processing payment upload example ([6f50d7e](https://github.com/isecurefi/isecure-ts-client/commit/6f50d7eb37f7365818a6f6101bdf9f9b6514dac2))
+* add verified payment export client ([d8634f8](https://github.com/isecurefi/isecure-ts-client/commit/d8634f88d8c41dfec97460291ea94b5e8a4cb9ad))
+* **examples:** add Processing simulator journey ([27aa9c1](https://github.com/isecurefi/isecure-ts-client/commit/27aa9c124e656f840f0a882b6b4f5482da6b9b04))
+* **iso20022:** add bank simulation control client ([15d592c](https://github.com/isecurefi/isecure-ts-client/commit/15d592c6c57ab23a90854196284b96c757b79c1c))
+* **iso20022:** add payment submission client ([b3bd7a9](https://github.com/isecurefi/isecure-ts-client/commit/b3bd7a9384ce0769be6a0b821f669158d3174e08))
+
+
+### Bug Fixes
+
+* refresh audited build dependencies ([f1e321d](https://github.com/isecurefi/isecure-ts-client/commit/f1e321d262436d849377fc17956f68aa911f5af0))
+* repin payment export profile lifecycle contract ([14445b2](https://github.com/isecurefi/isecure-ts-client/commit/14445b2d51c7dc010676b9362c91a0c812167fe3))
+
 ## [2.1.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.0.0...isecure-ts-client-v2.1.0) (2026-08-10)
 
 
