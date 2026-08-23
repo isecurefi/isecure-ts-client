@@ -46,6 +46,12 @@ describe("experimental ISO 20022 client", () => {
     const paymentExportId = "00000000-0000-4000-8000-000000000002";
     const profileId = "00000000-0000-4000-8000-000000000003";
     const claimId = "00000000-0000-4000-8000-000000000005";
+    const simulationReference = {
+      resource_type: "simulation_workspace",
+      resource_id: resource.resource_id,
+      resource_version: "1",
+      revision_id: paymentExportId,
+    } as const;
     const contentAuthority = {
       artifact_id: "00000000-0000-4000-8000-000000000004",
       artifact_digest: `sha256:${"0".repeat(64)}`,
@@ -155,6 +161,51 @@ describe("experimental ISO 20022 client", () => {
         { idempotencyKey: "synthetic-submit", expectedResourceVersion: '"1"' },
       ),
       client.paymentBatches.validate({ payment_order_id: resource.resource_id, revision_id: resource.resource_id }),
+      client.simulationArtifacts.list({ run_reference: simulationReference, page: {} }),
+      client.simulationBranches.create({} as never, { idempotencyKey: "synthetic-branch" }),
+      client.simulationCapabilities.list({ page: {} }),
+      client.simulationCheckpoints.create({} as never, {
+        idempotencyKey: "synthetic-checkpoint",
+        expectedResourceVersion: '"1"',
+      }),
+      client.simulationClocks.control({} as never, {
+        idempotencyKey: "synthetic-clock",
+        expectedResourceVersion: '"1"',
+      }),
+      client.simulationEvents.list({ workspace_reference: simulationReference, page: {} }),
+      client.simulationRuns.get({ resource_reference: simulationReference }),
+      client.simulationRuns.list({ workspace_reference: simulationReference, page: {} }),
+      client.simulationRuns.start({} as never, { idempotencyKey: "synthetic-run" }),
+      client.simulationScenarios.create({} as never, { idempotencyKey: "synthetic-scenario" }),
+      client.simulationScenarios.get({ resource_reference: simulationReference }),
+      client.simulationScenarios.list({ workspace_reference: simulationReference, page: {} }),
+      client.simulationScenarios.revise({} as never, {
+        idempotencyKey: "synthetic-scenario-revise",
+        expectedResourceVersion: '"1"',
+      }),
+      client.simulationWorkspaces.activate({} as never, {
+        idempotencyKey: "synthetic-workspace-activate",
+        expectedResourceVersion: '"1"',
+      }),
+      client.simulationWorkspaces.close({} as never, {
+        idempotencyKey: "synthetic-workspace-close",
+        expectedResourceVersion: '"1"',
+      }),
+      client.simulationWorkspaces.create({} as never, { idempotencyKey: "synthetic-workspace" }),
+      client.simulationWorkspaces.get({ resource_reference: simulationReference }),
+      client.simulationWorkspaces.list({ page: {} }),
+      client.simulationWorkspaces.reset({} as never, {
+        idempotencyKey: "synthetic-workspace-reset",
+        expectedResourceVersion: '"1"',
+      }),
+      client.simulationWorkspaces.revise({} as never, {
+        idempotencyKey: "synthetic-workspace-revise",
+        expectedResourceVersion: '"1"',
+      }),
+      client.simulationWorkspaces.suspend({} as never, {
+        idempotencyKey: "synthetic-workspace-suspend",
+        expectedResourceVersion: '"1"',
+      }),
       client.statements.explain(resource),
       client.statements.get(resource),
       client.statements.list({ page_size: 25 }),
@@ -166,7 +217,7 @@ describe("experimental ISO 20022 client", () => {
       client.validations.list({ run_kind: "validate" }),
     ]);
 
-    expect(transport.calls).toHaveLength(50);
+    expect(transport.calls).toHaveLength(71);
     expect(transport.calls.map((call) => call.operationId)).toEqual(Object.keys(iso20022Operations));
     for (const call of transport.calls) {
       const operation = iso20022Operations[call.operationId as keyof typeof iso20022Operations];
@@ -182,6 +233,11 @@ describe("experimental ISO 20022 client", () => {
     expect(transport.calls.find((call) => call.operationId === "payment_orders.finalize_draft")?.metadata).toEqual({
       contractVersion: 1,
       idempotencyKey: "synthetic-finalize",
+      expectedResourceVersion: '"1"',
+    });
+    expect(transport.calls.find((call) => call.operationId === "simulation_workspaces.reset")?.metadata).toEqual({
+      contractVersion: 3,
+      idempotencyKey: "synthetic-workspace-reset",
       expectedResourceVersion: '"1"',
     });
   });
@@ -223,5 +279,16 @@ describe("experimental ISO 20022 client", () => {
     expect(client.paymentOrders.finalizeDraft).toBe(client.paymentBatches.finalize);
     expect(client.paymentOrders.reviseDraft).toBe(client.paymentBatches.replaceDraft);
     expect(client).not.toHaveProperty("paymentFeedbacks");
+    expect(Object.keys(client.simulationWorkspaces)).toEqual([
+      "activate",
+      "close",
+      "create",
+      "get",
+      "list",
+      "reset",
+      "revise",
+      "suspend",
+    ]);
+    expect(client).not.toHaveProperty("applyBankSimulationTransition");
   });
 });

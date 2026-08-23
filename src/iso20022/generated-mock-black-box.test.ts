@@ -220,6 +220,48 @@ function invoke(
       return client.paymentBatches.submitForReview(input as never, revisionOptions(operationId));
     case "payment_orders.validate":
       return client.paymentBatches.validate(input as never);
+    case "simulation_artifacts.list":
+      return client.simulationArtifacts.list(input as never);
+    case "simulation_branches.create":
+      return client.simulationBranches.create(input as never, commandOptions(operationId));
+    case "simulation_capabilities.list":
+      return client.simulationCapabilities.list(input as never);
+    case "simulation_checkpoints.create":
+      return client.simulationCheckpoints.create(input as never, revisionOptions(operationId));
+    case "simulation_clocks.control":
+      return client.simulationClocks.control(input as never, revisionOptions(operationId));
+    case "simulation_events.list":
+      return client.simulationEvents.list(input as never);
+    case "simulation_runs.get":
+      return client.simulationRuns.get(input as never);
+    case "simulation_runs.list":
+      return client.simulationRuns.list(input as never);
+    case "simulation_runs.start":
+      return client.simulationRuns.start(input as never, commandOptions(operationId));
+    case "simulation_scenarios.create":
+      return client.simulationScenarios.create(input as never, commandOptions(operationId));
+    case "simulation_scenarios.get":
+      return client.simulationScenarios.get(input as never);
+    case "simulation_scenarios.list":
+      return client.simulationScenarios.list(input as never);
+    case "simulation_scenarios.revise":
+      return client.simulationScenarios.revise(input as never, revisionOptions(operationId));
+    case "simulation_workspaces.activate":
+      return client.simulationWorkspaces.activate(input as never, revisionOptions(operationId));
+    case "simulation_workspaces.close":
+      return client.simulationWorkspaces.close(input as never, revisionOptions(operationId));
+    case "simulation_workspaces.create":
+      return client.simulationWorkspaces.create(input as never, commandOptions(operationId));
+    case "simulation_workspaces.get":
+      return client.simulationWorkspaces.get(input as never);
+    case "simulation_workspaces.list":
+      return client.simulationWorkspaces.list(input as never);
+    case "simulation_workspaces.reset":
+      return client.simulationWorkspaces.reset(input as never, revisionOptions(operationId));
+    case "simulation_workspaces.revise":
+      return client.simulationWorkspaces.revise(input as never, revisionOptions(operationId));
+    case "simulation_workspaces.suspend":
+      return client.simulationWorkspaces.suspend(input as never, revisionOptions(operationId));
     case "statements.explain":
       return client.statements.explain(input as never);
     case "statements.get":
