@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "00a7c7abed377d6a476d1561246747088a5d2c86",
-    "processingClientSha256": "12d9f266638035ceeec34060868eb864e8e5247c697cb025128ebaa166fea072",
-    "processingOpenApiSha256": "e06844d0c7d3eaefe182e54ce6c8ec057610362502b40edea625210591f3ac01",
-    "processingMockSha256": "a8edacc3ee988d625073322ca829a53cb23116248a4984d11e96404dbbda1f64"
+    "revision": "bd228531a00356c51aee43bcf46067be39da1aaa",
+    "processingClientSha256": "33ff5f542f2f8996f5821b9974d67e20d92d9d1a672fc515fca86065b8ea2e26",
+    "processingOpenApiSha256": "1a8886abf32bed0df43b77c9a2be0a7a1556c106af464e43d9b697bf521ff8a4",
+    "processingMockSha256": "8225a7518e257c61cd801a8e7fb9b877e50bcc2ca9813a8b4a98c74d79a2dc6f"
   },
   "generated": {
     "path": "src/generated/iso20022-contracts.ts",
-    "sha256": "5c22fdd69571da4d8c7792f7a1c30776153ef526a0f502d6df41df4d89c23c46",
+    "sha256": "c5843ef150f12463bee861d95c52a6146a1609f4185c0b9676861b7161486629",
     "operationIds": [
       "balances.explain",
       "balances.get",
@@ -52,6 +52,27 @@
       "payment_orders.simulate",
       "payment_orders.submit_for_review",
       "payment_orders.validate",
+      "simulation_artifacts.list",
+      "simulation_branches.create",
+      "simulation_capabilities.list",
+      "simulation_checkpoints.create",
+      "simulation_clocks.control",
+      "simulation_events.list",
+      "simulation_runs.get",
+      "simulation_runs.list",
+      "simulation_runs.start",
+      "simulation_scenarios.create",
+      "simulation_scenarios.get",
+      "simulation_scenarios.list",
+      "simulation_scenarios.revise",
+      "simulation_workspaces.activate",
+      "simulation_workspaces.close",
+      "simulation_workspaces.create",
+      "simulation_workspaces.get",
+      "simulation_workspaces.list",
+      "simulation_workspaces.reset",
+      "simulation_workspaces.revise",
+      "simulation_workspaces.suspend",
       "statements.explain",
       "statements.get",
       "statements.list",
@@ -65,6 +86,6 @@
   },
   "generatedMock": {
     "path": "test-data/generated/iso20022-scenarios.json",
-    "sha256": "2a63f4176fd6d55df72ba69f34840d0b68c88d88070349f55c31c1a345ec8c27"
+    "sha256": "0c433203516aedc08684251400162b46105aca550cf8fda827ce28d93a62f5fc"
   }
 }

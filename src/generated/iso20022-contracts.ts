@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@00a7c7abed377d6a476d1561246747088a5d2c86
-// model: Bankfiles@0.100.0
-// source-digest: sha256:7a6d0391667a2becd988a3b5cb81c1e39304cee8a899faafcfeb71e36b6b045f
+// source: isecurefi/bankfiles-platform@bd228531a00356c51aee43bcf46067be39da1aaa
+// model: Bankfiles@0.103.0
+// source-digest: sha256:cbc2f377446f7c2ede1e0eaaac86f379e7005e44e851b7fd1497b4de93cc2b87
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = "approve" | "reject";
@@ -83,6 +83,42 @@ export type PaymentRemittanceKind = "none" | "unstructured" | "structured_credit
 export type PaymentTransferOutcomeState = "not_observed" | "pending" | "accepted" | "rejected" | "settled" | "returned" | "reversed" | "indeterminate" | "contradictory";
 
 export type PaymentValidationOutcome = "not_evaluated" | "valid" | "invalid" | "indeterminate";
+
+export type SimulationArtifactAccessMode = "file_exchange";
+
+export type SimulationArtifactRole = "input" | "status_report" | "debit_credit_notification" | "statement" | "validation_report";
+
+export type SimulationBehaviorScope = "synthetic_only";
+
+export type SimulationClockControlKind = "pause" | "use_real_time_pacing" | "set_acceleration" | "step_duration" | "step_event" | "advance_to_instant";
+
+export type SimulationClockMode = "paused" | "real_time" | "accelerated";
+
+export type SimulationDataAdmissionMode = "synthetic";
+
+export type SimulationEventKind = "run_accepted" | "payment_accepted" | "payment_rejected" | "payment_booked" | "payment_returned" | "payment_reversed" | "artifact_produced" | "clock_advanced" | "run_completed" | "run_indeterminate";
+
+export type SimulationFaultKind = "duplicate_evidence" | "out_of_order_evidence" | "missing_response" | "malformed_response" | "timeout_after_acceptance" | "contradictory_status";
+
+export type SimulationFileDirection = "customer_to_bank" | "bank_to_customer";
+
+export type SimulationRunState = "accepted" | "running" | "paused" | "succeeded" | "failed" | "indeterminate" | "cancelled";
+
+export type SimulationRuntimeAvailability = "contract_only";
+
+export type SimulationRuntimeTimeZone = "utc" | "europe_helsinki" | "europe_tallinn" | "europe_stockholm" | "europe_oslo" | "europe_copenhagen" | "europe_berlin";
+
+export type SimulationRuntimeWeekendRule = "saturday_and_sunday";
+
+export type SimulationScenarioOutcome = "accept" | "reject" | "partially_reject" | "delay" | "return" | "reverse" | "cancel" | "indeterminate";
+
+export type SimulationScenarioState = "draft" | "active" | "superseded";
+
+export type SimulationTopologySubjectKind = "bank" | "legal_entity" | "account" | "currency" | "counterparty";
+
+export type SimulationWorkspaceResetScope = "runtime_state" | "runtime_state_and_balances" | "runtime_state_balances_and_active_scenarios";
+
+export type SimulationWorkspaceState = "draft" | "active" | "suspended" | "closed";
 
 export interface BalanceGetResult {
     readonly context: OperationContext;
@@ -335,6 +371,15 @@ export interface IdempotencyResult {
     readonly retained_until: string;
 }
 
+export interface LifecycleTransition {
+    readonly transition_id: string;
+    readonly transition_ordinal: number;
+    readonly from_state?: string;
+    readonly to_state: string;
+    readonly reason_code: string;
+    readonly occurred_at: string;
+}
+
 export interface NextOperation {
     readonly operation_id: string;
     readonly target?: ResourceReference;
@@ -373,6 +418,10 @@ export interface PageRequest {
 export interface PageResult {
     readonly next_cursor?: string;
     readonly snapshot_reference: string;
+}
+
+export interface PlatformIssues {
+    readonly issues: readonly OperationIssue[];
 }
 
 export interface ResourceReference {
@@ -1169,6 +1218,553 @@ export interface UnstructuredPaymentRemittance {
     readonly text_lines: readonly string[];
 }
 
+export interface ControlSimulationClockInput {
+    readonly workspace_reference: ResourceReference;
+    readonly branch_reference?: ResourceReference;
+    readonly expected_clock_revision: string;
+    readonly control_kind: SimulationClockControlKind;
+    readonly acceleration_multiplier?: string;
+    readonly step_seconds?: string;
+    readonly advance_to_virtual_instant?: string;
+}
+
+export interface CreateSimulationBranchInput {
+    readonly checkpoint_reference: ResourceReference;
+    readonly scenario_revision_reference: ResourceReference;
+}
+
+export interface CreateSimulationCheckpointInput {
+    readonly run_reference: ResourceReference;
+    readonly expected_resource_version: string;
+}
+
+export interface CreateSimulationScenarioInput {
+    readonly workspace_revision_reference: ResourceReference;
+    readonly scenario_profile_id: string;
+    readonly scenario_profile_version: string;
+    readonly name: string;
+    readonly directives: readonly SimulationScenarioDirective[];
+}
+
+export interface CreateSimulationWorkspaceInput {
+    readonly capability_reference: ResourceReference;
+    readonly data_admission_mode: SimulationDataAdmissionMode;
+    readonly topology: SimulationTopology;
+    readonly service_setup: SimulationServiceSetup;
+}
+
+export interface ResetSimulationWorkspaceInput {
+    readonly workspace_reference: ResourceReference;
+    readonly branch_reference?: ResourceReference;
+    readonly expected_resource_version: string;
+    readonly reset_scope: SimulationWorkspaceResetScope;
+    readonly reason_code: string;
+}
+
+export interface ReviseSimulationScenarioInput {
+    readonly scenario_reference: ResourceReference;
+    readonly expected_resource_version: string;
+    readonly scenario_profile_id: string;
+    readonly scenario_profile_version: string;
+    readonly name: string;
+    readonly directives: readonly SimulationScenarioDirective[];
+}
+
+export interface ReviseSimulationWorkspaceInput {
+    readonly workspace_reference: ResourceReference;
+    readonly expected_resource_version: string;
+    readonly capability_reference: ResourceReference;
+    readonly data_admission_mode: SimulationDataAdmissionMode;
+    readonly topology: SimulationTopology;
+    readonly service_setup: SimulationServiceSetup;
+}
+
+export interface SimulationArtifactListInput {
+    readonly run_reference: ResourceReference;
+    readonly role?: SimulationArtifactRole;
+    readonly page: PageRequest;
+}
+
+export interface SimulationArtifactListResult {
+    readonly context: OperationContext;
+    readonly artifacts: readonly SimulationArtifactReference[];
+    readonly page: PageResult;
+}
+
+export interface SimulationArtifactReference {
+    readonly artifact_reference: ResourceReference;
+    readonly file_exchange_occurrence_reference: ResourceReference;
+    readonly role: SimulationArtifactRole;
+    readonly media_type: string;
+    readonly schema_namespace?: string;
+    readonly profile_id: string;
+    readonly profile_version: string;
+    readonly produced_at_virtual_instant?: string;
+}
+
+export interface SimulationBranchResource {
+    readonly branch_id: string;
+    readonly parent_checkpoint_reference: ResourceReference;
+    readonly scenario_revision_reference: ResourceReference;
+    readonly initial_run_reference?: ResourceReference;
+    readonly created_at: string;
+}
+
+export interface SimulationBranchResult {
+    readonly context: OperationContext;
+    readonly branch: SimulationBranchResource;
+}
+
+export interface SimulationCapability {
+    readonly capability_id: string;
+    readonly capability_version: string;
+    readonly available_data_admission_modes: readonly SimulationDataAdmissionMode[];
+    readonly clock_modes: readonly SimulationClockMode[];
+    readonly profile_capabilities: readonly SimulationProfileCapability[];
+    readonly runtime_policy_profiles: readonly SimulationRuntimePolicyProfile[];
+    readonly quota: SimulationQuota;
+    readonly exact_artifact_access: SimulationArtifactAccessMode;
+    readonly runtime_availability: SimulationRuntimeAvailability;
+    readonly behavior_scope: SimulationBehaviorScope;
+}
+
+export interface SimulationCapabilityListInput {
+    readonly data_admission_mode?: SimulationDataAdmissionMode;
+    readonly page: PageRequest;
+}
+
+export interface SimulationCapabilityListResult {
+    readonly context: OperationContext;
+    readonly capabilities: readonly SimulationCapability[];
+    readonly page: PageResult;
+}
+
+export interface SimulationCheckpointResource {
+    readonly checkpoint_id: string;
+    readonly run_reference: ResourceReference;
+    readonly checkpoint_ordinal: number;
+    readonly clock: SimulationClockSnapshot;
+    readonly pending_event_count: number;
+    readonly created_at: string;
+}
+
+export interface SimulationCheckpointResult {
+    readonly context: OperationContext;
+    readonly checkpoint: SimulationCheckpointResource;
+}
+
+export interface SimulationClockControlResult {
+    readonly context: OperationContext;
+    readonly clock: SimulationClockSnapshot;
+    readonly lifecycle: LifecycleTransition;
+}
+
+export interface SimulationClockSnapshot {
+    readonly clock_revision: string;
+    readonly mode: SimulationClockMode;
+    readonly virtual_instant: string;
+    readonly acceleration_multiplier?: string;
+    readonly next_event_instant?: string;
+    readonly pending_event_count: number;
+}
+
+export interface SimulationEventListInput {
+    readonly workspace_reference: ResourceReference;
+    readonly run_reference?: ResourceReference;
+    readonly event_kind?: SimulationEventKind;
+    readonly page: PageRequest;
+}
+
+export interface SimulationEventListResult {
+    readonly context: OperationContext;
+    readonly events: readonly SimulationEventResource[];
+    readonly page: PageResult;
+}
+
+export interface SimulationEventResource {
+    readonly event_id: string;
+    readonly event_sequence: string;
+    readonly event_kind: SimulationEventKind;
+    readonly workspace_reference: ResourceReference;
+    readonly run_reference?: ResourceReference;
+    readonly subject_reference?: ResourceReference;
+    readonly artifact_references: readonly SimulationArtifactReference[];
+    readonly reason_code?: string;
+    readonly virtual_occurred_at?: string;
+    readonly recorded_at: string;
+}
+
+export interface SimulationExactArtifactInput {
+    readonly artifact: SimulationArtifactReference;
+}
+
+export interface SimulationFileServicePermission {
+    readonly permission_key: string;
+    readonly connection_key: string;
+    readonly file_type_code: string;
+    readonly direction: SimulationFileDirection;
+    readonly message_namespace: string;
+    readonly profile_id: string;
+    readonly profile_version: string;
+}
+
+export interface SimulationLifecycleTransition {
+    readonly transition_id: string;
+    readonly transition_ordinal: number;
+    readonly from_state?: SimulationRunState;
+    readonly to_state: SimulationRunState;
+    readonly reason_code: string;
+    readonly virtual_occurred_at?: string;
+    readonly recorded_at: string;
+}
+
+export interface SimulationPaymentOrderInput {
+    readonly payment_order_revision_reference: ResourceReference;
+}
+
+export interface SimulationProfileCapability {
+    readonly profile_id: string;
+    readonly profile_version: string;
+    readonly message_namespace: string;
+    readonly accepted_input_media_types: readonly string[];
+    readonly generated_output_media_types: readonly string[];
+}
+
+export interface SimulationQuota {
+    readonly maximum_banks: number;
+    readonly maximum_legal_entities: number;
+    readonly maximum_accounts: number;
+    readonly maximum_counterparties: number;
+    readonly maximum_currencies: number;
+    readonly maximum_scenarios: number;
+    readonly maximum_runs: number;
+    readonly maximum_artifacts_per_run: number;
+    readonly maximum_pending_events: number;
+    readonly maximum_agreements: number;
+    readonly maximum_service_users: number;
+    readonly maximum_certificates: number;
+    readonly maximum_connections: number;
+    readonly maximum_file_permissions: number;
+    readonly maximum_schedules: number;
+    readonly maximum_cutoffs: number;
+    readonly maximum_acceleration_multiplier: string;
+    readonly maximum_step_seconds: string;
+}
+
+export interface SimulationResourceGetInput {
+    readonly resource_reference: ResourceReference;
+}
+
+export interface SimulationRunGetResult {
+    readonly context: OperationContext;
+    readonly run: SimulationRunResource;
+}
+
+export interface SimulationRunListInput {
+    readonly workspace_reference: ResourceReference;
+    readonly scenario_reference?: ResourceReference;
+    readonly state?: SimulationRunState;
+    readonly page: PageRequest;
+}
+
+export interface SimulationRunListResult {
+    readonly context: OperationContext;
+    readonly runs: readonly SimulationRunResource[];
+    readonly page: PageResult;
+}
+
+export interface SimulationRunMutationResult {
+    readonly context: OperationContext;
+    readonly task: TaskReference;
+    readonly run: SimulationRunResource;
+}
+
+export interface SimulationRunResource {
+    readonly run_id: string;
+    readonly resource_version: string;
+    readonly revision_id: string;
+    readonly revision_number: string;
+    readonly state: SimulationRunState;
+    readonly workspace_revision_reference: ResourceReference;
+    readonly scenario_revision_reference: ResourceReference;
+    readonly branch_reference?: ResourceReference;
+    readonly data_admission_mode: SimulationDataAdmissionMode;
+    readonly input: SimulationRunInput;
+    readonly clock: SimulationClockSnapshot;
+    readonly input_artifacts: readonly SimulationArtifactReference[];
+    readonly output_artifacts: readonly SimulationArtifactReference[];
+    readonly transitions: readonly SimulationLifecycleTransition[];
+    readonly simulator_release_reference: ResourceReference;
+    readonly accepted_at: string;
+    readonly completed_at?: string;
+}
+
+export interface SimulationRuntimeCurrencyPolicy {
+    readonly currency: string;
+    readonly booking_cutoff: SimulationRuntimePolicyLocalTime;
+    readonly fixed_charge: ExactMoney;
+}
+
+export interface SimulationRuntimeFxRate {
+    readonly source_currency: string;
+    readonly target_currency: string;
+    readonly target_units_per_source_unit: string;
+}
+
+export interface SimulationRuntimePolicyLocalTime {
+    readonly hour: number;
+    readonly minute: number;
+    readonly second: number;
+}
+
+export interface SimulationRuntimePolicyProfile {
+    readonly runtime_policy_profile_id: string;
+    readonly runtime_policy_profile_version: string;
+    readonly calendar_profile_id: string;
+    readonly calendar_profile_version: string;
+    readonly holiday_release_id: string;
+    readonly holiday_release_version: string;
+    readonly holiday_release_digest_algorithm: string;
+    readonly holiday_release_digest: string;
+    readonly business_timezone: SimulationRuntimeTimeZone;
+    readonly calendar_valid_from: string;
+    readonly calendar_valid_until: string;
+    readonly weekend_rule: SimulationRuntimeWeekendRule;
+    readonly holiday_dates: readonly string[];
+    readonly currency_policies: readonly SimulationRuntimeCurrencyPolicy[];
+    readonly directional_fx_pairs: readonly SimulationRuntimeFxPair[];
+}
+
+export interface SimulationRuntimeUnsupportedFxPair {
+    readonly source_currency: string;
+    readonly target_currency: string;
+    readonly reason_code: string;
+}
+
+export interface SimulationScenarioDirective {
+    readonly directive_ordinal: number;
+    readonly outcome: SimulationScenarioOutcome;
+    readonly fault_kind?: SimulationFaultKind;
+    readonly target_reference?: SimulationTopologyReference;
+    readonly scheduled_virtual_instant?: string;
+    readonly delay_seconds?: string;
+    readonly reason_code?: string;
+}
+
+export interface SimulationScenarioGetResult {
+    readonly context: OperationContext;
+    readonly scenario: SimulationScenarioResource;
+}
+
+export interface SimulationScenarioListInput {
+    readonly workspace_reference: ResourceReference;
+    readonly state?: SimulationScenarioState;
+    readonly page: PageRequest;
+}
+
+export interface SimulationScenarioListResult {
+    readonly context: OperationContext;
+    readonly scenarios: readonly SimulationScenarioResource[];
+    readonly page: PageResult;
+}
+
+export interface SimulationScenarioMutationResult {
+    readonly context: OperationContext;
+    readonly scenario: SimulationScenarioResource;
+    readonly lifecycle: LifecycleTransition;
+}
+
+export interface SimulationScenarioResource {
+    readonly scenario_id: string;
+    readonly resource_version: string;
+    readonly revision_id: string;
+    readonly revision_number: string;
+    readonly state: SimulationScenarioState;
+    readonly workspace_revision_reference: ResourceReference;
+    readonly scenario_profile_id: string;
+    readonly scenario_profile_version: string;
+    readonly name: string;
+    readonly directives: readonly SimulationScenarioDirective[];
+    readonly created_at: string;
+}
+
+export interface SimulationServiceCutoffDefinition {
+    readonly cutoff_key: string;
+    readonly permission_key: string;
+    readonly cutoff_profile_id: string;
+    readonly cutoff_profile_version: string;
+    readonly business_timezone: string;
+    readonly currency?: string;
+}
+
+export interface SimulationServiceScheduleDefinition {
+    readonly schedule_key: string;
+    readonly permission_key: string;
+    readonly schedule_profile_id: string;
+    readonly schedule_profile_version: string;
+    readonly business_timezone: string;
+}
+
+export interface SimulationServiceSetup {
+    readonly agreements: readonly SyntheticBankAgreementDefinition[];
+    readonly users: readonly SyntheticWebServicesUserDefinition[];
+    readonly certificates: readonly SyntheticCertificateDefinition[];
+    readonly connections: readonly SyntheticBankConnectionDefinition[];
+    readonly file_permissions: readonly SimulationFileServicePermission[];
+    readonly schedules: readonly SimulationServiceScheduleDefinition[];
+    readonly cutoffs: readonly SimulationServiceCutoffDefinition[];
+}
+
+export interface SimulationTopology {
+    readonly banks: readonly SyntheticBankDefinition[];
+    readonly legal_entities: readonly SyntheticLegalEntityDefinition[];
+    readonly currencies: readonly SyntheticCurrencyDefinition[];
+    readonly accounts: readonly SyntheticAccountDefinition[];
+    readonly counterparties: readonly SyntheticCounterpartyDefinition[];
+}
+
+export interface SimulationTopologyReference {
+    readonly subject_kind: SimulationTopologySubjectKind;
+    readonly subject_key: string;
+}
+
+export interface SimulationWorkspaceGetResult {
+    readonly context: OperationContext;
+    readonly workspace: SimulationWorkspaceResource;
+}
+
+export interface SimulationWorkspaceListInput {
+    readonly state?: SimulationWorkspaceState;
+    readonly page: PageRequest;
+}
+
+export interface SimulationWorkspaceListResult {
+    readonly context: OperationContext;
+    readonly workspaces: readonly SimulationWorkspaceResource[];
+    readonly page: PageResult;
+}
+
+export interface SimulationWorkspaceMutationResult {
+    readonly context: OperationContext;
+    readonly workspace: SimulationWorkspaceResource;
+    readonly lifecycle: LifecycleTransition;
+}
+
+export interface SimulationWorkspaceResetResource {
+    readonly reset_id: string;
+    readonly source_workspace_revision_reference: ResourceReference;
+    readonly result_workspace_revision_reference: ResourceReference;
+    readonly reset_scope: SimulationWorkspaceResetScope;
+    readonly reason_code: string;
+    readonly superseded_scenario_revision_references: readonly ResourceReference[];
+    readonly recorded_at: string;
+}
+
+export interface SimulationWorkspaceResetResult {
+    readonly context: OperationContext;
+    readonly workspace: SimulationWorkspaceResource;
+    readonly reset: SimulationWorkspaceResetResource;
+    readonly lifecycle: LifecycleTransition;
+}
+
+export interface SimulationWorkspaceResource {
+    readonly workspace_id: string;
+    readonly resource_version: string;
+    readonly revision_id: string;
+    readonly revision_number: string;
+    readonly state: SimulationWorkspaceState;
+    readonly data_admission_mode: SimulationDataAdmissionMode;
+    readonly capability_reference: ResourceReference;
+    readonly topology: SimulationTopology;
+    readonly service_setup: SimulationServiceSetup;
+    readonly created_at: string;
+    readonly transitioned_at: string;
+}
+
+export interface StartSimulationRunInput {
+    readonly workspace_revision_reference: ResourceReference;
+    readonly scenario_revision_reference: ResourceReference;
+    readonly branch_reference?: ResourceReference;
+    readonly data_admission_mode: SimulationDataAdmissionMode;
+    readonly input: SimulationRunInput;
+}
+
+export interface SyntheticAccountDefinition {
+    readonly account_key: string;
+    readonly bank_key: string;
+    readonly legal_entity_key: string;
+    readonly currency: string;
+    readonly starting_balance: ExactMoney;
+}
+
+export interface SyntheticBankAgreementDefinition {
+    readonly agreement_key: string;
+    readonly bank_key: string;
+    readonly legal_entity_key: string;
+    readonly agreement_profile_id: string;
+    readonly agreement_profile_version: string;
+    readonly valid_from?: string;
+    readonly valid_until?: string;
+}
+
+export interface SyntheticBankConnectionDefinition {
+    readonly connection_key: string;
+    readonly agreement_key: string;
+    readonly user_key: string;
+    readonly certificate_key: string;
+    readonly connection_profile_id: string;
+    readonly connection_profile_version: string;
+}
+
+export interface SyntheticBankDefinition {
+    readonly bank_key: string;
+    readonly display_name: string;
+    readonly domicile_country: string;
+    readonly runtime_policy_profile_id: string;
+    readonly runtime_policy_profile_version: string;
+    readonly supported_currencies: readonly string[];
+}
+
+export interface SyntheticCertificateDefinition {
+    readonly certificate_key: string;
+    readonly user_key: string;
+    readonly certificate_profile_id: string;
+    readonly certificate_profile_version: string;
+    readonly valid_from: string;
+    readonly valid_until: string;
+}
+
+export interface SyntheticCounterpartyDefinition {
+    readonly counterparty_key: string;
+    readonly display_name: string;
+    readonly domicile_country: string;
+    readonly settlement_account_key?: string;
+}
+
+export interface SyntheticCurrencyDefinition {
+    readonly currency: string;
+    readonly fraction_digits: number;
+}
+
+export interface SyntheticLegalEntityDefinition {
+    readonly legal_entity_key: string;
+    readonly display_name: string;
+    readonly domicile_country: string;
+}
+
+export interface SyntheticWebServicesUserDefinition {
+    readonly user_key: string;
+    readonly agreement_key: string;
+    readonly display_name: string;
+    readonly user_profile_id: string;
+    readonly user_profile_version: string;
+}
+
+export interface TransitionSimulationWorkspaceInput {
+    readonly workspace_reference: ResourceReference;
+    readonly expected_resource_version: string;
+}
+
 export type RequiredAction =
     (HumanReviewAction & { readonly action_type: "human_review" })
     | (StrongAuthenticationAction & { readonly action_type: "strong_authentication" })
@@ -1204,6 +1800,14 @@ export type PaymentTransferOption =
     | (PaymentPriorityOption & { readonly option_type: "priority" })
     | (PaymentAdviceOption & { readonly option_type: "advice" })
     | (PaymentRegulatoryReportingOption & { readonly option_type: "regulatory_reporting" });
+
+export type SimulationRunInput =
+    (SimulationPaymentOrderInput & { readonly input_type: "payment_order_revision" })
+    | (SimulationExactArtifactInput & { readonly input_type: "exact_artifact" });
+
+export type SimulationRuntimeFxPair =
+    (SimulationRuntimeFxRate & { readonly support_status: "supported" })
+    | (SimulationRuntimeUnsupportedFxPair & { readonly support_status: "unsupported" });
 
 export interface ProcessingRequestMetadata {
     readonly contractVersion: number;
@@ -2638,6 +3242,766 @@ export const iso20022Operations = {
     "expectedVersion": "none",
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_artifacts.list": {
+    "method": "GET",
+    "path": "/v1/simulation-artifacts",
+    "version": 2,
+    "contractDigest": "sha256:11068487fb4c2d7dec34e66517b61c0f7ad96303bfa52d046156925e3bb5c5dc",
+    "input": "isecure.bankfiles.simulation.SimulationArtifactListInput",
+    "result": "isecure.bankfiles.simulation.SimulationArtifactListResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "run_reference",
+        "location": "query",
+        "inputField": "run_reference",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "resource_type",
+          "resource_id",
+          "resource_version",
+          "revision_id"
+        ]
+      },
+      {
+        "name": "role",
+        "location": "query",
+        "inputField": "role",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page",
+        "location": "query",
+        "inputField": "page",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "page_size",
+          "cursor"
+        ]
+      }
+    ]
+  },
+  "simulation_branches.create": {
+    "method": "POST",
+    "path": "/v1/simulation-branches:create",
+    "version": 3,
+    "contractDigest": "sha256:eaf59ccdc15c370fdcc30bbe963a38567251de3aa8d1226615fb9f68f81da020",
+    "input": "isecure.bankfiles.simulation.CreateSimulationBranchInput",
+    "result": "isecure.bankfiles.simulation.SimulationBranchResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_capabilities.list": {
+    "method": "GET",
+    "path": "/v1/simulation-capabilities",
+    "version": 3,
+    "contractDigest": "sha256:61c7f446935d5db7f3105db065bb8416b4097d27974fe6b14bcf60d526609fea",
+    "input": "isecure.bankfiles.simulation.SimulationCapabilityListInput",
+    "result": "isecure.bankfiles.simulation.SimulationCapabilityListResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "data_admission_mode",
+        "location": "query",
+        "inputField": "data_admission_mode",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page",
+        "location": "query",
+        "inputField": "page",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "page_size",
+          "cursor"
+        ]
+      }
+    ]
+  },
+  "simulation_checkpoints.create": {
+    "method": "POST",
+    "path": "/v1/simulation-checkpoints:create",
+    "version": 3,
+    "contractDigest": "sha256:022690e54e95d74bbe08f8f4786b82212d30732e847178cb93962bed3ca8b975",
+    "input": "isecure.bankfiles.simulation.CreateSimulationCheckpointInput",
+    "result": "isecure.bankfiles.simulation.SimulationCheckpointResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_clocks.control": {
+    "method": "POST",
+    "path": "/v1/simulation-clocks:control",
+    "version": 3,
+    "contractDigest": "sha256:5cd955883432d634f7878f5fd525d638acae68a3c4d52f0c9eeb014d306df8db",
+    "input": "isecure.bankfiles.simulation.ControlSimulationClockInput",
+    "result": "isecure.bankfiles.simulation.SimulationClockControlResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_events.list": {
+    "method": "GET",
+    "path": "/v1/simulation-events",
+    "version": 2,
+    "contractDigest": "sha256:9d9965ecba12d600ebe8c2db0cbeb360fb239cbd431c15fc210d426b5af0a6ef",
+    "input": "isecure.bankfiles.simulation.SimulationEventListInput",
+    "result": "isecure.bankfiles.simulation.SimulationEventListResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "workspace_reference",
+        "location": "query",
+        "inputField": "workspace_reference",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "resource_type",
+          "resource_id",
+          "resource_version",
+          "revision_id"
+        ]
+      },
+      {
+        "name": "run_reference",
+        "location": "query",
+        "inputField": "run_reference",
+        "required": false,
+        "style": "deepObject",
+        "objectFields": [
+          "resource_type",
+          "resource_id",
+          "resource_version",
+          "revision_id"
+        ]
+      },
+      {
+        "name": "event_kind",
+        "location": "query",
+        "inputField": "event_kind",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page",
+        "location": "query",
+        "inputField": "page",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "page_size",
+          "cursor"
+        ]
+      }
+    ]
+  },
+  "simulation_runs.get": {
+    "method": "GET",
+    "path": "/v1/simulation-runs/{resource_reference}",
+    "version": 3,
+    "contractDigest": "sha256:5772c97b906ce580396e7af9dc11d24349b8cbddaedd784103383c3fb69c38dd",
+    "input": "isecure.bankfiles.simulation.SimulationResourceGetInput",
+    "result": "isecure.bankfiles.simulation.SimulationRunGetResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "resource_reference",
+        "location": "path",
+        "inputField": "resource_reference",
+        "required": true,
+        "style": "simple",
+        "objectFields": [
+          "resource_type",
+          "resource_id",
+          "resource_version",
+          "revision_id"
+        ]
+      }
+    ]
+  },
+  "simulation_runs.list": {
+    "method": "GET",
+    "path": "/v1/simulation-runs",
+    "version": 3,
+    "contractDigest": "sha256:aa0e5379cc18f08bc120f4b777c1c4098e8d7db7593ff5c647cc105bd37861a4",
+    "input": "isecure.bankfiles.simulation.SimulationRunListInput",
+    "result": "isecure.bankfiles.simulation.SimulationRunListResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "workspace_reference",
+        "location": "query",
+        "inputField": "workspace_reference",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "resource_type",
+          "resource_id",
+          "resource_version",
+          "revision_id"
+        ]
+      },
+      {
+        "name": "scenario_reference",
+        "location": "query",
+        "inputField": "scenario_reference",
+        "required": false,
+        "style": "deepObject",
+        "objectFields": [
+          "resource_type",
+          "resource_id",
+          "resource_version",
+          "revision_id"
+        ]
+      },
+      {
+        "name": "state",
+        "location": "query",
+        "inputField": "state",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page",
+        "location": "query",
+        "inputField": "page",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "page_size",
+          "cursor"
+        ]
+      }
+    ]
+  },
+  "simulation_runs.start": {
+    "method": "POST",
+    "path": "/v1/simulation-runs:start",
+    "version": 3,
+    "contractDigest": "sha256:a3a7dbba14e34ff5d98dcd390aac3a4af949a98ff3490079e231e67431042a00",
+    "input": "isecure.bankfiles.simulation.StartSimulationRunInput",
+    "result": "isecure.bankfiles.simulation.SimulationRunMutationResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 202,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_scenarios.create": {
+    "method": "POST",
+    "path": "/v1/simulation-scenarios:create",
+    "version": 3,
+    "contractDigest": "sha256:821fb89f13ef6258b41f2c744f02416ea2fa54365fdc1d8732a66d91c799a0ba",
+    "input": "isecure.bankfiles.simulation.CreateSimulationScenarioInput",
+    "result": "isecure.bankfiles.simulation.SimulationScenarioMutationResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_scenarios.get": {
+    "method": "GET",
+    "path": "/v1/simulation-scenarios/{resource_reference}",
+    "version": 2,
+    "contractDigest": "sha256:d475ec5de6afdd7d015e177e5c306698ba23855279fcfda53937290ae0a0838f",
+    "input": "isecure.bankfiles.simulation.SimulationResourceGetInput",
+    "result": "isecure.bankfiles.simulation.SimulationScenarioGetResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "resource_reference",
+        "location": "path",
+        "inputField": "resource_reference",
+        "required": true,
+        "style": "simple",
+        "objectFields": [
+          "resource_type",
+          "resource_id",
+          "resource_version",
+          "revision_id"
+        ]
+      }
+    ]
+  },
+  "simulation_scenarios.list": {
+    "method": "GET",
+    "path": "/v1/simulation-scenarios",
+    "version": 2,
+    "contractDigest": "sha256:9efe8788631721f60b68dae43efc39480484ddf63350601d374f99942612f46d",
+    "input": "isecure.bankfiles.simulation.SimulationScenarioListInput",
+    "result": "isecure.bankfiles.simulation.SimulationScenarioListResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "workspace_reference",
+        "location": "query",
+        "inputField": "workspace_reference",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "resource_type",
+          "resource_id",
+          "resource_version",
+          "revision_id"
+        ]
+      },
+      {
+        "name": "state",
+        "location": "query",
+        "inputField": "state",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page",
+        "location": "query",
+        "inputField": "page",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "page_size",
+          "cursor"
+        ]
+      }
+    ]
+  },
+  "simulation_scenarios.revise": {
+    "method": "POST",
+    "path": "/v1/simulation-scenarios:revise",
+    "version": 3,
+    "contractDigest": "sha256:cb88d9e1353e4f5235dbeb92b0c532f747b9cb4ce730cee4408ec073f844e21b",
+    "input": "isecure.bankfiles.simulation.ReviseSimulationScenarioInput",
+    "result": "isecure.bankfiles.simulation.SimulationScenarioMutationResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_workspaces.activate": {
+    "method": "POST",
+    "path": "/v1/simulation-workspaces:activate",
+    "version": 3,
+    "contractDigest": "sha256:07e78aa85029137a2a324b20a13c1a9817be7972a2b49a66e082c99f6cfcaed5",
+    "input": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
+    "result": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_workspaces.close": {
+    "method": "POST",
+    "path": "/v1/simulation-workspaces:close",
+    "version": 3,
+    "contractDigest": "sha256:592dca66296ef62058d79024f143389bb0ef1e8c04ccb3859bccd0244234b589",
+    "input": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
+    "result": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_workspaces.create": {
+    "method": "POST",
+    "path": "/v1/simulation-workspaces:create",
+    "version": 3,
+    "contractDigest": "sha256:a896e534591258875c6cd7bb3003084edc3944437cb4f789a34317ac127c0363",
+    "input": "isecure.bankfiles.simulation.CreateSimulationWorkspaceInput",
+    "result": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_workspaces.get": {
+    "method": "GET",
+    "path": "/v1/simulation-workspaces/{resource_reference}",
+    "version": 3,
+    "contractDigest": "sha256:7a39c3c1c3a3754eb54cc89dcddef8ea318ef80aa2cf67edd33fc2b0471f2cfc",
+    "input": "isecure.bankfiles.simulation.SimulationResourceGetInput",
+    "result": "isecure.bankfiles.simulation.SimulationWorkspaceGetResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "resource_reference",
+        "location": "path",
+        "inputField": "resource_reference",
+        "required": true,
+        "style": "simple",
+        "objectFields": [
+          "resource_type",
+          "resource_id",
+          "resource_version",
+          "revision_id"
+        ]
+      }
+    ]
+  },
+  "simulation_workspaces.list": {
+    "method": "GET",
+    "path": "/v1/simulation-workspaces",
+    "version": 3,
+    "contractDigest": "sha256:6b07e38a9f73a338660f291afc607324b4da59100bbc621eca25fff00c69f650",
+    "input": "isecure.bankfiles.simulation.SimulationWorkspaceListInput",
+    "result": "isecure.bankfiles.simulation.SimulationWorkspaceListResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "state",
+        "location": "query",
+        "inputField": "state",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page",
+        "location": "query",
+        "inputField": "page",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "page_size",
+          "cursor"
+        ]
+      }
+    ]
+  },
+  "simulation_workspaces.reset": {
+    "method": "POST",
+    "path": "/v1/simulation-workspaces:reset",
+    "version": 3,
+    "contractDigest": "sha256:f2473c48934f4f132d69c3f60f432a5520d8522ff07186f594bf432a4cfc604b",
+    "input": "isecure.bankfiles.simulation.ResetSimulationWorkspaceInput",
+    "result": "isecure.bankfiles.simulation.SimulationWorkspaceResetResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_workspaces.revise": {
+    "method": "POST",
+    "path": "/v1/simulation-workspaces:revise",
+    "version": 3,
+    "contractDigest": "sha256:b3c3b1f1989dc5224ccef2413f18ac6d9eda7e380a4155395b5ae435d8d08d57",
+    "input": "isecure.bankfiles.simulation.ReviseSimulationWorkspaceInput",
+    "result": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_workspaces.suspend": {
+    "method": "POST",
+    "path": "/v1/simulation-workspaces:suspend",
+    "version": 3,
+    "contractDigest": "sha256:93a3f47f42e57101d50fe1a201c08105d16df2522045cdfdf457193fa04f1f7a",
+    "input": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
+    "result": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
     "requestBody": true,
     "successResponse": {
       "kind": "json",
