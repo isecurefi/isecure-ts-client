@@ -32,6 +32,13 @@
 - Added `parseMode` / `parseLogLevel` (and `isMode` / `isLogLevel`) input guards so untrusted values such as environment variables are validated instead of unchecked-cast.
 - Tightened the `classifyErrorReason` "unconfirmed" heuristic to avoid matching unrelated responses that merely contain the word "confirm".
 
+## [2.2.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.2.0...isecure-ts-client-v2.2.1) (2026-08-23)
+
+
+### Bug Fixes
+
+* **iso20022:** require bank simulation management authority ([823d410](https://github.com/isecurefi/isecure-ts-client/commit/823d410203edaf34fa75496396774358795b95b9))
+
 ## [2.2.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.1.0...isecure-ts-client-v2.2.0) (2026-08-23)
 
 
