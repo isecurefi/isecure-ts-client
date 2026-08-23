@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Corrected all 21 Bank Simulation operations to the dedicated `manage_simulation` authority and
+  advanced contract versions from the pinned platform release. Their generated SDK metadata now
+  preserves the exact public audiences while excluding the private Module transition and agent/MCP
+  tools; authentication, entitlement, and authorization enforcement remain server-owned.
 - Added the complete generated Bank Simulation control plane to the isolated experimental
   `./iso20022` Processing entry point. The client exposes capabilities, workspaces, scenarios, runs,
   clocks, checkpoints, branches, events, and Artifact references while preserving exact contract

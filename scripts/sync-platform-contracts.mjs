@@ -284,6 +284,8 @@ function generateContract(sourceText, openApi, revision) {
       path: binding.path,
       version: contract.version,
       contractDigest: contract.contractDigest,
+      permission: requireMetadataToken(contract.permission, operationId, "permission"),
+      audiences: requireMetadataTokens(contract.audiences, operationId, "audiences"),
       input: contract.input,
       result: contract.result,
       issues: contract.issues,
@@ -306,6 +308,24 @@ function generateContract(sourceText, openApi, revision) {
   const sourceDigest = requireHeader(sourceText, /^\/\/ source-digest: (.+)$/mu, "source digest");
 
   return `// GENERATED FILE: DO NOT EDIT.\n// source: isecurefi/bankfiles-platform@${revision}\n// model: ${model}\n// source-digest: ${sourceDigest}\n// Exact decimals and 64-bit integers are JSON decimal strings.\n\n${declarationText}\n\nexport const iso20022Operations = ${JSON.stringify(operations, undefined, 2)} as const;\n\nexport type Iso20022OperationId = keyof typeof iso20022Operations;\n`;
+}
+
+function requireMetadataToken(value, operationId, field) {
+  if (typeof value !== "string" || !/^[a-z][a-z0-9_]*$/u.test(value)) {
+    throw new Error(`${operationId} has an invalid ${field} value`);
+  }
+  return value;
+}
+
+function requireMetadataTokens(values, operationId, field) {
+  if (!Array.isArray(values) || values.length === 0) {
+    throw new Error(`${operationId} has no ${field} values`);
+  }
+  const tokens = values.map((value) => requireMetadataToken(value, operationId, field));
+  if (new Set(tokens).size !== tokens.length) {
+    throw new Error(`${operationId} has duplicate ${field} values`);
+  }
+  return tokens;
 }
 
 function generateParameter(openApi, parameter, operationId) {

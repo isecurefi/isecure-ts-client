@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@bd228531a00356c51aee43bcf46067be39da1aaa
-// model: Bankfiles@0.103.0
-// source-digest: sha256:cbc2f377446f7c2ede1e0eaaac86f379e7005e44e851b7fd1497b4de93cc2b87
+// source: isecurefi/bankfiles-platform@3795299a2a506b27bc17c69ffbffad9cd3647f9f
+// model: Bankfiles@0.104.0
+// source-digest: sha256:c147608d5514c3e3d3586becb62ca13d13cb9326134a50df5878a9235fbbcde0
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = "approve" | "reject";
@@ -1829,6 +1829,14 @@ export const iso20022Operations = {
     "path": "/v1/balances/{resource_id}/explanation",
     "version": 1,
     "contractDigest": "sha256:9a23cd4786bbcccd7d5847a536ae1ec4a64974eb14672ba05a4614c4a62a9734",
+    "permission": "explain",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ObservationExplainInput",
     "result": "isecure.bankfiles.observations.ExplanationResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -1858,6 +1866,14 @@ export const iso20022Operations = {
     "path": "/v1/balances/{resource_id}",
     "version": 1,
     "contractDigest": "sha256:213e3f72f29fbf60192e0f6be6eaa85f9386ae6ccf78a996b7ee573d1f1eb979",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ObservationGetInput",
     "result": "isecure.bankfiles.observations.BalanceGetResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -1887,6 +1903,14 @@ export const iso20022Operations = {
     "path": "/v1/balances",
     "version": 2,
     "contractDigest": "sha256:9c35b653028dcc468bc88101df2fd639e05bc2f08cc957bada60e5ed58a733d8",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.BalanceListInput",
     "result": "isecure.bankfiles.observations.BalanceListResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -1964,6 +1988,14 @@ export const iso20022Operations = {
     "path": "/v1/entries/{resource_id}/explanation",
     "version": 1,
     "contractDigest": "sha256:0b3180437372f28691a9c90465c2fdbcb59e85039178881c1b20eb6e534b4da8",
+    "permission": "explain",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ObservationExplainInput",
     "result": "isecure.bankfiles.observations.ExplanationResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -1993,6 +2025,14 @@ export const iso20022Operations = {
     "path": "/v1/entries/{resource_id}",
     "version": 1,
     "contractDigest": "sha256:e243bcce2460b84de79f7914a9dcd0957728a95dcf59ac7e324ad6b461112708",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ObservationGetInput",
     "result": "isecure.bankfiles.observations.EntryGetResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -2022,6 +2062,14 @@ export const iso20022Operations = {
     "path": "/v1/entries",
     "version": 2,
     "contractDigest": "sha256:e68cd3da6a753203a161d240ff659872c8d7a3416d281fb4ae93c03b24b55203",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.EntryListInput",
     "result": "isecure.bankfiles.observations.EntryListResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -2107,6 +2155,13 @@ export const iso20022Operations = {
     "path": "/v1/payment-approval-requests:decide",
     "version": 1,
     "contractDigest": "sha256:5ab90e67325ab3a39a95e29628ebaa19d29c669fcdb1e63828eaa81c6ce1b7d7",
+    "permission": "approve",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.DecidePaymentApprovalRequestInput",
     "result": "isecure.bankfiles.payments_api.PaymentApprovalDecisionResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2137,6 +2192,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-capabilities/{account_capability_id}/explanation",
     "version": 1,
     "contractDigest": "sha256:6fa22b380da3cbf75d8f4ea4dd930957bae7467361c05f13206192324ed4b607",
+    "permission": "explain",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentCapabilityGetInput",
     "result": "isecure.bankfiles.observations.ExplanationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2174,6 +2237,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-capabilities/{account_capability_id}",
     "version": 1,
     "contractDigest": "sha256:c90346fc85073d6bb924adcfa8132bef1300c11637f17b6143986af9fdd12068",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentCapabilityGetInput",
     "result": "isecure.bankfiles.payments_api.PaymentCapabilityGetResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2211,6 +2282,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-capabilities",
     "version": 1,
     "contractDigest": "sha256:aaaaa4cc383855ab04337a4a9eef6262bb12330e8c6a2505c213e662ab706765",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentCapabilityListInput",
     "result": "isecure.bankfiles.payments_api.PaymentCapabilityListResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2283,6 +2362,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-capabilities:resolve",
     "version": 1,
     "contractDigest": "sha256:15dc4c7169d02a11a7334b44002298ad0726e70dddc4c6d437c42bcea04cebdf",
+    "permission": "validate",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentCapabilityCriteria",
     "result": "isecure.bankfiles.payments_api.PaymentCapabilityResolution",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2303,6 +2390,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-execution-attempts/{execution_attempt_id}/explanation",
     "version": 1,
     "contractDigest": "sha256:f4eaace0bde412782c037a13ecae73b2afc3bd0e3281bcc24779521be0b779ec",
+    "permission": "explain",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
     "result": "isecure.bankfiles.observations.ExplanationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2332,6 +2427,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-execution-attempts/{execution_attempt_id}",
     "version": 1,
     "contractDigest": "sha256:6fd1d3f1693b933c10db70342d16723b8aad27dd45aebeb0d4a55427728f4cd2",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetInput",
     "result": "isecure.bankfiles.payments_api.PaymentExecutionAttemptGetResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2361,6 +2464,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-execution-attempts",
     "version": 1,
     "contractDigest": "sha256:d2c8f0a377be5274584d30495e803474f92d54596ed6231d86ec616bc146fcbf",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListInput",
     "result": "isecure.bankfiles.payments_api.PaymentExecutionAttemptListResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2409,6 +2520,13 @@ export const iso20022Operations = {
     "path": "/v1/payment-execution-fulfillments:claim",
     "version": 1,
     "contractDigest": "sha256:2d4bf454343f38ad3d19be57e55595d17e40df650a59a2841e724d0683d2b414",
+    "permission": "fulfill_execution",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
     "result": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2434,6 +2552,13 @@ export const iso20022Operations = {
     "path": "/v1/payment-execution-observations:report",
     "version": 1,
     "contractDigest": "sha256:a5acc23d3344a94fa3388bbf6af781e9f51146d1d5487ef4bf8894e42ed63d82",
+    "permission": "fulfill_execution",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
     "result": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2459,6 +2584,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-export-profile-catalog",
     "version": 1,
     "contractDigest": "sha256:52608f6a88fc8fe1d0c81396572590e8200f9af1689ce8a11be472e8650f7f02",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentExportProfileCatalogListInput",
     "result": "isecure.bankfiles.payments_api.PaymentExportProfileCatalogListResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2479,6 +2612,13 @@ export const iso20022Operations = {
     "path": "/v1/payment-export-profiles:configure",
     "version": 1,
     "contractDigest": "sha256:d1dfea42aaa194db43101014f3aba331aca6a0e44ef05f06d85c7078d8c7790b",
+    "permission": "approve",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.ConfigurePaymentExportProfileInput",
     "result": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2504,6 +2644,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-export-profiles",
     "version": 1,
     "contractDigest": "sha256:2e29d42f293d6a5dc4ca041424c2965612edc24a95eff13ac526026d3cabf064",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentExportProfileGetInput",
     "result": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2524,6 +2672,13 @@ export const iso20022Operations = {
     "path": "/v1/payment-export-profiles:revoke",
     "version": 1,
     "contractDigest": "sha256:de9e12f5bfcc83240eee01cc7f7a894f76ccfe1df7dc8d3d18a8e5f09b82c232",
+    "permission": "approve",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.RevokePaymentExportProfileInput",
     "result": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2554,6 +2709,13 @@ export const iso20022Operations = {
     "path": "/v1/payment-exports:download-content",
     "version": 1,
     "contractDigest": "sha256:c7bc845d103b087e9714cb51261a56f512520d99c5394c63c8b6ef9a65bbe4dd",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.DownloadPaymentExportContentInput",
     "result": "isecure.bankfiles.payments_api.PaymentExportContentResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2585,6 +2747,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-exports/{payment_export_id}",
     "version": 1,
     "contractDigest": "sha256:4948c65e5610a2b8770b63bea703263baab60e41069ef05b73dbdb8525fe2122",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentExportGetInput",
     "result": "isecure.bankfiles.payments_api.PaymentExportGetResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2614,6 +2784,13 @@ export const iso20022Operations = {
     "path": "/v1/payment-exports:release",
     "version": 1,
     "contractDigest": "sha256:e572d8b0feb3eada5d396be036cf816411fc3773c8264fcb892eb90387a0b87a",
+    "permission": "approve",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.ReleasePaymentExportInput",
     "result": "isecure.bankfiles.payments_api.PaymentExportReleaseResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2644,6 +2821,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-order-outcomes/{payment_order_outcome_id}/explanation",
     "version": 1,
     "contractDigest": "sha256:f3827ded84cef37e72babac0e5289b444546de41d3a7444f96dae0826d3104cd",
+    "permission": "explain",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
     "result": "isecure.bankfiles.observations.ExplanationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2673,6 +2858,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-order-outcomes/{payment_order_outcome_id}",
     "version": 1,
     "contractDigest": "sha256:473050fa821d372034a88bf1fc8c0f2b387019d426584b99cb90cb18ade19faa",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderOutcomeGetResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2702,6 +2895,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-order-outcomes",
     "version": 1,
     "contractDigest": "sha256:41b17169ad0b0285aa5ae9a3fe20ef1bf4467701634211b1c686c279cc1e04ab",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderOutcomeListResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2766,6 +2967,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:append-transfers",
     "version": 1,
     "contractDigest": "sha256:6b9cd39e3f7e11cdf13c229fff00cd678fa3cf1d9859a3cd97d4b6089e18cdf6",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2796,6 +3005,13 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:cancel-draft",
     "version": 1,
     "contractDigest": "sha256:14976041ee01abe2f7ba0a9b2294f5294976f9b497d8a43598d63a75345314ed",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2826,6 +3042,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:correct",
     "version": 1,
     "contractDigest": "sha256:4b88a7d1738a796f51f8eb4f5297f2bc33d5a59a4f757931d179bdff2bfcd10e",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2856,6 +3080,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:create-draft",
     "version": 1,
     "contractDigest": "sha256:cb1ab14ad98f98172b75edd69c1a0db92371aed66beffac568c1c40c3c7f839e",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderDraftInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2881,6 +3113,13 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:execute",
     "version": 1,
     "contractDigest": "sha256:ac6a4e5f6998e141f7303ab9e3d2047c39cc4bce801df6a3ba63da991770b96c",
+    "permission": "execute",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderExecuteResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2911,6 +3150,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders/{payment_order_id}/explanation",
     "version": 1,
     "contractDigest": "sha256:67ae1c8eb3c0b955a7991d3272a4e756cfec31eddab2111befe1db401551a760",
+    "permission": "explain",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderGetInput",
     "result": "isecure.bankfiles.observations.ExplanationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2948,6 +3195,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:finalize-draft",
     "version": 1,
     "contractDigest": "sha256:e8c22ad4b5dae182cefa00329de60625d382371b90452890952b4aa69dcec268",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderFinalizationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -2978,6 +3233,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders/{payment_order_id}",
     "version": 1,
     "contractDigest": "sha256:662bc78d1ba71acbca206a4004ccef039ca7a6b5bd199e4a308e48b50e21e367",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderGetInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderGetResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -3015,6 +3278,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders",
     "version": 1,
     "contractDigest": "sha256:da80266be8672929f2ee0d21973f83badd65306566c5e2434851aec37365f6ae",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderListInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderListResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -3095,6 +3366,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:remove-transfers",
     "version": 1,
     "contractDigest": "sha256:9e6e2ca12abbc6e09b6274cc359cdff9c9b856ffaa0de7393d25ba860f4d716b",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -3125,6 +3404,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:revise-draft",
     "version": 1,
     "contractDigest": "sha256:4f4f717f9a34ba59e99d070b02f9ccc589ea96d85c17ce3b1e037baa823112eb",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.RevisePaymentOrderInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -3155,6 +3442,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:revise-transfer",
     "version": 1,
     "contractDigest": "sha256:2577dd0e163120a35f7506125b767b048b210d18c372237ce1e9237c5bf35638",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -3185,6 +3480,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:simulate",
     "version": 1,
     "contractDigest": "sha256:2b1b8f92c01c1ce001c51cad03e9b5f8b7f11eb0d2fddd6bec40b17494a25fb1",
+    "permission": "simulate",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderRevisionInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderSimulationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -3205,6 +3508,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:submit-for-review",
     "version": 1,
     "contractDigest": "sha256:a3a3e08d56f17e44a91667a1b1beb5f56ec7e07289da0d332ae2c4f193eee58d",
+    "permission": "submit_for_review",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderReviewSubmissionResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -3235,6 +3546,14 @@ export const iso20022Operations = {
     "path": "/v1/payment-orders:validate",
     "version": 1,
     "contractDigest": "sha256:6d91419100ea2b95abf52467f476b092fa14886eaeaa25d93556b27458d59f3e",
+    "permission": "validate",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.payments_api.PaymentOrderRevisionInput",
     "result": "isecure.bankfiles.payments_api.PaymentOrderValidationResult",
     "issues": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -3253,8 +3572,15 @@ export const iso20022Operations = {
   "simulation_artifacts.list": {
     "method": "GET",
     "path": "/v1/simulation-artifacts",
-    "version": 2,
-    "contractDigest": "sha256:11068487fb4c2d7dec34e66517b61c0f7ad96303bfa52d046156925e3bb5c5dc",
+    "version": 3,
+    "contractDigest": "sha256:d1812e62ef688b7c85570774600e775d9ba8bc9522fd43e1299c98ca42aadce3",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.SimulationArtifactListInput",
     "result": "isecure.bankfiles.simulation.SimulationArtifactListResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3306,8 +3632,15 @@ export const iso20022Operations = {
   "simulation_branches.create": {
     "method": "POST",
     "path": "/v1/simulation-branches:create",
-    "version": 3,
-    "contractDigest": "sha256:eaf59ccdc15c370fdcc30bbe963a38567251de3aa8d1226615fb9f68f81da020",
+    "version": 4,
+    "contractDigest": "sha256:0269ca0f855c23a90212cc8ca2c1869b371cb8833d6f2bfb0c63fec61aa9c20a",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.CreateSimulationBranchInput",
     "result": "isecure.bankfiles.simulation.SimulationBranchResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3331,8 +3664,15 @@ export const iso20022Operations = {
   "simulation_capabilities.list": {
     "method": "GET",
     "path": "/v1/simulation-capabilities",
-    "version": 3,
-    "contractDigest": "sha256:61c7f446935d5db7f3105db065bb8416b4097d27974fe6b14bcf60d526609fea",
+    "version": 4,
+    "contractDigest": "sha256:1d1f9fd27e61c91e2c8908147fe27741e1f47d008a37ef6af6fb44e647c46b14",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.SimulationCapabilityListInput",
     "result": "isecure.bankfiles.simulation.SimulationCapabilityListResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3371,8 +3711,15 @@ export const iso20022Operations = {
   "simulation_checkpoints.create": {
     "method": "POST",
     "path": "/v1/simulation-checkpoints:create",
-    "version": 3,
-    "contractDigest": "sha256:022690e54e95d74bbe08f8f4786b82212d30732e847178cb93962bed3ca8b975",
+    "version": 4,
+    "contractDigest": "sha256:97fdef985c5897e19f0b43aec41a0e539cb5edc8aa292740c777efe14029d5ac",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.CreateSimulationCheckpointInput",
     "result": "isecure.bankfiles.simulation.SimulationCheckpointResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3401,8 +3748,15 @@ export const iso20022Operations = {
   "simulation_clocks.control": {
     "method": "POST",
     "path": "/v1/simulation-clocks:control",
-    "version": 3,
-    "contractDigest": "sha256:5cd955883432d634f7878f5fd525d638acae68a3c4d52f0c9eeb014d306df8db",
+    "version": 4,
+    "contractDigest": "sha256:d683043752ece7bd18c0c834bdeccd3a75ffee86177a0579b4babb2ef0b776e5",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.ControlSimulationClockInput",
     "result": "isecure.bankfiles.simulation.SimulationClockControlResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3431,8 +3785,15 @@ export const iso20022Operations = {
   "simulation_events.list": {
     "method": "GET",
     "path": "/v1/simulation-events",
-    "version": 2,
-    "contractDigest": "sha256:9d9965ecba12d600ebe8c2db0cbeb360fb239cbd431c15fc210d426b5af0a6ef",
+    "version": 3,
+    "contractDigest": "sha256:5d1e2eaa5d72e5d5baadf070dd6fdb14f1c97ea4f9bd01fd33a6b7c7c99c9412",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.SimulationEventListInput",
     "result": "isecure.bankfiles.simulation.SimulationEventListResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3497,8 +3858,15 @@ export const iso20022Operations = {
   "simulation_runs.get": {
     "method": "GET",
     "path": "/v1/simulation-runs/{resource_reference}",
-    "version": 3,
-    "contractDigest": "sha256:5772c97b906ce580396e7af9dc11d24349b8cbddaedd784103383c3fb69c38dd",
+    "version": 4,
+    "contractDigest": "sha256:2d90360c4ad64bdd8cd35c1aadc4e8bddd1e00304412a4896c191f4cc87c691a",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.SimulationResourceGetInput",
     "result": "isecure.bankfiles.simulation.SimulationRunGetResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3531,8 +3899,15 @@ export const iso20022Operations = {
   "simulation_runs.list": {
     "method": "GET",
     "path": "/v1/simulation-runs",
-    "version": 3,
-    "contractDigest": "sha256:aa0e5379cc18f08bc120f4b777c1c4098e8d7db7593ff5c647cc105bd37861a4",
+    "version": 4,
+    "contractDigest": "sha256:cf3c94d2af1a0bfd15a8b2a31899b3fc9003cf614d5d4556d56f6d2bed18a0ca",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.SimulationRunListInput",
     "result": "isecure.bankfiles.simulation.SimulationRunListResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3597,8 +3972,15 @@ export const iso20022Operations = {
   "simulation_runs.start": {
     "method": "POST",
     "path": "/v1/simulation-runs:start",
-    "version": 3,
-    "contractDigest": "sha256:a3a7dbba14e34ff5d98dcd390aac3a4af949a98ff3490079e231e67431042a00",
+    "version": 4,
+    "contractDigest": "sha256:4431e600655c7d1fd79e9434f846ead09783dbb6aa512d6c9db2dad9ecfc06be",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.StartSimulationRunInput",
     "result": "isecure.bankfiles.simulation.SimulationRunMutationResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3622,8 +4004,15 @@ export const iso20022Operations = {
   "simulation_scenarios.create": {
     "method": "POST",
     "path": "/v1/simulation-scenarios:create",
-    "version": 3,
-    "contractDigest": "sha256:821fb89f13ef6258b41f2c744f02416ea2fa54365fdc1d8732a66d91c799a0ba",
+    "version": 4,
+    "contractDigest": "sha256:25c2467181466e705ce673083355d784670873b779dcc2d29abebfab100b7667",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.CreateSimulationScenarioInput",
     "result": "isecure.bankfiles.simulation.SimulationScenarioMutationResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3647,8 +4036,15 @@ export const iso20022Operations = {
   "simulation_scenarios.get": {
     "method": "GET",
     "path": "/v1/simulation-scenarios/{resource_reference}",
-    "version": 2,
-    "contractDigest": "sha256:d475ec5de6afdd7d015e177e5c306698ba23855279fcfda53937290ae0a0838f",
+    "version": 3,
+    "contractDigest": "sha256:60e576c8a33bca289e8d8bd8d2410bbed37a1a4ace14cc852b1bd141764cc1d3",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.SimulationResourceGetInput",
     "result": "isecure.bankfiles.simulation.SimulationScenarioGetResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3681,8 +4077,15 @@ export const iso20022Operations = {
   "simulation_scenarios.list": {
     "method": "GET",
     "path": "/v1/simulation-scenarios",
-    "version": 2,
-    "contractDigest": "sha256:9efe8788631721f60b68dae43efc39480484ddf63350601d374f99942612f46d",
+    "version": 3,
+    "contractDigest": "sha256:fed6e0dda70a1ce7e0ce4d92cfe2d3e7ba4f510dc45e77afe296d509e07e780e",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.SimulationScenarioListInput",
     "result": "isecure.bankfiles.simulation.SimulationScenarioListResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3734,8 +4137,15 @@ export const iso20022Operations = {
   "simulation_scenarios.revise": {
     "method": "POST",
     "path": "/v1/simulation-scenarios:revise",
-    "version": 3,
-    "contractDigest": "sha256:cb88d9e1353e4f5235dbeb92b0c532f747b9cb4ce730cee4408ec073f844e21b",
+    "version": 4,
+    "contractDigest": "sha256:964dbf7234178c1a70f679afadc7cca15a3be538ac97a14f6e4a27488bf24767",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.ReviseSimulationScenarioInput",
     "result": "isecure.bankfiles.simulation.SimulationScenarioMutationResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3764,8 +4174,15 @@ export const iso20022Operations = {
   "simulation_workspaces.activate": {
     "method": "POST",
     "path": "/v1/simulation-workspaces:activate",
-    "version": 3,
-    "contractDigest": "sha256:07e78aa85029137a2a324b20a13c1a9817be7972a2b49a66e082c99f6cfcaed5",
+    "version": 4,
+    "contractDigest": "sha256:be864cfd6800ab2068c844c4ef1dbe0767184d6073bcaed0291ce24679a9086f",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
     "result": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3794,8 +4211,15 @@ export const iso20022Operations = {
   "simulation_workspaces.close": {
     "method": "POST",
     "path": "/v1/simulation-workspaces:close",
-    "version": 3,
-    "contractDigest": "sha256:592dca66296ef62058d79024f143389bb0ef1e8c04ccb3859bccd0244234b589",
+    "version": 4,
+    "contractDigest": "sha256:1fcc04f9ab15e4c46c1e8d44a30cc374f8b1c243d3e455586dfa9bca49254282",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
     "result": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3824,8 +4248,15 @@ export const iso20022Operations = {
   "simulation_workspaces.create": {
     "method": "POST",
     "path": "/v1/simulation-workspaces:create",
-    "version": 3,
-    "contractDigest": "sha256:a896e534591258875c6cd7bb3003084edc3944437cb4f789a34317ac127c0363",
+    "version": 4,
+    "contractDigest": "sha256:f5ead670aa55bdd04c26c3a5dc9bf3f2807d2a8dbcaaf014f39d2ff82809fe34",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.CreateSimulationWorkspaceInput",
     "result": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3849,8 +4280,15 @@ export const iso20022Operations = {
   "simulation_workspaces.get": {
     "method": "GET",
     "path": "/v1/simulation-workspaces/{resource_reference}",
-    "version": 3,
-    "contractDigest": "sha256:7a39c3c1c3a3754eb54cc89dcddef8ea318ef80aa2cf67edd33fc2b0471f2cfc",
+    "version": 4,
+    "contractDigest": "sha256:9f02dd9041a9571cba758cb375bf40e762f66f5512d68a8875e2ba6aaae3d5b3",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.SimulationResourceGetInput",
     "result": "isecure.bankfiles.simulation.SimulationWorkspaceGetResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3883,8 +4321,15 @@ export const iso20022Operations = {
   "simulation_workspaces.list": {
     "method": "GET",
     "path": "/v1/simulation-workspaces",
-    "version": 3,
-    "contractDigest": "sha256:6b07e38a9f73a338660f291afc607324b4da59100bbc621eca25fff00c69f650",
+    "version": 4,
+    "contractDigest": "sha256:44198d17e8c85bb22c36c68ddf35c2789ca96d345588a67118a0d9c227efcf16",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.SimulationWorkspaceListInput",
     "result": "isecure.bankfiles.simulation.SimulationWorkspaceListResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3923,8 +4368,15 @@ export const iso20022Operations = {
   "simulation_workspaces.reset": {
     "method": "POST",
     "path": "/v1/simulation-workspaces:reset",
-    "version": 3,
-    "contractDigest": "sha256:f2473c48934f4f132d69c3f60f432a5520d8522ff07186f594bf432a4cfc604b",
+    "version": 4,
+    "contractDigest": "sha256:04236b103473b279c6a42a83294c98227e7761836631471e7ba45cf2b54ddab3",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.ResetSimulationWorkspaceInput",
     "result": "isecure.bankfiles.simulation.SimulationWorkspaceResetResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3953,8 +4405,15 @@ export const iso20022Operations = {
   "simulation_workspaces.revise": {
     "method": "POST",
     "path": "/v1/simulation-workspaces:revise",
-    "version": 3,
-    "contractDigest": "sha256:b3c3b1f1989dc5224ccef2413f18ac6d9eda7e380a4155395b5ae435d8d08d57",
+    "version": 4,
+    "contractDigest": "sha256:838ec9b30941405400f26fbbaa7623048b31ad4dc2cf2fee3914a27f799cc1ef",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.ReviseSimulationWorkspaceInput",
     "result": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -3983,8 +4442,15 @@ export const iso20022Operations = {
   "simulation_workspaces.suspend": {
     "method": "POST",
     "path": "/v1/simulation-workspaces:suspend",
-    "version": 3,
-    "contractDigest": "sha256:93a3f47f42e57101d50fe1a201c08105d16df2522045cdfdf457193fa04f1f7a",
+    "version": 4,
+    "contractDigest": "sha256:1255a220d8695cfb46dcdb442aadaf310456d05468b0a915b4641b4740ba5b40",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
     "result": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
     "issues": "isecure.bankfiles.operations.PlatformIssues",
@@ -4015,6 +4481,14 @@ export const iso20022Operations = {
     "path": "/v1/statements/{resource_id}/explanation",
     "version": 1,
     "contractDigest": "sha256:8634f3bf634e612ec48c6f02d41382914114226236767f60926766cb4ab0bdc2",
+    "permission": "explain",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ObservationExplainInput",
     "result": "isecure.bankfiles.observations.ExplanationResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -4044,6 +4518,14 @@ export const iso20022Operations = {
     "path": "/v1/statements/{resource_id}",
     "version": 1,
     "contractDigest": "sha256:cd1e305749c6edc8790468ff3a55deffee411c50f43e1f16aa915dc7ce20197e",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ObservationGetInput",
     "result": "isecure.bankfiles.observations.StatementGetResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -4073,6 +4555,14 @@ export const iso20022Operations = {
     "path": "/v1/statements",
     "version": 1,
     "contractDigest": "sha256:ea7b9634ff6c58dcc8179f0918b8ba03e97580ad41003a8180241094f95ec2c8",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.StatementListInput",
     "result": "isecure.bankfiles.observations.StatementListResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -4134,6 +4624,14 @@ export const iso20022Operations = {
     "path": "/v1/transactions/{resource_id}/explanation",
     "version": 1,
     "contractDigest": "sha256:1ac123ec35f79340a86bf8a8fa6bd3033e4efd5b12dd18f498f869d8da5f1123",
+    "permission": "explain",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ObservationExplainInput",
     "result": "isecure.bankfiles.observations.ExplanationResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -4163,6 +4661,14 @@ export const iso20022Operations = {
     "path": "/v1/transactions/{resource_id}",
     "version": 1,
     "contractDigest": "sha256:2d7e9781bb688c6a4a89542ab09cd9f80933a9eab6f38b2287d618434b0c44ae",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ObservationGetInput",
     "result": "isecure.bankfiles.observations.TransactionGetResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -4192,6 +4698,14 @@ export const iso20022Operations = {
     "path": "/v1/transactions",
     "version": 2,
     "contractDigest": "sha256:0a79f8c673b89f35529e6bdf7a32ab35c4c81e537a32ab67d6694ee6ffb15fc2",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.TransactionListInput",
     "result": "isecure.bankfiles.observations.TransactionListResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -4261,6 +4775,14 @@ export const iso20022Operations = {
     "path": "/v1/validations/{resource_id}/explanation",
     "version": 1,
     "contractDigest": "sha256:22d55330cfba44ff7a3b5b8fed9a2a5799945c33c6f93132ba89ca7897a2e40a",
+    "permission": "explain",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ObservationExplainInput",
     "result": "isecure.bankfiles.observations.ExplanationResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -4290,6 +4812,14 @@ export const iso20022Operations = {
     "path": "/v1/validations/{resource_id}",
     "version": 1,
     "contractDigest": "sha256:a206e8d12a5b6cf9c17cfcc4840865d22390139ee5f018e6050f8890c4b688c1",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ObservationGetInput",
     "result": "isecure.bankfiles.observations.ValidationGetResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",
@@ -4319,6 +4849,14 @@ export const iso20022Operations = {
     "path": "/v1/validations",
     "version": 1,
     "contractDigest": "sha256:e0322ef33c1b7f47fd627295df16b91074e4d257a96ac2a699ab2c7ad8787d40",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
     "input": "isecure.bankfiles.observations.ValidationListInput",
     "result": "isecure.bankfiles.observations.ValidationListResult",
     "issues": "isecure.bankfiles.observations.ObservationIssues",

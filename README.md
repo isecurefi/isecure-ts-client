@@ -309,7 +309,9 @@ plain-English namespaces: `simulationCapabilities`, `simulationWorkspaces`, `sim
 operations. They do not expose the private simulator Module transition, checkpoint bytes, AWS
 resources, or a second File Exchange client. Artifact results are exact references; callers use the
 unchanged File Exchange surface for authorized bytes. Live Processing hosting, entitlement, and
-qualification remain separate release gates.
+qualification remain separate release gates. The generated operation metadata records the dedicated
+`manage_simulation` permission and exact public audiences; the server remains the sole authority for
+authentication, permission assignments, entitlement, and revocation.
 
 ```ts
 const capabilities = await iso20022.simulationCapabilities.list({ page: { page_size: 25 } });

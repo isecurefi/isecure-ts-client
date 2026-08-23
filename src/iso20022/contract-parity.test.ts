@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { iso20022Operations } from "../generated/iso20022-contracts.js";
 
-const PLATFORM_REVISION = "bd228531a00356c51aee43bcf46067be39da1aaa";
+const PLATFORM_REVISION = "3795299a2a506b27bc17c69ffbffad9cd3647f9f";
 const SIMULATION_OPERATION_IDS = [
   "simulation_artifacts.list",
   "simulation_branches.create",
@@ -28,6 +28,29 @@ const SIMULATION_OPERATION_IDS = [
   "simulation_workspaces.revise",
   "simulation_workspaces.suspend",
 ] as const;
+const SIMULATION_OPERATION_VERSIONS: Record<(typeof SIMULATION_OPERATION_IDS)[number], number> = {
+  "simulation_artifacts.list": 3,
+  "simulation_branches.create": 4,
+  "simulation_capabilities.list": 4,
+  "simulation_checkpoints.create": 4,
+  "simulation_clocks.control": 4,
+  "simulation_events.list": 3,
+  "simulation_runs.get": 4,
+  "simulation_runs.list": 4,
+  "simulation_runs.start": 4,
+  "simulation_scenarios.create": 4,
+  "simulation_scenarios.get": 3,
+  "simulation_scenarios.list": 3,
+  "simulation_scenarios.revise": 4,
+  "simulation_workspaces.activate": 4,
+  "simulation_workspaces.close": 4,
+  "simulation_workspaces.create": 4,
+  "simulation_workspaces.get": 4,
+  "simulation_workspaces.list": 4,
+  "simulation_workspaces.reset": 4,
+  "simulation_workspaces.revise": 4,
+  "simulation_workspaces.suspend": 4,
+};
 
 interface PlatformContractLock {
   schemaVersion: number;
@@ -113,16 +136,29 @@ describe("generated platform contract parity", () => {
     );
   });
 
-  it("selects the complete public Bank Simulation control plane without the private Module operation", () => {
+  it("selects the exact public Bank Simulation authority contract without private or agent tools", async () => {
     const selected = Object.keys(iso20022Operations).filter((operationId) => operationId.startsWith("simulation_"));
+    const generatedMock = JSON.parse(
+      await readFile(resolve(import.meta.dirname, "../../test-data/generated/iso20022-scenarios.json"), "utf8"),
+    ) as {
+      operations: { operationId: string; version: number; bindings: { adapter: string }[] }[];
+    };
+    const simulationMocks = generatedMock.operations.filter(({ operationId }) => operationId.startsWith("simulation_"));
 
     expect(selected).toEqual(SIMULATION_OPERATION_IDS);
     expect(iso20022Operations).not.toHaveProperty("bank_simulation.apply_transition");
+    expect(simulationMocks.map(({ operationId }) => operationId)).toEqual(SIMULATION_OPERATION_IDS);
     for (const operationId of SIMULATION_OPERATION_IDS) {
       const operation = iso20022Operations[operationId];
+      const mock = simulationMocks.find(({ operationId: candidate }) => candidate === operationId);
+      expect(operation.version).toBe(SIMULATION_OPERATION_VERSIONS[operationId]);
+      expect(operation.permission).toBe("manage_simulation");
+      expect(operation.audiences).toEqual(["admin", "cli", "rest", "typescript"]);
       expect(operation.successResponse).toMatchObject({ kind: "json" });
       expect(operation.contractDigest).toMatch(/^sha256:[0-9a-f]{64}$/u);
       expect(operation.idempotency).toBe(operation.method === "POST" ? "required" : "none");
+      expect(mock?.version).toBe(SIMULATION_OPERATION_VERSIONS[operationId]);
+      expect(mock?.bindings.map(({ adapter }) => adapter)).toEqual(["rest", "typescript", "cli", "admin"]);
     }
   });
 
