@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "3795299a2a506b27bc17c69ffbffad9cd3647f9f",
-    "model": "Bankfiles@0.104.0",
-    "sourceDigest": "sha256:c147608d5514c3e3d3586becb62ca13d13cb9326134a50df5878a9235fbbcde0",
+    "revision": "9bf4087e90719b2503df7fc35ebd34544c631262",
+    "model": "Bankfiles@0.111.0",
+    "sourceDigest": "sha256:272bd94bd3290761b8945c17bf1471958c7a87ded97c9d3cf5023d0d5c5e4b49",
     "fixedClock": "2040-01-02T03:04:05.000Z",
     "safety": {
       "syntheticOnly": true,
@@ -15270,9 +15270,9 @@
     },
     {
       "operationId": "simulation_capabilities.list",
-      "version": 4,
-      "contractDigest": "sha256:1d1f9fd27e61c91e2c8908147fe27741e1f47d008a37ef6af6fb44e647c46b14",
-      "eventClosureDigest": "sha256:f83856367771fc96fab595229d9f50a65486e2514b3782700ee4622b98b7b1b8",
+      "version": 5,
+      "contractDigest": "sha256:59a9facecbb74ab6ec54e16f2e5f5a93d749974c29550047d9f24ae23b06febd",
+      "eventClosureDigest": "sha256:6a5e26d5b753417560de779b79e20f7e626fdeb7333b9834e5c9a1e15e5d13f5",
       "inputContract": "isecure.bankfiles.simulation.SimulationCapabilityListInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationCapabilityListResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -15323,7 +15323,7 @@
               "context": {
                 "request_id": "cacaba0e-7d14-4477-8e7c-e867a061e9d6",
                 "operation_id": "simulation_capabilities.list",
-                "contract_version": "4",
+                "contract_version": "5",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "9eca0e71-7e62-4e84-98d3-b1f4919a7654",
@@ -15332,6 +15332,10 @@
               },
               "capabilities": [
                 {
+                  "capability_reference": {
+                    "resource_type": "simulation_capabilities.list-res",
+                    "resource_id": "30d0ac24-aac8-4f3f-83f3-9551c92e0eab"
+                  },
                   "capability_id": "simulation_capabilities.list-res",
                   "capability_version": "simulation_capabilities.list-res",
                   "available_data_admission_modes": [
@@ -15441,7 +15445,7 @@
               "context": {
                 "request_id": "cacaba0e-7d14-4477-8e7c-e867a061e9d6",
                 "operation_id": "simulation_capabilities.list",
-                "contract_version": "4",
+                "contract_version": "5",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "9eca0e71-7e62-4e84-98d3-b1f4919a7654",
@@ -15471,7 +15475,7 @@
               "context": {
                 "request_id": "cacaba0e-7d14-4477-8e7c-e867a061e9d6",
                 "operation_id": "simulation_capabilities.list",
-                "contract_version": "4",
+                "contract_version": "5",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "9eca0e71-7e62-4e84-98d3-b1f4919a7654",
@@ -15480,6 +15484,10 @@
               },
               "capabilities": [
                 {
+                  "capability_reference": {
+                    "resource_type": "simulation_capabilities.list-res",
+                    "resource_id": "30d0ac24-aac8-4f3f-83f3-9551c92e0eab"
+                  },
                   "capability_id": "simulation_capabilities.list-res",
                   "capability_version": "simulation_capabilities.list-res",
                   "available_data_admission_modes": [
