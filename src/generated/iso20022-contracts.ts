@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@3795299a2a506b27bc17c69ffbffad9cd3647f9f
-// model: Bankfiles@0.104.0
-// source-digest: sha256:c147608d5514c3e3d3586becb62ca13d13cb9326134a50df5878a9235fbbcde0
+// source: isecurefi/bankfiles-platform@9bf4087e90719b2503df7fc35ebd34544c631262
+// model: Bankfiles@0.111.0
+// source-digest: sha256:272bd94bd3290761b8945c17bf1471958c7a87ded97c9d3cf5023d0d5c5e4b49
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = "approve" | "reject";
@@ -104,7 +104,7 @@ export type SimulationFileDirection = "customer_to_bank" | "bank_to_customer";
 
 export type SimulationRunState = "accepted" | "running" | "paused" | "succeeded" | "failed" | "indeterminate" | "cancelled";
 
-export type SimulationRuntimeAvailability = "contract_only";
+export type SimulationRuntimeAvailability = "contract_only" | "hosted";
 
 export type SimulationRuntimeTimeZone = "utc" | "europe_helsinki" | "europe_tallinn" | "europe_stockholm" | "europe_oslo" | "europe_copenhagen" | "europe_berlin";
 
@@ -1316,6 +1316,7 @@ export interface SimulationBranchResult {
 }
 
 export interface SimulationCapability {
+    readonly capability_reference: ResourceReference;
     readonly capability_id: string;
     readonly capability_version: string;
     readonly available_data_admission_modes: readonly SimulationDataAdmissionMode[];
@@ -3664,8 +3665,8 @@ export const iso20022Operations = {
   "simulation_capabilities.list": {
     "method": "GET",
     "path": "/v1/simulation-capabilities",
-    "version": 4,
-    "contractDigest": "sha256:1d1f9fd27e61c91e2c8908147fe27741e1f47d008a37ef6af6fb44e647c46b14",
+    "version": 5,
+    "contractDigest": "sha256:59a9facecbb74ab6ec54e16f2e5f5a93d749974c29550047d9f24ae23b06febd",
     "permission": "manage_simulation",
     "audiences": [
       "admin",

@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ProcessingRevisionCommandOptions, ResourceReference } from "../generated/iso20022-contracts.js";
+import type {
+  CreateSimulationWorkspaceInput,
+  ProcessingRevisionCommandOptions,
+  ResourceReference,
+  SimulationCapability,
+} from "../generated/iso20022-contracts.js";
 import { createIso20022Client } from "./client.js";
 import { Iso20022HttpError, Iso20022HttpTransport } from "./transport.js";
 
@@ -9,6 +14,12 @@ const PROCESSING_TOKEN = "S".repeat(43);
 const AUDIENCE = "isecure-processing-gpgtest-v1";
 const WORKSPACE_ID = "00000000-0000-4000-8000-000000000001";
 const REVISION_ID = "00000000-0000-4000-8000-000000000002";
+const capabilityReference: ResourceReference = {
+  resource_type: "simulation_capability",
+  resource_id: "00000000-0000-4000-8000-000000000010",
+  resource_version: "1",
+  revision_id: "00000000-0000-4000-8000-000000000011",
+};
 
 const workspaceReference: ResourceReference = {
   resource_type: "simulation_workspace",
@@ -70,6 +81,83 @@ async function readySimulator(operationFetch: typeof globalThis.fetch) {
 }
 
 describe("experimental Bank Simulation Processing client", () => {
+  it("uses the exact capability reference returned by discovery to create a workspace", async () => {
+    const discoveredCapability = {
+      capability_reference: capabilityReference,
+    } satisfies Pick<SimulationCapability, "capability_reference">;
+    const operationFetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = new URL(input instanceof Request ? input.url : input.toString());
+      return url.pathname.endsWith("/v1/simulation-capabilities")
+        ? jsonResponse({ capabilities: [discoveredCapability], page: {} })
+        : jsonResponse({ ok: true });
+    });
+    const { client } = await readySimulator(operationFetch);
+
+    const discovered = await client.simulationCapabilities.list({ page: { page_size: 1 } });
+    const discoveredReference = discovered.capabilities[0]?.capability_reference;
+    expect(discoveredReference).toEqual(capabilityReference);
+    if (discoveredReference === undefined) throw new Error("Synthetic capability reference is missing");
+
+    const workspaceInput: CreateSimulationWorkspaceInput = {
+      capability_reference: discoveredReference,
+      data_admission_mode: "synthetic",
+      topology: {
+        banks: [
+          {
+            bank_key: "synthetic-bank",
+            display_name: "Synthetic Bank",
+            domicile_country: "fi",
+            runtime_policy_profile_id: "isecure.simulation.synthetic-bank",
+            runtime_policy_profile_version: "1",
+            supported_currencies: ["EUR"],
+          },
+        ],
+        legal_entities: [
+          {
+            legal_entity_key: "synthetic-entity",
+            display_name: "Synthetic Entity",
+            domicile_country: "fi",
+          },
+        ],
+        currencies: [{ currency: "EUR", fraction_digits: 2 }],
+        accounts: [
+          {
+            account_key: "synthetic-account",
+            bank_key: "synthetic-bank",
+            legal_entity_key: "synthetic-entity",
+            currency: "EUR",
+            starting_balance: { amount: "1000.00", currency: "EUR" },
+          },
+        ],
+        counterparties: [],
+      },
+      service_setup: {
+        agreements: [],
+        users: [],
+        certificates: [],
+        connections: [],
+        file_permissions: [],
+        schedules: [],
+        cutoffs: [],
+      },
+    };
+    await client.simulationWorkspaces.create(workspaceInput, { idempotencyKey: "workspace-from-discovery" });
+
+    expect(operationFetch).toHaveBeenCalledTimes(2);
+    expect(operationFetch.mock.calls[0]?.[1]).toMatchObject({
+      method: "GET",
+      headers: { "ISECure-Contract-Version": "5" },
+    });
+    expect(operationFetch.mock.calls[1]?.[1]).toMatchObject({
+      method: "POST",
+      headers: {
+        "ISECure-Contract-Version": "4",
+        "Idempotency-Key": "workspace-from-discovery",
+      },
+    });
+    expect(JSON.parse(String(operationFetch.mock.calls[1]?.[1]?.body))).toEqual(workspaceInput);
+  });
+
   it("serializes exact revision references and snapshot pagination without reducing either", async () => {
     const operationFetch = vi.fn(async () => jsonResponse({ ok: true }));
     const { client } = await readySimulator(operationFetch);
