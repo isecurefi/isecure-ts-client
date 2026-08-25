@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.2.1...isecure-ts-client-v2.2.2) (2026-08-25)
+
+### Bug Fixes
+
+* **iso20022:** expose simulation capability reference ([92a679b](https://github.com/isecurefi/isecure-ts-client/commit/92a679b23e88a9b60d5668bd4d4855fd9971d548))
+
 ## [2.2.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.2.0...isecure-ts-client-v2.2.1) (2026-08-23)
 
 ### Bug Fixes
