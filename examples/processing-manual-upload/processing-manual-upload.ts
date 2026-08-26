@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -70,6 +71,10 @@ export function exactEnv(name: string, pattern: RegExp): string {
 
 export function optionalEnv(name: string, fallback: string): string {
   return process.env[name] ?? fallback;
+}
+
+export function paymentTransferExternalId(runId: string): string {
+  return `E2E-${createHash("sha256").update(runId, "utf8").digest("hex").slice(0, 31)}`;
 }
 
 export function requireExplicitUploadConfirmation(): void {
@@ -225,7 +230,7 @@ export async function createApprovedExport(
       options: [],
       transfers: [
         {
-          external_id: `${runId}-transfer-1`,
+          external_id: paymentTransferExternalId(runId),
           money: { amount, currency: "EUR" },
           creditor: {
             name: requiredEnv("ISECURE_CREDITOR_NAME"),
