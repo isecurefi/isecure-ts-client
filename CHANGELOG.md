@@ -32,6 +32,13 @@
 - Added `parseMode` / `parseLogLevel` (and `isMode` / `isLogLevel`) input guards so untrusted values such as environment variables are validated instead of unchecked-cast.
 - Tightened the `classifyErrorReason` "unconfirmed" heuristic to avoid matching unrelated responses that merely contain the word "confirm".
 
+## [2.2.3](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.2.2...isecure-ts-client-v2.2.3) (2026-08-26)
+
+
+### Bug Fixes
+
+* **example:** bound payment end-to-end identifier ([b23a68c](https://github.com/isecurefi/isecure-ts-client/commit/b23a68c2958c3f87feafdfe3bc801ec67f72940d))
+
 ## [2.2.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.2.1...isecure-ts-client-v2.2.2) (2026-08-25)
 
 
