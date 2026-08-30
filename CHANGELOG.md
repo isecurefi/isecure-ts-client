@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.3](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.2.2...isecure-ts-client-v2.2.3) (2026-08-26)
+
+### Bug Fixes
+
+* **example:** bound payment end-to-end identifier ([b23a68c](https://github.com/isecurefi/isecure-ts-client/commit/b23a68c2958c3f87feafdfe3bc801ec67f72940d))
+
 ## [2.2.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.2.1...isecure-ts-client-v2.2.2) (2026-08-25)
 
 ### Bug Fixes
