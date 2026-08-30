@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.2.3...isecure-ts-client-v2.3.0) (2026-08-30)
+
+### Features
+
+* **iso20022:** expose authenticated processing event stream ([f3dede6](https://github.com/isecurefi/isecure-ts-client/commit/f3dede6da846a2f59a67478947c30bf99dffcb74))
+
 ## [2.2.3](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.2.2...isecure-ts-client-v2.2.3) (2026-08-26)
 
 ### Bug Fixes
