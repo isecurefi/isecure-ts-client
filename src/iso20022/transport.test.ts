@@ -451,6 +451,97 @@ describe("ISO 20022 HTTP transport", () => {
     expect(String(error)).not.toContain("filesystem detail");
   });
 
+  it("streams bounded event, task, and heartbeat notifications without exposing the session", async () => {
+    const firstCursor = `sse_${"1".repeat(32)}`;
+    const secondCursor = `sse_${"2".repeat(32)}`;
+    const operationFetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      expect(headers.get("Accept")).toBe("text/event-stream");
+      expect(headers.get("Authorization")).toBe(`Processing ${PROCESSING_TOKEN}`);
+      expect(headers.get("ISECure-Contract-Version")).toBe("1");
+      expect(headers.get("x-api-key")).toBe(API_KEY);
+      expect(headers.get("Last-Event-ID")).toBe(firstCursor);
+      return new Response(
+        `id: ${firstCursor}\nevent: event\ndata: {"event":"changed"}\n\n` +
+          `id: ${secondCursor}\nevent: task\ndata: {"state":"running"}\n\n` +
+          ": heartbeat\n\n",
+        {
+          headers: {
+            "cache-control": "private, no-store, no-cache, must-revalidate",
+            "content-type": "text/event-stream; charset=utf-8",
+          },
+        },
+      );
+    });
+    const { adapter } = await readyTransport(operationFetch);
+
+    const items = [];
+    for await (const item of adapter.streamProcessingEvents({ lastEventId: firstCursor })) items.push(item);
+
+    expect(items).toEqual([
+      { kind: "event", id: firstCursor, data: { event: "changed" } },
+      { kind: "task", id: secondCursor, data: { state: "running" } },
+      { kind: "heartbeat" },
+    ]);
+    expect(JSON.stringify(items)).not.toContain(PROCESSING_TOKEN);
+  });
+
+  it("rejects invalid resume cursors before opening a stream", async () => {
+    const { adapter, fetch } = await readyTransport();
+    const callsBeforeStream = fetch.mock.calls.length;
+    const stream = adapter.streamProcessingEvents({ lastEventId: "customer-selected-cursor" });
+
+    await expect(stream.next()).rejects.toMatchObject({ code: "invalid_configuration" });
+    expect(fetch).toHaveBeenCalledTimes(callsBeforeStream);
+  });
+
+  it("fails closed on malformed or oversized stream items", async () => {
+    const malformed = await readyTransport(
+      vi.fn(
+        async () =>
+          new Response("event: event\ndata: {}\n\n", {
+            headers: {
+              "cache-control": "private, no-store, no-cache, must-revalidate",
+              "content-type": "text/event-stream; charset=utf-8",
+            },
+          }),
+      ),
+    );
+    await expect(malformed.adapter.streamProcessingEvents().next()).rejects.toMatchObject({
+      code: "malformed_response",
+    });
+
+    const duplicateField = await readyTransport(
+      vi.fn(
+        async () =>
+          new Response(`id: sse_${"1".repeat(32)}\nevent: event\ndata: {}\ndata: {"substituted":true}\n\n`, {
+            headers: {
+              "cache-control": "private, no-store, no-cache, must-revalidate",
+              "content-type": "text/event-stream; charset=utf-8",
+            },
+          }),
+      ),
+    );
+    await expect(duplicateField.adapter.streamProcessingEvents().next()).rejects.toMatchObject({
+      code: "malformed_response",
+    });
+
+    const oversized = await readyTransport(
+      vi.fn(
+        async () =>
+          new Response(`id: sse_${"1".repeat(32)}\nevent: event\ndata: {"x":"${"a".repeat(65_536)}"}`, {
+            headers: {
+              "cache-control": "private, no-store, no-cache, must-revalidate",
+              "content-type": "text/event-stream; charset=utf-8",
+            },
+          }),
+      ),
+    );
+    await expect(oversized.adapter.streamProcessingEvents().next()).rejects.toMatchObject({
+      code: "response_too_large",
+    });
+  });
+
   it.each([
     "http://api.example.test/processing",
     "https://user:password@api.example.test/processing",
