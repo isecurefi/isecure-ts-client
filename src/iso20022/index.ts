@@ -11,6 +11,8 @@ export {
   type PaymentExportContentSink,
   type ProcessingBootstrapAuthentication,
   type ProcessingBootstrapAuthenticationProvider,
+  type ProcessingEventStreamItem,
+  type ProcessingEventStreamOptions,
   type ProcessingSessionMetadata,
   type VerifiedPaymentExportContent,
   type VerifiedPaymentExportContentMetadata,
