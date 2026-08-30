@@ -308,10 +308,11 @@ plain-English namespaces: `simulationCapabilities`, `simulationWorkspaces`, `sim
 `simulationEvents`, and `simulationArtifacts`. These methods expose only the public Processing
 operations. They do not expose the private simulator Module transition, checkpoint bytes, AWS
 resources, or a second File Exchange client. Artifact results are exact references; callers use the
-unchanged File Exchange surface for authorized bytes. Live Processing hosting, entitlement, and
-qualification remain separate release gates. The generated operation metadata records the dedicated
-`manage_simulation` permission and exact public audiences; the server remains the sole authority for
-authentication, permission assignments, entitlement, and revocation.
+unchanged File Exchange surface for authorized bytes. The control API is qualified only for governed
+synthetic testing in non-production `gpgtest`; no RC/production route or real-bank support is
+implied. The generated operation metadata records the dedicated `manage_simulation` permission and
+exact public audiences; the server remains the sole authority for authentication, permission
+assignments, entitlement, and revocation.
 
 ```ts
 const capabilities = await iso20022.simulationCapabilities.list({ page: { page_size: 25 } });
@@ -343,6 +344,30 @@ The client forwards exact resource references and snapshot cursors. It does not 
 deduplicate commands, retry mutations, infer revisions, or execute simulator rules locally. Clear
 the separate Processing session with `transport.clearProcessingSession()` when access is revoked or
 the integration signs out.
+
+The same transport can open one finite authenticated SSE lease without exposing its private
+Processing token. Stream items are bounded `event` or `task` notification objects plus heartbeats.
+The SDK deliberately does not interpret their payload, reconnect, or treat them as complete
+evidence. Retain the last completely handled opaque cursor, reconnect explicitly, tolerate
+duplicates, and reconcile through generated list/get operations after every gap, expired cursor, or
+indeterminate command.
+
+```ts
+const controller = new AbortController();
+
+for await (const item of transport.streamProcessingEvents({
+  lastEventId: previousCursor,
+  signal: controller.signal,
+})) {
+  if (item.kind === "heartbeat") continue;
+  previousCursor = item.id;
+  // Refresh the exact authorized Run, task, event, and Artifact resources.
+}
+```
+
+Each server lease is intentionally finite. Cancel it on sign-out, permission/entitlement loss, or
+when the consuming view is no longer active. A notification is not payment approval, bank
+acceptance, settlement, or a replacement for the cursor-paged event resource.
 
 The plain-English payment surface separates four concepts:
 

@@ -14,6 +14,8 @@ const MAX_TIMEOUT_MS = 5 * 60_000;
 const MAX_REQUEST_URL_LENGTH = 16 * 1024;
 const MAX_BOOTSTRAP_CREDENTIAL_LENGTH = 16 * 1024;
 const PROCESSING_SESSION_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/u;
+const PROCESSING_STREAM_CURSOR_PATTERN = /^sse_[a-f0-9]{32}$/u;
+const PROCESSING_STREAM_MAXIMUM_BUFFER_BYTES = 65_536;
 const SHA256_PATTERN = /^sha256:[0-9a-f]{64}$/u;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const FORBIDDEN_LOCAL_SECRET_FIELDS = new Set([
@@ -61,6 +63,21 @@ export interface ProcessingSessionMetadata {
   readonly schemaVersion: 1;
   readonly tokenType: "Processing";
 }
+
+export interface ProcessingEventStreamOptions {
+  /** Resume after the last completely handled item. The cursor stays opaque. */
+  readonly lastEventId?: string;
+  /** Cancels this finite stream lease without clearing the Processing session. */
+  readonly signal?: AbortSignal;
+}
+
+export type ProcessingEventStreamItem =
+  | {
+      readonly kind: "event" | "task";
+      readonly id: string;
+      readonly data: Readonly<Record<string, unknown>>;
+    }
+  | { readonly kind: "heartbeat" };
 
 export type PaymentExportContentAuthority = Readonly<
   Pick<PaymentExportResource, "artifact_id" | "artifact_digest" | "artifact_byte_length" | "artifact_media_type">
@@ -216,6 +233,89 @@ export class Iso20022HttpTransport implements Iso20022Transport {
     return this.processingSession === undefined ? undefined : sessionMetadata(this.processingSession);
   }
 
+  /**
+   * Opens one finite authenticated SSE lease. The caller owns reconnect and
+   * authoritative list/get reconciliation; this method never retries or exposes
+   * the private Processing credential.
+   */
+  async *streamProcessingEvents(options: ProcessingEventStreamOptions = {}): AsyncGenerator<ProcessingEventStreamItem> {
+    const lastEventId = parseStreamCursor(options.lastEventId);
+    if (options.signal?.aborted === true) return;
+    const session = this.requireProcessingSession();
+    const controller = new AbortController();
+    let callerAborted = false;
+    const cancel = (): void => {
+      callerAborted = true;
+      controller.abort();
+    };
+    options.signal?.addEventListener("abort", cancel, { once: true });
+    const timer = abortAfter(controller, this.timeoutMs);
+    let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+    try {
+      const headers: Record<string, string> = {
+        Accept: "text/event-stream",
+        Authorization: `Processing ${session.processingSession}`,
+        "ISECure-Contract-Version": "1",
+        "x-api-key": session.apiKey,
+      };
+      if (lastEventId !== undefined) headers["Last-Event-ID"] = lastEventId;
+      let response: Response;
+      try {
+        response = await this.fetchImplementation(new URL("stream", this.baseUrl), {
+          headers,
+          redirect: "error",
+          signal: controller.signal,
+        });
+      } catch {
+        if (callerAborted) return;
+        throw requestFailure(controller);
+      }
+      if (!response.ok) {
+        const body = await parseResponse(response, this.maxResponseBytes);
+        throw processingHttpError(response.status, body);
+      }
+      requireEventStreamResponse(response);
+      if (response.body === null) {
+        throw new Iso20022TransportError("malformed_response", "The Processing event stream has no body");
+      }
+      reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8", { fatal: true });
+      let buffered = "";
+      while (true) {
+        let chunk: ReadableStreamReadResult<Uint8Array>;
+        try {
+          chunk = await reader.read();
+        } catch {
+          if (callerAborted) return;
+          throw requestFailure(controller);
+        }
+        if (chunk.done) {
+          buffered += decoder.decode();
+          if (buffered.trim().length !== 0) {
+            throw new Iso20022TransportError("malformed_response", "The Processing event stream ended mid-item");
+          }
+          return;
+        }
+        try {
+          buffered += decoder.decode(chunk.value, { stream: true });
+        } catch {
+          throw new Iso20022TransportError("malformed_response", "The Processing event stream is not valid UTF-8");
+        }
+        if (utf8Length(buffered) > PROCESSING_STREAM_MAXIMUM_BUFFER_BYTES) {
+          throw new Iso20022TransportError("response_too_large", "The Processing event stream item is too large");
+        }
+        const parsed = splitEventStreamItems(buffered);
+        buffered = parsed.remainder;
+        for (const item of parsed.items) yield parseEventStreamItem(item);
+      }
+    } finally {
+      clearTimeout(timer);
+      options.signal?.removeEventListener("abort", cancel);
+      controller.abort();
+      await reader?.cancel().catch(() => undefined);
+    }
+  }
+
   async invoke<Input, Result>(
     operationId: Iso20022OperationId,
     input: Input,
@@ -342,6 +442,68 @@ export class Iso20022HttpTransport implements Iso20022Transport {
       clearTimeout(timer);
     }
   }
+}
+
+function parseStreamCursor(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  if (!PROCESSING_STREAM_CURSOR_PATTERN.test(value)) {
+    throw new Iso20022TransportError("invalid_configuration", "The Processing event cursor is invalid");
+  }
+  return value;
+}
+
+function requireEventStreamResponse(response: Response): void {
+  if (response.headers.get("content-type") !== "text/event-stream; charset=utf-8") {
+    throw new Iso20022TransportError("malformed_response", "The Processing event stream media type is invalid");
+  }
+  const cacheDirectives = new Set(
+    (response.headers.get("cache-control") ?? "")
+      .toLowerCase()
+      .split(",")
+      .map((directive) => directive.trim()),
+  );
+  if (!cacheDirectives.has("private") || !cacheDirectives.has("no-store") || !cacheDirectives.has("no-cache")) {
+    throw new Iso20022TransportError("malformed_response", "The Processing event stream cache policy is invalid");
+  }
+}
+
+function splitEventStreamItems(value: string): { readonly items: readonly string[]; readonly remainder: string } {
+  const normalized = value.replaceAll("\r\n", "\n");
+  const parts = normalized.split("\n\n");
+  return { items: parts.slice(0, -1), remainder: parts.at(-1) ?? "" };
+}
+
+function utf8Length(value: string): number {
+  return new TextEncoder().encode(value).byteLength;
+}
+
+function parseEventStreamItem(value: string): ProcessingEventStreamItem {
+  if (value === ": heartbeat") return { kind: "heartbeat" };
+  const lines = value.split("\n");
+  if (
+    lines.length !== 3 ||
+    !lines[0]?.startsWith("id: ") ||
+    !lines[1]?.startsWith("event: ") ||
+    !lines[2]?.startsWith("data: ")
+  ) {
+    throw new Iso20022TransportError("malformed_response", "The Processing event stream item is invalid");
+  }
+  const id = lines[0].slice(4);
+  const kind = lines[1].slice(7);
+  const dataLine = lines[2].slice(6);
+  if (!PROCESSING_STREAM_CURSOR_PATTERN.test(id) || (kind !== "event" && kind !== "task") || dataLine.length === 0) {
+    throw new Iso20022TransportError("malformed_response", "The Processing event stream item is invalid");
+  }
+  let data: unknown;
+  try {
+    data = JSON.parse(dataLine);
+  } catch {
+    throw new Iso20022TransportError("malformed_response", "The Processing event stream data is invalid JSON");
+  }
+  if (data === null || typeof data !== "object" || Array.isArray(data)) {
+    throw new Iso20022TransportError("malformed_response", "The Processing event stream data is not an object");
+  }
+  return { kind, id, data: data as Readonly<Record<string, unknown>> };
 }
 
 interface ProcessingSessionCredential extends ProcessingSessionMetadata {
