@@ -33,6 +33,25 @@ describe("challenge encryption", () => {
     expect(decrypt(keyPair.privateKey, encrypted)).toBe("Example-password-123!||1475429754114");
   });
 
+  it("rejects passwords that exceed the RSA-OAEP challenge capacity with a clear byte limit", async () => {
+    const keyPair = generateRsaKeyPair();
+
+    await expect(encryptPasswordChallenge(keyPair.spkiPublicKey, challenge, "x".repeat(200))).rejects.toThrow(
+      "Password is too long. Use at most 199 UTF-8 bytes.",
+    );
+  });
+
+  it("measures password capacity in UTF-8 bytes", async () => {
+    const keyPair = generateRsaKeyPair();
+    const maximumPassword = `${"ä".repeat(99)}x`;
+    const encrypted = await encryptPasswordChallenge(keyPair.spkiPublicKey, challenge, maximumPassword);
+
+    expect(decrypt(keyPair.privateKey, encrypted)).toBe(`${maximumPassword}||1475429754114`);
+    await expect(encryptPasswordChallenge(keyPair.spkiPublicKey, challenge, "ä".repeat(100))).rejects.toThrow(
+      "Password is too long. Use at most 199 UTF-8 bytes.",
+    );
+  });
+
   it("rejects malformed challenge and key inputs", async () => {
     const keyPair = generateRsaKeyPair();
 
