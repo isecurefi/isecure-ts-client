@@ -32,6 +32,14 @@
 - Added `parseMode` / `parseLogLevel` (and `isMode` / `isLogLevel`) input guards so untrusted values such as environment variables are validated instead of unchecked-cast.
 - Tightened the `classifyErrorReason` "unconfirmed" heuristic to avoid matching unrelated responses that merely contain the word "confirm".
 
+## [2.3.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.3.0...isecure-ts-client-v2.3.1) (2026-09-03)
+
+
+### Bug Fixes
+
+* **auth:** explain password challenge length limit ([e191236](https://github.com/isecurefi/isecure-ts-client/commit/e191236d86d418b7ca32350b8cd16ea1096a3c44))
+* **auth:** explain password challenge length limit ([6d1830a](https://github.com/isecurefi/isecure-ts-client/commit/6d1830a56a1b5b1598d99969198eb5c3b23a0077))
+
 ## [2.3.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.2.3...isecure-ts-client-v2.3.0) (2026-08-30)
 
 
