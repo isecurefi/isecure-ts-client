@@ -1,5 +1,6 @@
 const RSA_OAEP_PARAMS = { name: "RSA-OAEP" } as const;
 const RSA_OAEP_IMPORT_PARAMS = { name: "RSA-OAEP", hash: "SHA-1" } as const;
+const SHA_1_DIGEST_BYTES = 20;
 
 export async function encryptPasswordChallenge(
   publicKeyPem: string,
@@ -23,13 +24,22 @@ export async function encryptPasswordChallenge(
     false,
     ["encrypt"],
   );
-  const encrypted = await subtle.encrypt(
-    RSA_OAEP_PARAMS,
-    publicKey,
-    new TextEncoder().encode(`${password}||${timestamp}`),
-  );
+  const encoder = new TextEncoder();
+  const passwordBytes = encoder.encode(password);
+  const challengeSuffixBytes = encoder.encode(`||${timestamp}`);
+  const maximumPasswordBytes = rsaOaepMaximumPlaintextBytes(publicKey) - challengeSuffixBytes.byteLength;
+  if (passwordBytes.byteLength > maximumPasswordBytes) {
+    throw new Error(`Password is too long. Use at most ${Math.max(0, maximumPasswordBytes)} UTF-8 bytes.`);
+  }
+
+  const encrypted = await subtle.encrypt(RSA_OAEP_PARAMS, publicKey, encoder.encode(`${password}||${timestamp}`));
 
   return bytesToBase64(new Uint8Array(encrypted));
+}
+
+function rsaOaepMaximumPlaintextBytes(publicKey: CryptoKey): number {
+  const algorithm = publicKey.algorithm as RsaHashedKeyAlgorithm;
+  return Math.floor(algorithm.modulusLength / 8) - 2 * SHA_1_DIGEST_BYTES - 2;
 }
 
 function publicKeyDerFromPem(publicKeyPem: string): Uint8Array {
