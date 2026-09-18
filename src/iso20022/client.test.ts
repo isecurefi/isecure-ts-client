@@ -4,7 +4,6 @@ import { createIso20022Client } from "./client.js";
 import type {
   Iso20022Transport,
   PaymentExportContentAuthority,
-  PaymentExportContentSink,
   VerifiedPaymentExportContent,
   VerifiedPaymentExportContentMetadata,
 } from "./transport.js";
@@ -30,9 +29,7 @@ class RecordingTransport implements Iso20022Transport {
     input: unknown,
     metadata: unknown,
     authority: PaymentExportContentAuthority,
-    sink: PaymentExportContentSink,
   ): Promise<VerifiedPaymentExportContentMetadata> {
-    void sink;
     this.calls.push({ operationId: "payment_exports.download_content", input, metadata });
     return Promise.resolve(authority);
   }

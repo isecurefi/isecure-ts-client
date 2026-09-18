@@ -88,9 +88,9 @@ function generateRsaKeyPair(): { privateKey: string; pkcs1PublicKey: string; spk
   });
 
   return {
-    privateKey: privateKey.export({ format: "pem", type: "pkcs8" }).toString(),
-    pkcs1PublicKey: publicKey.export({ format: "pem", type: "pkcs1" }).toString(),
-    spkiPublicKey: publicKey.export({ format: "pem", type: "spki" }).toString(),
+    privateKey: privateKey.export({ format: "pem", type: "pkcs8" }),
+    pkcs1PublicKey: publicKey.export({ format: "pem", type: "pkcs1" }),
+    spkiPublicKey: publicKey.export({ format: "pem", type: "spki" }),
   };
 }
 
