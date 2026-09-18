@@ -38,7 +38,7 @@ interface OperationContract {
 
 interface ContractContext {
   transport: FakeTransport;
-  loginResponse: "authenticated" | "mfa" | "email";
+  loginResponse: "authenticated" | "mfa" | "mfa_selection" | "email";
 }
 
 const publicKey = readFileSync(new URL("../../examples/gpg-encryption-test/test.pem", import.meta.url), "utf8");
@@ -96,6 +96,13 @@ const contract = {
       context.transport.requests.length = 0;
     },
     invoke: (client) => client.loginMFA("123456"),
+  },
+  SelectMFA: {
+    sdkMethod: "selectMfaType",
+    method: "PUT",
+    path: "/session/{Email}/{Mode}/selectmfa",
+    setup: loginToMfaSelection,
+    invoke: (client) => client.selectMfaType("totp"),
   },
   VerifyTOTP: {
     sdkMethod: "verifyTotp",
@@ -176,6 +183,13 @@ const contract = {
     setup: authenticate,
     invoke: (client) => client.enrollCert({ Code: "123456", Company: "EXAMPLE COMPANY", WsUserId: "ws-user" }),
   },
+  RetireCert: {
+    sdkMethod: "retireCert",
+    method: "DELETE",
+    path: "/certs/{Bank}",
+    setup: authenticate,
+    invoke: (client) => client.retireCert({ Account: "customer@example.test" }),
+  },
   ListFiles: {
     sdkMethod: "listFiles",
     method: "GET",
@@ -210,6 +224,13 @@ const contract = {
     path: "/integrator/accounts",
     setup: authenticate,
     invoke: (client) => client.listAccounts(),
+  },
+  DeleteAccount: {
+    sdkMethod: "deleteAccount",
+    method: "DELETE",
+    path: "/account/{Email}",
+    setup: authenticate,
+    invoke: (client) => client.deleteAccount("user@example.test", "user@example.test"),
   },
   ListKeys: {
     sdkMethod: "listKeys",
@@ -289,6 +310,12 @@ describe("OpenAPI contract honesty", () => {
     }
   });
 });
+
+async function loginToMfaSelection(client: WSChannel, context: ContractContext): Promise<void> {
+  context.loginResponse = "mfa_selection";
+  await client.login();
+  context.transport.requests.length = 0;
+}
 
 async function authenticate(client: WSChannel, context: ContractContext): Promise<void> {
   context.loginResponse = "authenticated";
@@ -450,6 +477,30 @@ function contractResponse(request: TransportRequest, transport: FakeTransport): 
   if (request.method === "PUT" && path.endsWith("/mfacode")) {
     return response({ ApiKey: "api-key", IdToken: "id-token", ResponseCode: "00", ResponseText: "logged in" });
   }
+  if (request.method === "PUT" && path.endsWith("/selectmfa")) {
+    return response({
+      ChallengeName: "SOFTWARE_TOKEN_MFA",
+      ResponseCode: "00",
+      ResponseText: "Give TOTP code",
+      Session: "session-token",
+    });
+  }
+  if (request.method === "DELETE" && path === "/certs/nordea") {
+    return response({
+      Bank: "nordea",
+      ResponseCode: "00",
+      ResponseText: "Certificate retired",
+      RetiredCertNames: ["nordea.REMOVED.1a2b3c4d"],
+    });
+  }
+  if (request.method === "DELETE" && path.startsWith("/account/")) {
+    return response({
+      Deleted: { Account: true, AdminUser: true, DataUser: true },
+      Email: "user@example.test",
+      ResponseCode: "00",
+      ResponseText: "Account deleted",
+    });
+  }
   if (request.method === "PUT" && path.endsWith("/verifytotp")) {
     return response({ ResponseCode: "00", ResponseText: "TOTP verified" });
   }
@@ -508,6 +559,15 @@ function loginResponse(transport: FakeTransport): TransportResponse<unknown> {
   const context = currentContext(transport);
   if (context?.loginResponse === "mfa") {
     return response({ ResponseCode: "00", ResponseText: "Give SMS code", Session: "session-token" });
+  }
+  if (context?.loginResponse === "mfa_selection") {
+    return response({
+      ChallengeName: "SELECT_MFA_TYPE",
+      MfaOptions: ["SMS_MFA", "SOFTWARE_TOKEN_MFA"],
+      ResponseCode: "00",
+      ResponseText: "Select MFA type",
+      Session: "session-token",
+    });
   }
   if (context?.loginResponse === "email") {
     return response({

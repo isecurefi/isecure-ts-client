@@ -26,6 +26,10 @@ import {
   type InitPasswordResetResponse,
   type InitRegisterResponse,
   type ListAccountsResponse,
+  type RetireCertQuery,
+  type RetireCertResponse,
+  type DeleteAccountRequest,
+  type DeleteAccountResponse,
   type ListCertsResponse,
   type ListFilesQuery,
   type ListFilesResponse,
@@ -484,8 +488,39 @@ export class WSChannel {
     return this.call<EnrollCertResponse, EnrollCertRequest>("POST", this.urls.cert(), { body: request, auth: true });
   }
 
+  /**
+   * Retires the active certificate of the configured `Bank` so a fresh enrollment
+   * or import becomes possible; the record stays on the account, unusable, until
+   * the account is deleted. Admin mode only. The integrator API key owner may pass
+   * `Account` to retire a customer account's certificate instead of its own.
+   */
+  async retireCert(query: RetireCertQuery = {}): Promise<RetireCertResponse> {
+    const options: { auth: true; query?: QueryParams } = { auth: true };
+    if (query.Account !== undefined) options.query = { Account: query.Account };
+    return this.call<RetireCertResponse>("DELETE", this.urls.cert(), options);
+  }
+
   async listAccounts(): Promise<ListAccountsResponse> {
     return this.call<ListAccountsResponse>("GET", this.urls.integratorAccounts(), { auth: true });
+  }
+
+  /**
+   * Permanently deletes one customer account under the caller's API key: both
+   * Cognito users, the account record, and every certificate on it. Admin mode
+   * only, integrator API key owner only, and the admin login (which includes MFA)
+   * must be at most 10 minutes old or the API answers "Re-authenticate to delete
+   * accounts". `Confirm` must repeat `Email` exactly; a mismatch is refused here
+   * so a typo never reaches the API.
+   */
+  async deleteAccount(Email: string, Confirm: string): Promise<DeleteAccountResponse> {
+    if (Confirm !== Email) {
+      throw new ISecureError("deleteAccount confirmation must equal the account email exactly");
+    }
+    const request: DeleteAccountRequest = { Confirm };
+    return this.call<DeleteAccountResponse, DeleteAccountRequest>("DELETE", this.urls.customerAccount(Email), {
+      body: request,
+      auth: true,
+    });
   }
 
   async logout(): Promise<LogoutResponse> {

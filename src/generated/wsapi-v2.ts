@@ -4,6 +4,30 @@
  */
 
 export interface paths {
+    "/account/{Email}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * DeleteAccount
+         * @description Permanently delete one customer account under the caller's API key: both Cognito users (*admin* and *data*), the account record, every active and retired certificate and private key on it, and its link to a certificate-sharing owner. Nothing is retained; use this for GDPR erasure. The operation is not reversible.
+         *
+         *     *Admin* mode only, and only the integrator API key owner account may call it. The admin login (which always includes MFA) must be fresh: a token whose `auth_time` is older than 10 minutes is rejected with `Re-authenticate to delete accounts`, so clients should sign in again with MFA and retry. The caller must repeat the exact account email in the body `Confirm` field; a missing or different value is rejected before any change.
+         *
+         *     Integrator API key owner accounts can never be deleted through the API, not even by themselves. An account that still shares its certificates with other accounts (see `ShareCerts`) is rejected until those accounts are unshared or deleted. An interrupted deletion can be repeated safely: already removed Cognito users are tolerated and the account record is removed last.
+         */
+        delete: operations["DeleteAccount"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/account/{Email}/{Mode}": {
         parameters: {
             query?: never;
@@ -13,12 +37,72 @@ export interface paths {
         };
         /**
          * InitRegister
-         * @description Before register (or login), client must fetch `challenge` from the API. Then on register (or login), the challenge must be passed along to the API (as response to the challenge). The challenge is always fresh for some period of time and the API validates it when passed with register (or login). The challenge has form of `base64-string|timestamp|uuid`. For example:\n\n```ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e```\n\n**NOTE:** The call must contain the same email as used for registration itself.\n
+         * @description Before register (or login), client must fetch `challenge` from the API. Then on register (or login), the challenge must be passed along to the API (as response to the challenge). The challenge is always fresh for some period of time and the API validates it when passed with register (or login). The challenge has form of `base64-string|timestamp|uuid`. For example:
+         *
+         *     ```ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e```
+         *
+         *     **NOTE:** The call must contain the same email as used for registration itself.
          */
         get: operations["InitRegister"];
         /**
          * Register
-         * @description You need to register both *admin* and *data* accounts with the same email address. Both accounts share the same data, but are used for different purposes. *Admin* account must be registered first, then *data* account.\n\n*Admin* account is used to configure setup with **Certs** and **Pgp** operations, while the *data* account is used with **Files** operations only. Both accounts use **Account** and **Session** operations.\n\n*Admin* account always requires MFA during login. SMS MFA remains available, and TOTP can be enrolled after SMS bootstrap. *Data* account does not require MFA. Generally, the *data* account is considered *read-only* when no PGP keys are configured, since PGP Keys are used to verify file upload signatures and are thus required to successfully upload files with **Files** *UploadFile* operation.\n\nRegistrations are independent for both accounts, *admin* and *data* and both require phone number and email verifications.\n\n`email` is the login username for both accounts and `mode` defines the selected "mode" for the login, i.e. *admin* or *data*.\n\nBefore registration client must fetch challenge from API (see Account InitRegister operation) and pass it back within the `ChResp` parameter.\n\nThe following parameters `name`, `phone`, and `company` are required and must be valid (`phone`, `email`) as they need to be confirmed before registration becomes successful and login possible.\n\nClient must RSA encrypt (OAEP padding) the _password_ and the challenge _timestamp_ as string in the form `password||timestamp`, base64 encode it and provide the resulting string as `Encrypted` parameter. The RSA encryption can be done e.g. for illustration purposes within command line with openssl rsautl:\n```\necho -n Toddler_..123456789012345\\|\\|1475175151231 |\n\topenssl rsautl -oaep -encrypt -pubin -inkey test.pem |\n\tbase64\n\n```\n\nThe **test** API's RSA public key is as follows:\n\n```\n% cat test.pem\n-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkuSaoSZztGAIGDTY7Rff\npsBHJJT1k207UodOJbYFhHAq0lWJnvMPLl5Q1DUUZdTGtTdL8Dsaj/Bo2+gSykMM\nR5QiKewvQsLfvqjwOO8JDItnhJl0lUqcPpdQV4M/Ai3YNRjNcVy4a+pichqtSAWl\n9S1HV01MNeouk8PEr/zoUasmgfO3mz6N6XTUtF/tIi8K2kBOsLAtqltihFSd/zT8\nifYZE9cZTJ09lUs7kMz1wxFIsiegaE1jUYV+VSLu3PJ97oKhQpqop8EnkBAoBl6r\nmdmFryBQIdakPIdd4rO5Yg+to10n4u7Wij9ePIwWMfbqY4QoW5nXqMgFJQkIt4TG\neQIDAQAB\n-----END PUBLIC KEY-----\n```\n\nThe **production** API's RSA public key is as follows:\n\n```\n% cat prod.pem\n-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7wx4l7P3eLsaEyK7ZRME\ng5urEHwaEoY9LjkYcpMw9gmPIi3RoGjQX7HzPad2D7ES2yIGdmyxjN8R2LyFa8ke\nEE+VY3ISYzP2cOjd/zDkX01yjDXQLRxntXbtqIypGQAzmZbCyIB226ZKEE+ldh6M\nYyM41YWYikfocYssFEjY7fpPGeUg4FOmHmyWIZeMkXYovskoi1jZ1Ay1qn95XlpA\n/Ptru2efro4T1xksv4WBBrj8bMNwdDpf4oyzH2PKYkn3/KlNTBCHlAmzP0jd4pIa\nN0tAf2m8TcNq7kuBzyfs8AcCUj870p8SEiko0PMx6K+zVsTVWsxfUX+/+kmapmp/\nAwIDAQAB\n-----END PUBLIC KEY-----\n```\n\n\n\n**NOTE:** Password must be at least 20 characters long, have lower and upper case letters, numbers, and special characters.\n\n**NOTE:** Phone number must be provided with country code, e.g. `+358404982201`.
+         * @description You need to register both *admin* and *data* accounts with the same email address. Both accounts share the same data, but are used for different purposes. *Admin* account must be registered first, then *data* account.
+         *
+         *     *Admin* account is used to configure setup with **Certs** and **Pgp** operations, while the *data* account is used with **Files** operations only. Both accounts use **Account** and **Session** operations.
+         *
+         *     *Admin* account always requires MFA during login. SMS MFA remains available, and TOTP can be enrolled after SMS bootstrap. *Data* account does not require MFA. Generally, the *data* account is considered *read-only* when no PGP keys are configured, since PGP Keys are used to verify file upload signatures and are thus required to successfully upload files with **Files** *UploadFile* operation.
+         *
+         *     Registrations are independent for both accounts, *admin* and *data* and both require phone number and email verifications.
+         *
+         *     `email` is the login username for both accounts and `mode` defines the selected "mode" for the login, i.e. *admin* or *data*.
+         *
+         *     Before registration client must fetch challenge from API (see Account InitRegister operation) and pass it back within the `ChResp` parameter.
+         *
+         *     The following parameters `name`, `phone`, and `company` are required and must be valid (`phone`, `email`) as they need to be confirmed before registration becomes successful and login possible.
+         *
+         *     Client must RSA encrypt (OAEP padding) the _password_ and the challenge _timestamp_ as string in the form `password||timestamp`, base64 encode it and provide the resulting string as `Encrypted` parameter. The RSA encryption can be done e.g. for illustration purposes within command line with openssl rsautl:
+         *     ```
+         *     echo -n Toddler_..123456789012345\|\|1475175151231 |
+         *     	openssl rsautl -oaep -encrypt -pubin -inkey test.pem |
+         *     	base64
+         *
+         *     ```
+         *
+         *     The **test** API's RSA public key is as follows:
+         *
+         *     ```
+         *     % cat test.pem
+         *     -----BEGIN PUBLIC KEY-----
+         *     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkuSaoSZztGAIGDTY7Rff
+         *     psBHJJT1k207UodOJbYFhHAq0lWJnvMPLl5Q1DUUZdTGtTdL8Dsaj/Bo2+gSykMM
+         *     R5QiKewvQsLfvqjwOO8JDItnhJl0lUqcPpdQV4M/Ai3YNRjNcVy4a+pichqtSAWl
+         *     9S1HV01MNeouk8PEr/zoUasmgfO3mz6N6XTUtF/tIi8K2kBOsLAtqltihFSd/zT8
+         *     ifYZE9cZTJ09lUs7kMz1wxFIsiegaE1jUYV+VSLu3PJ97oKhQpqop8EnkBAoBl6r
+         *     mdmFryBQIdakPIdd4rO5Yg+to10n4u7Wij9ePIwWMfbqY4QoW5nXqMgFJQkIt4TG
+         *     eQIDAQAB
+         *     -----END PUBLIC KEY-----
+         *     ```
+         *
+         *     The **production** API's RSA public key is as follows:
+         *
+         *     ```
+         *     % cat prod.pem
+         *     -----BEGIN PUBLIC KEY-----
+         *     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7wx4l7P3eLsaEyK7ZRME
+         *     g5urEHwaEoY9LjkYcpMw9gmPIi3RoGjQX7HzPad2D7ES2yIGdmyxjN8R2LyFa8ke
+         *     EE+VY3ISYzP2cOjd/zDkX01yjDXQLRxntXbtqIypGQAzmZbCyIB226ZKEE+ldh6M
+         *     YyM41YWYikfocYssFEjY7fpPGeUg4FOmHmyWIZeMkXYovskoi1jZ1Ay1qn95XlpA
+         *     /Ptru2efro4T1xksv4WBBrj8bMNwdDpf4oyzH2PKYkn3/KlNTBCHlAmzP0jd4pIa
+         *     N0tAf2m8TcNq7kuBzyfs8AcCUj870p8SEiko0PMx6K+zVsTVWsxfUX+/+kmapmp/
+         *     AwIDAQAB
+         *     -----END PUBLIC KEY-----
+         *     ```
+         *
+         *
+         *
+         *     **NOTE:** Password must be at least 20 characters long, have lower and upper case letters, numbers, and special characters.
+         *
+         *     **NOTE:** Phone number must be provided with country code, e.g. `+358404982201`.
          */
         put: operations["Register"];
         /**
@@ -139,20 +223,36 @@ export interface paths {
         };
         /**
          * ExportCert
-         * @description Download bank certificate and private key encrypted with stored PGP key.\n\n**NOTE**: The previously uploaded `PgpKeyId` must have purpose type `export`. I.e. purpose type `authorize` PGP keys cannot be used for exporting.\n\n**NOTE**: If `export` has been set to `disabled` (see ConfigCerts), then exporting private keys is not possible through API.
+         * @description Download bank certificate and private key encrypted with stored PGP key.
+         *
+         *     **NOTE**: The previously uploaded `PgpKeyId` must have purpose type `export`. I.e. purpose type `authorize` PGP keys cannot be used for exporting.
+         *
+         *     **NOTE**: If `export` has been set to `disabled` (see ConfigCerts), then exporting private keys is not possible through API.
          */
         get: operations["ExportCert"];
         /**
          * ImportCert
-         * @description Provide _WsUserId_, _Company_, _PrivateKey_, and _Certificate_ for importing existing WS Channel certificate and private key. _Company_ must match with the contract with the bank. Certificate(s) and private key(s) must be PEM formatted.\n\n**NOTE:** _EncCertificate_ and _EncPrivatekey_ are for DanskeBank only.
+         * @description Provide _WsUserId_, _Company_, _PrivateKey_, and _Certificate_ for importing existing WS Channel certificate and private key. _Company_ must match with the contract with the bank. Certificate(s) and private key(s) must be PEM formatted.
+         *
+         *     **NOTE:** _EncCertificate_ and _EncPrivatekey_ are for DanskeBank only.
          */
         put: operations["ImportCert"];
         /**
          * EnrollCert
-         * @description Provide WS-Channel user id, _WsUserId_, _Company_, and PIN _Code_ for _Bank_ certificate enrollment. _Company_ must match with the contract with the bank and is part of enrollment process. Note that certificate private key is securely generated and stored encrypted with AWS KMS encrypted authentication on API side. Certificates are automatically renewed when needed.\n\n**NOTE:** For OP bank, ensure that you set the PIN code blocks 1 and 2 in correct order. If not initially in correct order, bank will lock the registration and you need to call them for unlock.
+         * @description Provide WS-Channel user id, _WsUserId_, _Company_, and PIN _Code_ for _Bank_ certificate enrollment. _Company_ must match with the contract with the bank and is part of enrollment process. Note that certificate private key is securely generated and stored encrypted with AWS KMS encrypted authentication on API side. Certificates are automatically renewed when needed.
+         *
+         *     **NOTE:** For OP bank, ensure that you set the PIN code blocks 1 and 2 in correct order. If not initially in correct order, bank will lock the registration and you need to call them for unlock.
          */
         post: operations["EnrollCert"];
-        delete?: never;
+        /**
+         * RetireCert
+         * @description Retire the active certificate of *Bank* so the bank has no usable certificate and a fresh enrollment or import becomes possible. The certificate record is renamed on the account with a `.REMOVED.<random>` marker and stays only until the account is deleted; it is never exported, renewed, or used for file exchange again. `ListCerts` reports it under `Retired`.
+         *
+         *     *Admin* mode only. Without the `Account` query parameter the caller's own certificate is retired. The integrator API key owner account may pass `Account` to retire a certificate on one of its customer accounts under the same API key. Any other account combination is rejected.
+         *
+         *     Retiring a bank that has no active certificate fails, so a repeated call is a clean error rather than a second rename.
+         */
+        delete: operations["RetireCert"];
         options?: never;
         head?: never;
         patch?: never;
@@ -185,7 +285,22 @@ export interface paths {
         get: operations["ListFiles"];
         /**
          * UploadFile
-         * @description Uploads file to bank if PGP signature(s) are valid. _FileContents_ is a string of _Base64_ encoded file contents. _FileType_ is bank specific. _Signature_ is detached PGP signature or concatenation of PGP detached signatures in ASCII armor format. PGP signatures are used for authorizing file uploads. Currently one valid PGP authorize registered key signature is enough. _FileName_ is upload filename.\n\n**NOTE:** The uploaded files do not show up on the file listing from bank.\n\n```\n% export SESSION=~/.wscli/settings.yaml\n% wscli session login -c $SESSION\n% export APIKEY=`yq -r .settings.apikey $SESSION`\n% export IDTOKEN=`yq -r .settings.idtoken $SESSION`\n%\n% curl -X PUT -H Content-Type:application/json \\ \n       -H Authorization:$IDTOKEN \\ \n       -H x-api-key:$APIKEY \\ \n       -d @request-example.json \\ \n       https://ws-api.isecure.fi/v2/files/danskebank\n```\n\n
+         * @description Uploads file to bank if PGP signature(s) are valid. _FileContents_ is a string of _Base64_ encoded file contents. _FileType_ is bank specific. _Signature_ is detached PGP signature or concatenation of PGP detached signatures in ASCII armor format. PGP signatures are used for authorizing file uploads. Currently one valid PGP authorize registered key signature is enough. _FileName_ is upload filename.
+         *
+         *     **NOTE:** The uploaded files do not show up on the file listing from bank.
+         *
+         *     ```
+         *     % export SESSION=~/.wscli/settings.yaml
+         *     % wscli session login -c $SESSION
+         *     % export APIKEY=`yq -r .settings.apikey $SESSION`
+         *     % export IDTOKEN=`yq -r .settings.idtoken $SESSION`
+         *     %
+         *     % curl -X PUT -H Content-Type:application/json \
+         *            -H Authorization:$IDTOKEN \
+         *            -H x-api-key:$APIKEY \
+         *            -d @request-example.json \
+         *            https://ws-api.isecure.fi/v2/files/danskebank
+         *     ```
          */
         put: operations["UploadFile"];
         post?: never;
@@ -276,7 +391,11 @@ export interface paths {
         };
         /**
          * InitLogin
-         * @description Before login, client must fetch `challenge` from the API. Then on login, the challenge must be passed along to the API (as response to the challenge). The challenge is always fresh for some period of time and the API validates it when passed with login. The challenge has form of `base64-string|timestamp|uuid`. For example:\n\n```ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e```\n\n**NOTE:** The call must contain the same email as used for registration itself.
+         * @description Before login, client must fetch `challenge` from the API. Then on login, the challenge must be passed along to the API (as response to the challenge). The challenge is always fresh for some period of time and the API validates it when passed with login. The challenge has form of `base64-string|timestamp|uuid`. For example:
+         *
+         *     ```ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e```
+         *
+         *     **NOTE:** The call must contain the same email as used for registration itself.
          */
         get: operations["InitLogin"];
         put?: never;
@@ -297,7 +416,9 @@ export interface paths {
         post: operations["Login"];
         /**
          * Logout
-         * @description Logout user.\n\n**NOTE**: AWS Cognito allows user logout, but the received authorization _IdToken_ **is still valid**. When the optional _AccessToken_ parameter is also provided, the _IdToken_ is also revoked.
+         * @description Logout user.
+         *
+         *     **NOTE**: AWS Cognito allows user logout, but the received authorization _IdToken_ **is still valid**. When the optional _AccessToken_ parameter is also provided, the _IdToken_ is also revoked.
          */
         delete: operations["Logout"];
         options?: never;
@@ -318,6 +439,26 @@ export interface paths {
          * @description Send MFA _Code_ along with the previously received _Session_ token. For SMS MFA use the SMS code; for software-token MFA use the authenticator/TOTP code and echo `ChallengeName: SOFTWARE_TOKEN_MFA`. If _Email_ has not been yet verified, successful login provides only _ResponseCode_, _ResponseText_, and an _AccessToken_ that must be used to verify email address. If email is already verified and the login succeeds, add the _IdToken_ from the login response as Authorization header in API requests requiring authorization (i.e. pass as parameter to client SDK API calls). _IdToken_ expires in _ExpiresIn_ seconds.
          */
         put: operations["LoginMFA"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/session/{Email}/{Mode}/selectmfa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * SelectMFA
+         * @description When login returns a `SELECT_MFA_TYPE` challenge (the account has both SMS and authenticator MFA enabled with neither preferred), choose which factor to use by sending the previously received _Session_ and the chosen _MfaType_. Returns the chosen factor's challenge (`SMS_MFA` or `SOFTWARE_TOKEN_MFA`) with a fresh _Session_; complete it with `LoginMFA`. Choosing `SMS_MFA` sends the SMS.
+         */
+        put: operations["SelectMFA"];
         post?: never;
         delete?: never;
         options?: never;
@@ -349,6 +490,15 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Which resources DeleteAccount removed; `false` means the resource was already absent */
+        AccountDeletionDescriptor: {
+            /** @description The account record with all certificates was deleted by this call */
+            Account: boolean;
+            /** @description The *admin* mode Cognito user was deleted by this call */
+            AdminUser: boolean;
+            /** @description The *data* mode Cognito user was deleted by this call */
+            DataUser: boolean;
+        };
         /**
          * @example {
          *       "AdminMode": "registered",
@@ -362,10 +512,16 @@ export interface components {
          */
         AccountDescriptor: {
             /**
+             * @description `integrator` for the API key owner account, `customer` for accounts registered under it
+             * @enum {string}
+             */
+            AccountType?: "integrator" | "customer";
+            /**
              * @description `admin` mode status
              * @enum {string}
              */
             AdminMode?: "registered" | "unregistered";
+            /** @description Certificates directly owned by the account */
             Certs: components["schemas"]["CertDescriptor"][];
             /**
              * @description `data` mode status
@@ -379,10 +535,14 @@ export interface components {
              * @enum {string}
              */
             Export: "disabled" | "allowed";
+            /** @description Email of the account whose certificates this account uses through ShareCerts, or empty */
+            LinkedTo?: string;
             /** @description Full name of registrant */
             Name: string;
             /** @description Phone number with country code and `+` in front */
             Phone: string;
+            /** @description Certificates retired with RetireCert or set aside by ISECure */
+            Retired?: components["schemas"]["RetiredCertDescriptor"][];
         };
         /** @description Minimal certificate status for bank connection discovery */
         BankConnectionCertificateDescriptor: {
@@ -444,6 +604,36 @@ export interface components {
         ConfigCertsReq: {
             /** @description Set export to `disabled` to disallow certificate and private key pair exporting */
             Export: string;
+        };
+        /**
+         * @example {
+         *       "Confirm": "user@example.com"
+         *     }
+         */
+        DeleteAccountReq: {
+            /** @description Must equal the `Email` path value exactly */
+            Confirm: string;
+        };
+        /**
+         * @example {
+         *       "Deleted": {
+         *         "Account": true,
+         *         "AdminUser": true,
+         *         "DataUser": true
+         *       },
+         *       "Email": "user@example.com",
+         *       "ResponseCode": "..",
+         *       "ResponseText": ".."
+         *     }
+         */
+        DeleteAccountResp: {
+            Deleted: components["schemas"]["AccountDeletionDescriptor"];
+            /** @description Deleted account email */
+            Email: string;
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
         };
         /**
          * @example {
@@ -605,7 +795,8 @@ export interface components {
          *       "Certs": [],
          *       "Connections": [],
          *       "ResponseCode": "..",
-         *       "ResponseText": ".."
+         *       "ResponseText": "..",
+         *       "Retired": []
          *     }
          */
         ListCertsResp: {
@@ -617,6 +808,8 @@ export interface components {
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
+            /** @description Certificates retired with RetireCert (or set aside by ISECure); no longer usable and removed with the account */
+            Retired?: components["schemas"]["RetiredCertDescriptor"][];
         };
         /**
          * @example {
@@ -653,7 +846,7 @@ export interface components {
          *       "ChallengeName": "SMS_MFA",
          *       "Code": "123456",
          *       "Session": "...",
-         *       "SetupTOTP": false
+         *       "SetupTOTP": "string"
          *     }
          */
         LoginMFAReq: {
@@ -679,21 +872,39 @@ export interface components {
          *     }
          */
         LoginMFAResp: {
-            /** @description Access token\n- **Only** present when Email verification is required, or when `SetupTOTP` was requested (held by the client in memory only, posted back to `VerifyTOTP`) */
+            /**
+             * @description Access token
+             *     - **Only** present when Email verification is required, or when `SetupTOTP` was requested (held by the client in memory only, posted back to `VerifyTOTP`)
+             */
             AccessToken?: string;
-            /** @description Integrator API Key\n- **Not** present when Email verification is required */
+            /**
+             * @description Integrator API Key
+             *     - **Not** present when Email verification is required
+             */
             ApiKey?: string;
-            /** @description Session expiration time\n- **Not** present when Email verification is required */
+            /**
+             * @description Session expiration time
+             *     - **Not** present when Email verification is required
+             */
             ExpiresIn?: string;
-            /** @description ID token\n- **Not** present when Email verification is required */
+            /**
+             * @description ID token
+             *     - **Not** present when Email verification is required
+             */
             IdToken?: string;
-            /** @description `otpauth://` URI for rendering the enrollment QR code\n- **Only** present when `SetupTOTP` was requested */
+            /**
+             * @description `otpauth://` URI for rendering the enrollment QR code
+             *     - **Only** present when `SetupTOTP` was requested
+             */
             OtpauthUri?: string;
             /** @description Two digit response code in string format */
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
-            /** @description TOTP shared secret\n- **Only** present when `SetupTOTP` was requested */
+            /**
+             * @description TOTP shared secret
+             *     - **Only** present when `SetupTOTP` was requested
+             */
             SecretCode?: string;
         };
         /**
@@ -721,21 +932,40 @@ export interface components {
          *     }
          */
         LoginResp: {
-            /** @description Access token\n- **Not** present on MFA login initiation, i.e. `admin` mode\n- **Only** present when Email verification is required */
+            /**
+             * @description Access token
+             *     - **Not** present on MFA login initiation, i.e. `admin` mode
+             *     - **Only** present when Email verification is required
+             */
             AccessToken?: string;
-            /** @description Integrator API Key\n- **Not** present on MFA login initiation, i.e. `admin` mode) */
+            /**
+             * @description Integrator API Key
+             *     - **Not** present on MFA login initiation, i.e. `admin` mode)
+             */
             ApiKey?: string;
-            /** @description MFA challenge returned by Cognito\n- **Only** present on MFA login initiation (`SMS_MFA` or `SOFTWARE_TOKEN_MFA`) */
+            /**
+             * @description MFA challenge returned by Cognito
+             *     - **Only** present on MFA login initiation (`SMS_MFA` or `SOFTWARE_TOKEN_MFA`)
+             */
             ChallengeName?: string;
-            /** @description Session expiration time\n- **Not** present on MFA login initiation, i.e. `admin` mode) */
+            /**
+             * @description Session expiration time
+             *     - **Not** present on MFA login initiation, i.e. `admin` mode)
+             */
             ExpiresIn?: string;
-            /** @description ID token\n- **Not** present on MFA login initiation, i.e. `admin` mode */
+            /**
+             * @description ID token
+             *     - **Not** present on MFA login initiation, i.e. `admin` mode
+             */
             IdToken?: string;
             /** @description Two digit response code in string format */
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
-            /** @description Session token\n- **Only** present on MFA login initiation, i.e. `admin` mode) */
+            /**
+             * @description Session token
+             *     - **Only** present on MFA login initiation, i.e. `admin` mode)
+             */
             Session?: string;
         };
         /**
@@ -812,6 +1042,49 @@ export interface components {
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
+        };
+        /**
+         * @example {
+         *       "Bank": "nordea",
+         *       "ResponseCode": "..",
+         *       "ResponseText": "..",
+         *       "RetiredCertNames": [
+         *         "nordea.REMOVED.1a2b3c4d"
+         *       ]
+         *     }
+         */
+        RetireCertResp: {
+            /** @description Public bank name whose certificate was retired */
+            Bank: string;
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+            /** @description Retired certificate record names, e.g. `nordea.REMOVED.1a2b3c4d` */
+            RetiredCertNames: string[];
+        };
+        /** @description A certificate retired from active use */
+        RetiredCertDescriptor: {
+            /** @description Public bank name the certificate belonged to */
+            Bank: string;
+            /** @description Retired certificate record name, e.g. `nordea.REMOVED.1a2b3c4d_customer_signing_cert` */
+            CertName: string;
+            /** @description Certificate expiry, or `unknown` when the retired material cannot be parsed */
+            Expires: string;
+            /** @enum {string} */
+            Purpose: "signing" | "encryption";
+        };
+        /**
+         * @example {
+         *       "MfaType": "SOFTWARE_TOKEN_MFA",
+         *       "Session": "..."
+         *     }
+         */
+        SelectMFAReq: {
+            /** @description Chosen MFA factor: `SMS_MFA` or `SOFTWARE_TOKEN_MFA` */
+            MfaType: string;
+            /** @description Session token from the SELECT_MFA_TYPE login response */
+            Session: string;
         };
         /**
          * @example {
@@ -921,6 +1194,80 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    DeleteAccount: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path: {
+                /** @description Email address of the customer account to delete permanently */
+                Email: string;
+            };
+            cookie?: never;
+        };
+        /** @description Deletion confirmation */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccountReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteAccountResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     InitRegister: {
         parameters: {
             query?: never;
@@ -938,6 +1285,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -947,6 +1295,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -956,6 +1305,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -986,6 +1336,7 @@ export interface operations {
             /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -995,6 +1346,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1004,6 +1356,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1034,6 +1387,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1043,6 +1397,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1052,6 +1407,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1077,6 +1433,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1086,6 +1443,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1095,6 +1453,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1125,6 +1484,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1134,6 +1494,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1143,6 +1504,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1175,6 +1537,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1184,6 +1547,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1193,6 +1557,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1218,6 +1583,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1227,6 +1593,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1236,6 +1603,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1245,6 +1613,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1254,6 +1623,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1284,6 +1654,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1293,6 +1664,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1302,6 +1674,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1311,6 +1684,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1320,6 +1694,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1348,6 +1723,7 @@ export interface operations {
             /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1357,6 +1733,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1366,6 +1743,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1375,6 +1753,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1384,6 +1763,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1412,6 +1792,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1421,6 +1802,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1430,6 +1812,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1439,6 +1822,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1448,6 +1832,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1479,6 +1864,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1488,6 +1874,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1497,6 +1884,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1506,6 +1894,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1515,6 +1904,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1548,6 +1938,7 @@ export interface operations {
             /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1557,6 +1948,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1566,6 +1958,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1575,6 +1968,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1584,6 +1978,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1617,6 +2012,7 @@ export interface operations {
             /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1626,6 +2022,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1635,6 +2032,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1644,6 +2042,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1653,6 +2052,79 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    RetireCert: {
+        parameters: {
+            query?: {
+                /** @description Optional customer account email under the same API key. Only the integrator API key owner account may retire another account's certificate. */
+                Account?: string;
+            };
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path: {
+                /** @description *Bank* whose active certificate is retired, e.g. `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
+                Bank: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetireCertResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1686,6 +2158,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1695,6 +2168,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1704,6 +2178,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1713,6 +2188,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1722,6 +2198,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1755,6 +2232,7 @@ export interface operations {
             /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1764,6 +2242,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1773,6 +2252,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1782,6 +2262,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1791,6 +2272,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1823,6 +2305,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1832,6 +2315,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1841,6 +2325,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1850,6 +2335,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1859,6 +2345,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1891,6 +2378,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1900,6 +2388,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1909,6 +2398,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1918,6 +2408,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1927,6 +2418,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1952,6 +2444,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1961,6 +2454,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1970,6 +2464,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1979,6 +2474,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -1988,6 +2484,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2013,6 +2510,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2022,6 +2520,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2031,6 +2530,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2040,6 +2540,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2049,6 +2550,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2069,7 +2571,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description ASCII armored PGP Key in `PgpKey` and key purpose, i.e. `export` (exporting cert private key) or `authorize` (upload content authorization verification) in `PgpKeyPurpose`.\n\n**NOTE**: The same PGP key cannot be used for both `export` and `authorize` purpose at the same time. */
+        /**
+         * @description ASCII armored PGP Key in `PgpKey` and key purpose, i.e. `export` (exporting cert private key) or `authorize` (upload content authorization verification) in `PgpKeyPurpose`.
+         *
+         *     **NOTE**: The same PGP key cannot be used for both `export` and `authorize` purpose at the same time.
+         */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UploadKeyReq"];
@@ -2079,6 +2585,7 @@ export interface operations {
             /** @description Operation successfully processed. Resource created. See response. */
             201: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2088,6 +2595,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2097,6 +2605,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2106,6 +2615,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2115,6 +2625,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2145,6 +2656,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2154,6 +2666,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2163,6 +2676,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2172,6 +2686,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2181,6 +2696,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2206,6 +2722,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2215,6 +2732,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2224,6 +2742,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2254,6 +2773,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2263,6 +2783,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2272,6 +2793,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2302,6 +2824,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2311,6 +2834,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2320,6 +2844,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2329,6 +2854,7 @@ export interface operations {
             /** @description Unauthenticated */
             403: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2338,6 +2864,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2368,6 +2895,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2377,6 +2905,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2386,6 +2915,58 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    SelectMFA: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Email address as the account username, e.g. `user@example.com` */
+                Email: string;
+                /** @description MFA selection is an `admin` mode operation */
+                Mode: "admin";
+            };
+            cookie?: never;
+        };
+        /** @description Session parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SelectMFAReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2416,6 +2997,7 @@ export interface operations {
             /** @description Operation successfully processed. See response. */
             200: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2425,6 +3007,7 @@ export interface operations {
             /** @description Request validation error */
             400: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2434,6 +3017,7 @@ export interface operations {
             /** @description Unexpected error occurred */
             500: {
                 headers: {
+                    "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
                 };
                 content: {
