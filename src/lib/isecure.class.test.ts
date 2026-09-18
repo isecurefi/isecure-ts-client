@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { SUPPORTED_OPERATIONS, UNSUPPORTED_OPERATIONS } from "./api-types.js";
+import { ISecureError } from "./errors.js";
 import { WSChannel, type IWSChannel, type Logger } from "./isecure.class.js";
 import { FakeTransport, type TransportRequest, type TransportResponse } from "./transport.js";
 
@@ -501,6 +502,22 @@ describe("WSChannel", () => {
       if (match("GET", "/integrator/accounts")(request)) {
         return response({ Accounts: [], ResponseCode: "00", ResponseText: "accounts" });
       }
+      if (match("DELETE", "/certs/nordea")(request)) {
+        return response({
+          Bank: "nordea",
+          ResponseCode: "00",
+          ResponseText: "Certificate retired",
+          RetiredCertNames: ["nordea.REMOVED.1a2b3c4d"],
+        });
+      }
+      if (match("DELETE", "/account/customer%40example.test")(request)) {
+        return response({
+          Deleted: { Account: true, AdminUser: true, DataUser: true },
+          Email: "customer@example.test",
+          ResponseCode: "00",
+          ResponseText: "Account deleted",
+        });
+      }
       if (match("GET", "/pgp")(request)) {
         return response({ PgpKeys: [], ResponseCode: "00", ResponseText: "keys" });
       }
@@ -548,6 +565,15 @@ describe("WSChannel", () => {
     await expect(client.downloadFile("CAMT", "123")).resolves.toMatchObject({ Content: "Zm9v" });
     await expect(client.deleteFile("CAMT", "123")).resolves.toMatchObject({ ResponseText: "deleted" });
     await expect(client.listAccounts()).resolves.toMatchObject({ Accounts: [] });
+    await expect(client.retireCert()).resolves.toMatchObject({
+      Bank: "nordea",
+      RetiredCertNames: ["nordea.REMOVED.1a2b3c4d"],
+    });
+    await expect(client.retireCert({ Account: "customer@example.test" })).resolves.toMatchObject({ Bank: "nordea" });
+    await expect(client.deleteAccount("customer@example.test", "customer@example.test")).resolves.toMatchObject({
+      Email: "customer@example.test",
+      Deleted: { Account: true },
+    });
     await expect(client.listKeys()).resolves.toMatchObject({ PgpKeys: [] });
     await expect(client.deleteKey("3A3A59B2")).resolves.toMatchObject({ PgpKeys: [] });
     await expect(client.logout()).resolves.toMatchObject({ ResponseText: "logged out" });
@@ -558,12 +584,44 @@ describe("WSChannel", () => {
     expect(transport.requests.find((request) => request.url.endsWith("/certs/nordea"))?.query).toEqual({
       PgpKeyId: "3A3A59B2",
     });
+    const retireRequests = transport.requests.filter(
+      (request) => request.method === "DELETE" && request.url.endsWith("/certs/nordea"),
+    );
+    expect(retireRequests.map((request) => request.query)).toEqual([undefined, { Account: "customer@example.test" }]);
+    expect(retireRequests.every((request) => request.body === undefined)).toBe(true);
+    const deleteAccountRequest = transport.requests.find(
+      (request) => request.method === "DELETE" && request.url.endsWith("/account/customer%40example.test"),
+    );
+    expect(deleteAccountRequest?.body).toEqual({ Confirm: "customer@example.test" });
+    expect(deleteAccountRequest?.query).toBeUndefined();
     expect(
       transport.requests.find((request) => request.method === "DELETE" && request.url.endsWith("/pgp"))?.body,
     ).toEqual({
       PgpKeyId: "3A3A59B2",
     });
     expect(client.session).toEqual({});
+  });
+
+  it("refuses a DeleteAccount confirmation mismatch locally without sending a request", async () => {
+    const transport = new FakeTransport();
+    transport.respond((request) => {
+      if (match("GET", "/session/user%40example.test/admin")(request)) {
+        return response({ Challenge: challenge, ResponseCode: "00", ResponseText: "OK" });
+      }
+      if (match("POST", "/session/user%40example.test/admin")(request)) {
+        return response({ ApiKey: "api-key", IdToken: "id-token", ResponseCode: "00", ResponseText: "Login OK" });
+      }
+      return undefined;
+    });
+    const client = new WSChannel(props(), { transport });
+    await client.login();
+    const requestsBefore = transport.requests.length;
+
+    await expect(client.deleteAccount("customer@example.test", "customer@example.com")).rejects.toBeInstanceOf(
+      ISecureError,
+    );
+    await expect(client.deleteAccount("customer@example.test", "")).rejects.toThrow(/confirmation must equal/);
+    expect(transport.requests).toHaveLength(requestsBefore);
   });
 
   it("rejects malformed challenges and incomplete legacy upload arguments", async () => {

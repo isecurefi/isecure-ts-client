@@ -69,6 +69,10 @@ export class UrlBuilder {
     return this.url("integrator", "accounts");
   }
 
+  customerAccount(email: string): string {
+    return this.url("account", email);
+  }
+
   pgp(): string {
     return this.url("pgp");
   }

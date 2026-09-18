@@ -170,6 +170,21 @@ if (state.status === "authenticated") {
 
 Verification helpers (`verifyEmail`, `verifyPhone`) and `classifyVerificationResponse` return the same typed `failed` state with an `AuthErrorReason`, so invalid/expired codes, rate limiting, and already-verified cases are discriminable rather than collapsed into a single error string.
 
+## Account Lifecycle (integrator owner)
+
+The integrator API key owner manages its customer accounts from an `admin` mode session.
+`retireCert` renames the active certificate of the client's `Bank` so a new enrollment or
+import can follow; pass `Account` to act on a customer account under the same API key.
+`deleteAccount` is permanent and removes both Cognito users, the account record and every
+certificate on it. The API requires the admin login (with MFA) to be at most 10 minutes old
+and rejects older sessions with `Re-authenticate to delete accounts`; the SDK refuses a
+confirmation that does not repeat the email exactly before sending anything.
+
+```ts
+await client.retireCert({ Account: "customer@example.com" });
+await client.deleteAccount("customer@example.com", "customer@example.com");
+```
+
 ## Debug Logging
 
 Logging is opt-in. By default the SDK uses a no-op logger and emits nothing. Inject a `logger` and keep `LogLevel` at `debug` (the default) to get redacted request/response debug lines for every call — secrets, tokens, and one-time codes are stripped before logging:
@@ -428,6 +443,7 @@ Currently supported:
 - `InitLogin`
 - `Login`
 - `LoginMFA`
+- `SelectMFA`
 - `VerifyEmail`
 - `VerifyPhone`
 - `ListCerts`
@@ -437,12 +453,14 @@ Currently supported:
 - `ExportCert`
 - `ImportCert`
 - `EnrollCert`
+- `RetireCert`
 - `UploadKey`
 - `UploadFile`
 - `ListFiles`
 - `DownloadFile`
 - `DeleteFile`
 - `ListAccounts`
+- `DeleteAccount`
 - `ListKeys`
 - `DeleteKey`
 - `Logout`

@@ -99,6 +99,13 @@ export type ListFilesQuery = NonNullable<operations["ListFiles"]["parameters"]["
 export type DownloadFileResponse = JsonResponse<"DownloadFile", 200>;
 export type DeleteFileResponse = JsonResponse<"DeleteFile", 200>;
 export type ListAccountsResponse = JsonResponse<"ListAccounts", 200>;
+export type RetireCertResponse = JsonResponse<"RetireCert", 200>;
+/** Optional `Account` query: the integrator API key owner retiring a customer account's certificate. */
+export interface RetireCertQuery {
+  Account?: string;
+}
+export type DeleteAccountRequest = JsonRequest<"DeleteAccount">;
+export type DeleteAccountResponse = JsonResponse<"DeleteAccount", 200>;
 export type ListKeysResponse = JsonResponse<"ListKeys", 200>;
 export type DeleteKeyRequest = JsonRequest<"DeleteKey">;
 export type DeleteKeyResponse = JsonResponse<"DeleteKey", 200>;
@@ -113,6 +120,7 @@ export const SUPPORTED_OPERATIONS = [
   "InitLogin",
   "Login",
   "LoginMFA",
+  "SelectMFA",
   "VerifyTOTP",
   "VerifyEmail",
   "VerifyPhone",
@@ -123,12 +131,14 @@ export const SUPPORTED_OPERATIONS = [
   "ExportCert",
   "ImportCert",
   "EnrollCert",
+  "RetireCert",
   "UploadKey",
   "UploadFile",
   "ListFiles",
   "DownloadFile",
   "DeleteFile",
   "ListAccounts",
+  "DeleteAccount",
   "ListKeys",
   "DeleteKey",
   "Logout",

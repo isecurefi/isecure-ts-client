@@ -35,6 +35,9 @@ describe("UrlBuilder", () => {
       "https://ws-api.test.isecure.fi/v2/certs/shared/other%40example.test",
     );
     expect(urls.integratorAccounts()).toBe("https://ws-api.test.isecure.fi/v2/integrator/accounts");
+    expect(urls.customerAccount("customer@example.test")).toBe(
+      "https://ws-api.test.isecure.fi/v2/account/customer%40example.test",
+    );
     expect(urls.pgp()).toBe("https://ws-api.test.isecure.fi/v2/pgp");
   });
 
