@@ -32,6 +32,13 @@
 - Added `parseMode` / `parseLogLevel` (and `isMode` / `isLogLevel`) input guards so untrusted values such as environment variables are validated instead of unchecked-cast.
 - Tightened the `classifyErrorReason` "unconfirmed" heuristic to avoid matching unrelated responses that merely contain the word "confirm".
 
+## [2.4.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.3.1...isecure-ts-client-v2.4.0) (2026-09-18)
+
+
+### Features
+
+* add RetireCert, DeleteAccount and SelectMFA operations ([2cad6d1](https://github.com/isecurefi/isecure-ts-client/commit/2cad6d1f1bed794e2ab910a1e76072c59669352b))
+
 ## [2.3.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.3.0...isecure-ts-client-v2.3.1) (2026-09-03)
 
 
