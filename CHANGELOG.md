@@ -32,6 +32,14 @@
 - Added `parseMode` / `parseLogLevel` (and `isMode` / `isLogLevel`) input guards so untrusted values such as environment variables are validated instead of unchecked-cast.
 - Tightened the `classifyErrorReason` "unconfirmed" heuristic to avoid matching unrelated responses that merely contain the word "confirm".
 
+## [2.5.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.4.0...isecure-ts-client-v2.5.0) (2026-09-19)
+
+
+### Features
+
+* type the session Account object on authenticated logins ([549e783](https://github.com/isecurefi/isecure-ts-client/commit/549e7834daea69f64c422efdb15bf42668173237))
+* type the session Account object on authenticated logins ([7f205b0](https://github.com/isecurefi/isecure-ts-client/commit/7f205b0d11df10fd696770a07f97693b31d5fb63))
+
 ## [2.4.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.3.1...isecure-ts-client-v2.4.0) (2026-09-18)
 
 
