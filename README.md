@@ -170,6 +170,22 @@ if (state.status === "authenticated") {
 
 Verification helpers (`verifyEmail`, `verifyPhone`) and `classifyVerificationResponse` return the same typed `failed` state with an `AuthErrorReason`, so invalid/expired codes, rate limiting, and already-verified cases are discriminable rather than collapsed into a single error string.
 
+## Session Account
+
+Authenticated `login()` and `submitMfaCode()` states carry the server-decided `Account` object on
+`state.response.Account` (`SessionAccount`): `Type` is `operator`, `integrator` or `customer`,
+`Entitlements` lists the tenant's active products (absent if the lookup was unavailable), and
+`Features` lists per-user preview flags. Use it to choose what to show; the API enforces access on
+every operation regardless.
+
+```ts
+const state = await client.login();
+if (state.status === "authenticated") {
+  const { Type, Entitlements = [] } = state.response.Account ?? { Type: "customer" };
+  console.log(Type, Entitlements);
+}
+```
+
 ## Account Lifecycle (integrator owner)
 
 The integrator API key owner manages its customer accounts from an `admin` mode session.

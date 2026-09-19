@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { SUPPORTED_OPERATIONS, UNSUPPORTED_OPERATIONS } from "./api-types.js";
+import { SUPPORTED_OPERATIONS, UNSUPPORTED_OPERATIONS, type SessionAccount } from "./api-types.js";
 import { ISecureError } from "./errors.js";
 import { WSChannel, type IWSChannel, type Logger } from "./isecure.class.js";
 import { FakeTransport, type TransportRequest, type TransportResponse } from "./transport.js";
@@ -600,6 +600,30 @@ describe("WSChannel", () => {
       PgpKeyId: "3A3A59B2",
     });
     expect(client.session).toEqual({});
+  });
+
+  it("exposes the server-decided Account object on the authenticated state", async () => {
+    const transport = new FakeTransport();
+    transport.respond((request) => {
+      if (match("GET", "/session/user%40example.test/admin")(request)) {
+        return response({ Challenge: challenge, ResponseCode: "00", ResponseText: "OK" });
+      }
+      if (match("POST", "/session/user%40example.test/admin")(request)) {
+        return response({
+          Account: { Type: "integrator", Entitlements: ["bank-simulator"], Features: [] },
+          ApiKey: "api-key",
+          IdToken: "id-token",
+          ResponseCode: "00",
+          ResponseText: "Login OK",
+        });
+      }
+      return undefined;
+    });
+    const client = new WSChannel(props(), { transport });
+    const state = await client.login();
+    if (state.status !== "authenticated") throw new Error(`unexpected status ${state.status}`);
+    const account: SessionAccount | undefined = state.response.Account;
+    expect(account).toEqual({ Type: "integrator", Entitlements: ["bank-simulator"], Features: [] });
   });
 
   it("refuses a DeleteAccount confirmation mismatch locally without sending a request", async () => {

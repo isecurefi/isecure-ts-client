@@ -862,6 +862,13 @@ export interface components {
         /**
          * @example {
          *       "AccessToken": "eyJraWQiO...CzzcdcdAdEzKIcJPR7Fda0A",
+         *       "Account": {
+         *         "Entitlements": [
+         *           "bank-simulator"
+         *         ],
+         *         "Features": [],
+         *         "Type": "integrator"
+         *       },
          *       "ApiKey": "4vN6hGHrav31smM0Ha1k15MDlZKOEGn43UToWTt2",
          *       "ExpiresIn": "3600",
          *       "IdToken": "eyJraWQiOiJ...jExlzbFU4GlGtml7AWQHDYi05IpA",
@@ -877,6 +884,7 @@ export interface components {
              *     - **Only** present when Email verification is required, or when `SetupTOTP` was requested (held by the client in memory only, posted back to `VerifyTOTP`)
              */
             AccessToken?: string;
+            Account?: components["schemas"]["SessionAccountDescriptor"];
             /**
              * @description Integrator API Key
              *     - **Not** present when Email verification is required
@@ -922,6 +930,13 @@ export interface components {
         /**
          * @example {
          *       "AccessToken": "eyJraWQiO...CzzcdcdAdEzKIcJPR7Fda0A",
+         *       "Account": {
+         *         "Entitlements": [
+         *           "bank-simulator"
+         *         ],
+         *         "Features": [],
+         *         "Type": "integrator"
+         *       },
          *       "ApiKey": "4vN6hGHrav31smM0Ha1k15MDlZKOEGn43UToWTt2",
          *       "ChallengeName": "SOFTWARE_TOKEN_MFA",
          *       "ExpiresIn": "3600",
@@ -938,9 +953,10 @@ export interface components {
              *     - **Only** present when Email verification is required
              */
             AccessToken?: string;
+            Account?: components["schemas"]["SessionAccountDescriptor"];
             /**
              * @description Integrator API Key
-             *     - **Not** present on MFA login initiation, i.e. `admin` mode)
+             *     - **Not** present on MFA login initiation, i.e. `admin` mode
              */
             ApiKey?: string;
             /**
@@ -1085,6 +1101,18 @@ export interface components {
             MfaType: string;
             /** @description Session token from the SELECT_MFA_TYPE login response */
             Session: string;
+        };
+        /** @description Server-decided facts about the authenticated account for client presentation. Authorization is enforced by each operation regardless of these values. */
+        SessionAccountDescriptor: {
+            /** @description Stable ids of the tenant's active products, e.g. `bank-simulator`; absent when the lookup was unavailable at login */
+            Entitlements?: string[];
+            /** @description Per-user preview feature ids enabled by ISECure for this account; empty by default */
+            Features: string[];
+            /**
+             * @description `operator` for the ISECure owner account, `integrator` for an API key owner account, `customer` for an account registered under an API key
+             * @enum {string}
+             */
+            Type: "operator" | "integrator" | "customer";
         };
         /**
          * @example {

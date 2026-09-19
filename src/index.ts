@@ -61,6 +61,7 @@ export {
   type InitRegisterResponse,
   type InitPasswordResetResponse,
   type ListAccountsResponse,
+  type SessionAccount,
   type RetireCertQuery,
   type RetireCertResponse,
   type ListCertsResponse,
