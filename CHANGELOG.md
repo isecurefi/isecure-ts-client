@@ -35,6 +35,13 @@
 - Added `parseMode` / `parseLogLevel` (and `isMode` / `isLogLevel`) input guards so untrusted values such as environment variables are validated instead of unchecked-cast.
 - Tightened the `classifyErrorReason` "unconfirmed" heuristic to avoid matching unrelated responses that merely contain the word "confirm".
 
+## [2.6.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.5.0...isecure-ts-client-v2.6.0) (2026-09-19)
+
+
+### Features
+
+* add authenticated audit history pagination ([2310b0d](https://github.com/isecurefi/isecure-ts-client/commit/2310b0de2b90fd0bda292af72a50be0343792fdf))
+
 ## [2.5.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.4.0...isecure-ts-client-v2.5.0) (2026-09-19)
 
 
