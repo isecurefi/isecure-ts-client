@@ -66,6 +66,13 @@ export interface SelectMfaRequest {
 /** Response envelope for `PUT /session/{Email}/{Mode}/selectmfa`. */
 export type SelectMfaResponse = ApiResponse & TotpResponseFields;
 
+/**
+ * Server-decided facts about the authenticated account (WS API 2.10.0):
+ * `Type` (`operator` | `integrator` | `customer`), the tenant's active product
+ * `Entitlements` (absent when the lookup was unavailable), and per-user
+ * preview `Features`. Present on authenticated `Login`/`LoginMFA` responses.
+ */
+export type SessionAccount = components["schemas"]["SessionAccountDescriptor"];
 export type LoginResponse = JsonResponse<"Login", 200> & TotpResponseFields;
 export type LoginMfaRequest = JsonRequest<"LoginMFA"> & {
   /** Echo the `ChallengeName` from the login response so the API answers the right factor. */
