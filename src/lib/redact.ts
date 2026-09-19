@@ -26,6 +26,7 @@ const SENSITIVE_FIELDS = new Set(
     "x-api-key",
     "authorization",
     "session",
+    "nexttoken",
     "code",
     "chresp",
     "challenge",

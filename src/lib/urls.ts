@@ -65,6 +65,10 @@ export class UrlBuilder {
     return this.url("certs", "shared", extEmail);
   }
 
+  audit(): string {
+    return this.url("audit");
+  }
+
   integratorAccounts(): string {
     return this.url("integrator", "accounts");
   }

@@ -106,6 +106,11 @@ export type ListFilesQuery = NonNullable<operations["ListFiles"]["parameters"]["
 export type DownloadFileResponse = JsonResponse<"DownloadFile", 200>;
 export type DeleteFileResponse = JsonResponse<"DeleteFile", 200>;
 export type ListAccountsResponse = JsonResponse<"ListAccounts", 200>;
+/** Sanitized account-management evidence; retained independently of account deletion. */
+export type AuditEventDescriptor = components["schemas"]["AuditEventDescriptor"];
+export type ListAuditEventsResponse = JsonResponse<"ListAuditEvents", 200>;
+/** Optional scope, UTC time range, action/outcome filters and opaque pagination cursor. */
+export type ListAuditEventsQuery = NonNullable<operations["ListAuditEvents"]["parameters"]["query"]>;
 export type RetireCertResponse = JsonResponse<"RetireCert", 200>;
 /** Optional `Account` query: the integrator API key owner retiring a customer account's certificate. */
 export interface RetireCertQuery {
@@ -145,6 +150,7 @@ export const SUPPORTED_OPERATIONS = [
   "DownloadFile",
   "DeleteFile",
   "ListAccounts",
+  "ListAuditEvents",
   "DeleteAccount",
   "ListKeys",
   "DeleteKey",

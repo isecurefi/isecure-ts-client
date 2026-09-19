@@ -6,6 +6,7 @@ describe("redactValue (balanced)", () => {
     expect(
       redactValue({
         ApiKey: "abc",
+        NextToken: "opaque-cursor",
         Email: "user@example.test",
         Phone: "+358401234567",
         Name: "Jane Doe",
@@ -13,6 +14,7 @@ describe("redactValue (balanced)", () => {
       }),
     ).toEqual({
       ApiKey: REDACTED,
+      NextToken: REDACTED,
       Email: REDACTED,
       Phone: REDACTED,
       Name: REDACTED,
