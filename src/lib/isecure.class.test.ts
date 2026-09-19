@@ -1,6 +1,13 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { SUPPORTED_OPERATIONS, UNSUPPORTED_OPERATIONS, type SessionAccount } from "./api-types.js";
+import {
+  SUPPORTED_OPERATIONS,
+  UNSUPPORTED_OPERATIONS,
+  type SessionAccount,
+  type ListAuditEventsQuery,
+  type ListAuditEventsResponse,
+  type AuditEventDescriptor,
+} from "./api-types.js";
 import { ISecureError } from "./errors.js";
 import { WSChannel, type IWSChannel, type Logger } from "./isecure.class.js";
 import { FakeTransport, type TransportRequest, type TransportResponse } from "./transport.js";
@@ -40,6 +47,60 @@ describe("WSChannel", () => {
     expect(SUPPORTED_OPERATIONS).toContain("Logout");
     expect(UNSUPPORTED_OPERATIONS).toHaveLength(0);
   });
+
+  it.each(["admin", "data"] as const)(
+    "reads one authenticated audit page in %s mode and preserves empty-page cursors",
+    async (Mode) => {
+      const transport = new FakeTransport();
+      const evidence: AuditEventDescriptor = {
+        eventId: "operation:1",
+        operationId: "operation",
+        sequence: 1,
+        timestamp: "2026-09-19T12:00:00.000Z",
+        action: "account.delete",
+        phase: "result",
+        outcome: "completed",
+      };
+      const first: ListAuditEventsResponse = {
+        ResponseCode: "00",
+        ResponseText: "Audit history",
+        Events: [],
+        NextToken: "opaque-cursor",
+      };
+      const second: ListAuditEventsResponse = { ResponseCode: "00", ResponseText: "Audit history", Events: [evidence] };
+      transport.respond((request) => {
+        if (request.method === "GET" && request.url.endsWith(`/session/user%40example.test/${Mode}`)) {
+          return response({ Challenge: challenge, ResponseCode: "00", ResponseText: "OK" });
+        }
+        if (request.method === "POST" && request.url.endsWith(`/session/user%40example.test/${Mode}`)) {
+          return response({ IdToken: "id-token", ApiKey: "tenant-api-key", ResponseCode: "00", ResponseText: "OK" });
+        }
+        if (request.url.endsWith("/audit")) return response(request.query?.NextToken ? second : first);
+        return undefined;
+      });
+      const client = new WSChannel(props({ Mode }), { transport });
+      await expect(client.listAuditEvents()).rejects.toThrow(/Cannot call authenticated/);
+      expect(transport.requests).toHaveLength(0);
+      await client.login();
+      expect(await client.listAuditEvents()).toEqual(first);
+      const auditRequests = () => transport.requests.filter((request) => request.url.endsWith("/audit"));
+      expect(auditRequests()).toHaveLength(1);
+      expect(auditRequests()[0]).toMatchObject({
+        method: "GET",
+        headers: { Authorization: "id-token", "x-api-key": "tenant-api-key" },
+        query: {},
+      });
+      const query: ListAuditEventsQuery = {
+        Account: "customer+deleted@example.test",
+        Limit: 2,
+        NextToken: first.NextToken,
+      };
+      expect(await client.listAuditEvents(query)).toEqual(second);
+      expect(auditRequests()).toHaveLength(2);
+      expect(auditRequests()[1]?.query).toEqual({ ...query, Limit: "2" });
+      expect(auditRequests()[1]?.body).toBeUndefined();
+    },
+  );
 
   it("updates mutable account props without rebuilding the client", () => {
     const client = new WSChannel(props({ Mode: "admin" }));

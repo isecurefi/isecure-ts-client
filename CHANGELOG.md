@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add `listAuditEvents()` with typed query, response and audit-event exports for WS API 2.11.0. Reads one authenticated newest-first page, preserving opaque pagination tokens and server-enforced tenant/account scope.
+- Document ten-year audit preservation after account deletion and the current gpgtest rollout.
+
 - Corrected all 21 Bank Simulation operations to the dedicated `manage_simulation` authority and
   advanced contract versions from the pinned platform release. Their generated SDK metadata now
   preserves the exact public audiences while excluding the private Module transition and agent/MCP

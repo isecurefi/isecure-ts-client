@@ -26,6 +26,8 @@ import {
   type InitPasswordResetResponse,
   type InitRegisterResponse,
   type ListAccountsResponse,
+  type ListAuditEventsQuery,
+  type ListAuditEventsResponse,
   type RetireCertQuery,
   type RetireCertResponse,
   type DeleteAccountRequest,
@@ -500,13 +502,28 @@ export class WSChannel {
     return this.call<RetireCertResponse>("DELETE", this.urls.cert(), options);
   }
 
+  /**
+   * Reads one newest-first audit page. Integrator owners see their tenant;
+   * customers see only their own account. Both admin and data modes may read.
+   * Follow NextToken even after an empty page, keeping Account unchanged.
+   * Defaults: past seven days, up to 100 events; maximum range is 31 days.
+   * Delivery is asynchronous and account deletion preserves the evidence.
+   */
+  async listAuditEvents(query: ListAuditEventsQuery = {}): Promise<ListAuditEventsResponse> {
+    const { Limit, ...filters } = query;
+    const params: QueryParams = { ...filters };
+    if (Limit !== undefined) params.Limit = String(Limit);
+    return this.call<ListAuditEventsResponse>("GET", this.urls.audit(), { auth: true, query: params });
+  }
+
   async listAccounts(): Promise<ListAccountsResponse> {
     return this.call<ListAccountsResponse>("GET", this.urls.integratorAccounts(), { auth: true });
   }
 
   /**
    * Permanently deletes one customer account under the caller's API key: both
-   * Cognito users, the account record, and every certificate on it. Admin mode
+   * Cognito users, the account record, and every certificate on it. Audit evidence
+   * is retained separately for ten years. Admin mode
    * only, integrator API key owner only, and the admin login (which includes MFA)
    * must be at most 10 minutes old or the API answers "Re-authenticate to delete
    * accounts". `Confirm` must repeat `Email` exactly; a mismatch is refused here

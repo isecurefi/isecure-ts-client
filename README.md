@@ -192,7 +192,7 @@ The integrator API key owner manages its customer accounts from an `admin` mode 
 `retireCert` renames the active certificate of the client's `Bank` so a new enrollment or
 import can follow; pass `Account` to act on a customer account under the same API key.
 `deleteAccount` is permanent and removes both Cognito users, the account record and every
-certificate on it. The API requires the admin login (with MFA) to be at most 10 minutes old
+certificate on it. Audit evidence is retained separately for ten years. The API requires the admin login (with MFA) to be at most 10 minutes old
 and rejects older sessions with `Re-authenticate to delete accounts`; the SDK refuses a
 confirmation that does not repeat the email exactly before sending anything.
 
@@ -200,6 +200,50 @@ confirmation that does not repeat the email exactly before sending anything.
 await client.retireCert({ Account: "customer@example.com" });
 await client.deleteAccount("customer@example.com", "customer@example.com");
 ```
+
+## Audit history
+
+`listAuditEvents()` reads one page of sanitized account-management evidence, newest first.
+An authenticated integrator API-key owner sees its tenant; a customer sees only its own
+account. Both admin and data modes can read. The server checks the session and API-key
+ownership on every request; the SDK does not grant access based on client-side roles.
+
+Available in WS API 2.11.0; currently deployed to the `gpgtest` test stage. Configure
+`BaseUrl: "https://ws-api.test.isecure.fi/v2"` for that environment. Production rollout
+is separate from the SDK release.
+
+```ts
+import type { ListAuditEventsQuery } from "isecure-ts-client";
+
+const query: ListAuditEventsQuery = {
+  // Optional for an integrator; omit to see its whole tenant.
+  Account: "customer@example.com",
+  Action: "certificate.retire",
+  Outcome: "completed",
+  Limit: 50,
+};
+const first = await client.listAuditEvents(query);
+console.log(first.Events);
+if (first.NextToken) {
+  // Fetch the next page on demand, including after an empty page.
+  const next = await client.listAuditEvents({ ...query, NextToken: first.NextToken });
+  console.log(next.Events);
+}
+```
+
+Filters are `Account`, `From`, `To`, `Action`, `Outcome`, `Limit`, and `NextToken`.
+`From` and `To` are UTC timestamps. The default window is seven days; the maximum
+is 31 days per query, with `From` on or after 2024-01-01. `Limit` is 1–100 (default
+100), and a page may contain fewer events. Tokens expire after 24 hours and bind
+the caller, tenant, account and filters; keep `Account` unchanged on later pages.
+Omitted time/filter values are retained from the cursor.
+
+The method makes one API request and does not fetch further pages automatically.
+Responses use `ListAuditEventsResponse` and `AuditEventDescriptor`. Audit evidence
+includes actors, affected accounts, actions, outcomes and correlation identifiers;
+it excludes SOAP messages, bank-file contents, credentials and private keys.
+Delivery is asynchronous. Deduplicate by `eventId` across pages because delivery
+retries can repeat events. Integrators can read a deleted customer's retained history.
 
 ## Debug Logging
 

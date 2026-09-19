@@ -218,6 +218,22 @@ const contract = {
     setup: authenticate,
     invoke: (client) => client.deleteFile("CAMT", "123"),
   },
+  ListAuditEvents: {
+    sdkMethod: "listAuditEvents",
+    method: "GET",
+    path: "/audit",
+    setup: authenticate,
+    invoke: (client) =>
+      client.listAuditEvents({
+        Account: "customer@example.test",
+        From: "2026-09-19T00:00:00Z",
+        To: "2026-09-20T00:00:00Z",
+        Action: "certificate.retire",
+        Outcome: "completed",
+        Limit: 50,
+        NextToken: "opaque-next-page",
+      }),
+  },
   ListAccounts: {
     sdkMethod: "listAccounts",
     method: "GET",
@@ -450,6 +466,9 @@ function createContractTransport(): FakeTransport {
 
 function contractResponse(request: TransportRequest, transport: FakeTransport): TransportResponse<unknown> | undefined {
   const path = pathname(request.url);
+  if (request.method === "GET" && path === "/audit") {
+    return response({ Events: [], ResponseCode: "00", ResponseText: "Audit history" });
+  }
   if (request.method === "GET" && path.startsWith("/account/") && path.endsWith("/password")) {
     return response({ ResponseCode: "00", ResponseText: "password reset initialized" });
   }

@@ -8,6 +8,7 @@ export default tseslint.config(
       ".browser-check/**",
       ".chrome-wsapi-playwright/**",
       ".generated/**",
+      ".private/**",
       "coverage/**",
       "dist/**",
       "dist-examples/**",

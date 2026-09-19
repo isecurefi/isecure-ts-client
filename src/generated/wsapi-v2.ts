@@ -16,7 +16,7 @@ export interface paths {
         post?: never;
         /**
          * DeleteAccount
-         * @description Permanently delete one customer account under the caller's API key: both Cognito users (*admin* and *data*), the account record, every active and retired certificate and private key on it, and its link to a certificate-sharing owner. Nothing is retained; use this for GDPR erasure. The operation is not reversible.
+         * @description Permanently delete one customer account under the caller's API key: both Cognito users (*admin* and *data*), the account record, every active and retired certificate and private key on it, and its link to a certificate-sharing owner. Customer account and certificate material are removed. Audit evidence is retained separately for ten years; audit log streams are never deleted by account deletion. The operation is not reversible.
          *
          *     *Admin* mode only, and only the integrator API key owner account may call it. The admin login (which always includes MFA) must be fresh: a token whose `auth_time` is older than 10 minutes is rejected with `Re-authenticate to delete accounts`, so clients should sign in again with MFA and retry. The caller must repeat the exact account email in the body `Confirm` field; a missing or different value is rejected before any change.
          *
@@ -160,6 +160,30 @@ export interface paths {
          *     **NOTE:** Phone and email verification bypass is an integrator-level policy option for deployments where the integrator has already verified those attributes. Contact ISECure support if this is required for your API key.
          */
         post: operations["VerifyPhone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * ListAuditEvents
+         * @description Read sanitized account-management audit history through the authenticated API. Integrator API key owners can read their entire tenant or select Account; customer accounts can read only their own account. API-key ownership is verified before any log access. Both admin and data modes can read their permitted history.
+         *
+         *     Events include the actor, action, affected account, timestamp, outcome and operation/request correlation. No bank files, SOAP messages, credentials, private keys or raw internal diagnostics are returned. Delivery is asynchronous; deduplicate by eventId across pages because publication retries may repeat an event. Streams survive account deletion and events have ten-year retention. Integrator owners can query deleted-account history without the deleted users-table row.
+         *
+         *     Results are paginated newest first across all accounts in the permitted scope. Each page returns up to Limit events; additional pages continue toward older events. Use From and To to select up to 31 days at a time, and follow NextToken even after an empty page. Do not interpret missing or delayed events as proof that an operation did not happen.
+         */
+        get: operations["ListAuditEvents"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -544,6 +568,51 @@ export interface components {
             /** @description Certificates retired with RetireCert or set aside by ISECure */
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
         };
+        AuditEventDescriptor: {
+            /** @description Account-management action. */
+            action: string;
+            /** @description Authenticated actor email when available. */
+            actorEmail?: string;
+            /** @description Authenticated actor subject when available. */
+            actorId?: string;
+            /** @description Actor login mode, when known. */
+            actorMode?: string;
+            /** @description operator, integrator, customer, authenticated or unauthenticated. Registration has no authenticated actor. */
+            actorType?: string;
+            /** @description Public bank identifier. */
+            bank?: string;
+            /** @description Number of acknowledged mutation steps; missing resources on a deletion retry do not increment it. */
+            completedSteps?: number;
+            /** @description Stable operation and sequence identifier; deduplicate publication retries by this value. */
+            eventId: string;
+            /** @description Identifier for one invocation; retries have different operation IDs. */
+            operationId: string;
+            /** @description started, accepted, completed, not_found, rejected, failed or partial_failure. */
+            outcome: string;
+            /** @description Step without acknowledged completion; actual state may be unknown. */
+            pendingStep?: string;
+            /** @description request, authorization, step or result. */
+            phase: string;
+            /** @description Stable failure category without internal error details. */
+            reason?: string;
+            /** @description Gateway request correlation identifier. */
+            requestId?: string;
+            /** @description Retired certificate attribute or PGP public key identifier. */
+            resourceId?: string;
+            /** @description Sequence within the operation. */
+            sequence: number;
+            /** @description Instrumented operation step. */
+            step?: string;
+            /** @description Affected account, or attempted target in a tenant-visible denial. */
+            targetEmail?: string;
+            /** @description Registered account mode. */
+            targetMode?: string;
+            /**
+             * Format: date-time
+             * @description UTC event timestamp.
+             */
+            timestamp: string;
+        };
         /** @description Minimal certificate status for bank connection discovery */
         BankConnectionCertificateDescriptor: {
             /** @description Certificate expiry reported by the certificate parser */
@@ -785,6 +854,24 @@ export interface components {
         ListAccountsResp: {
             /** @description List of accounts under the API key */
             Accounts: components["schemas"]["AccountDescriptor"][];
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+        };
+        /**
+         * @example {
+         *       "Events": [],
+         *       "NextToken": "opaque-cursor",
+         *       "ResponseCode": "..",
+         *       "ResponseText": ".."
+         *     }
+         */
+        ListAuditEventsResp: {
+            /** @description Sanitized audit events; may be empty even when NextToken is present. */
+            Events: components["schemas"]["AuditEventDescriptor"][];
+            /** @description Optional continuation token; absent when pagination is complete. */
+            NextToken?: string;
             /** @description Two digit response code in string format */
             ResponseCode: string;
             /** @description Human readable response text */
@@ -1574,6 +1661,87 @@ export interface operations {
             };
             /** @description Request validation error */
             400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ListAuditEvents: {
+        parameters: {
+            query?: {
+                /** @description Optional customer email. Integrator owners may select any account history in their tenant, including deleted accounts. Other users may select only their own email; omitted means their own account. For an integrator, omitted means the entire tenant. */
+                Account?: string;
+                /** @description Inclusive UTC start time on or after 2024-01-01, e.g. 2026-09-19T00:00:00.000Z. Defaults to seven days ago. Maximum range: 31 days. */
+                From?: string;
+                /** @description Inclusive UTC end time. Defaults to now. Use the same range when continuing a page, or omit From and To to retain the cursor range. */
+                To?: string;
+                /** @description Optional exact audit action, e.g. account.delete or certificate.retire. */
+                Action?: string;
+                /** @description Optional exact outcome: started, accepted, completed, not_found, rejected, failed or partial_failure. */
+                Outcome?: string;
+                /** @description Maximum events per page, from 1 to 100; defaults to 100. */
+                Limit?: number;
+                /** @description Opaque continuation token returned by this operation. Bound to the caller, tenant, account and filters; expires after 24 hours. An empty page may still include a token. */
+                NextToken?: string;
+            };
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListAuditEventsResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
                 headers: {
                     "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;
