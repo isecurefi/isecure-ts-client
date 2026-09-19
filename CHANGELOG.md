@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.6.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.5.0...isecure-ts-client-v2.6.0) (2026-09-19)
+
+### Features
+
+* add authenticated audit history pagination ([2310b0d](https://github.com/isecurefi/isecure-ts-client/commit/2310b0de2b90fd0bda292af72a50be0343792fdf))
+
 ## [2.5.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.4.0...isecure-ts-client-v2.5.0) (2026-09-19)
 
 ### Features
