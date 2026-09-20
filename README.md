@@ -208,9 +208,9 @@ An authenticated integrator API-key owner sees its tenant; a customer sees only 
 account. Both admin and data modes can read. The server checks the session and API-key
 ownership on every request; the SDK does not grant access based on client-side roles.
 
-Available in WS API 2.11.0; currently deployed to the `gpgtest` test stage. Configure
-`BaseUrl: "https://ws-api.test.isecure.fi/v2"` for that environment. Production rollout
-is separate from the SDK release.
+Available since WS API 2.11.0 and deployed to production and test as of 2026-09-20.
+Use `BaseUrl: "https://ws-api.isecure.fi/v2"` for production or
+`BaseUrl: "https://ws-api.test.isecure.fi/v2"` for test.
 
 ```ts
 import type { ListAuditEventsQuery } from "isecure-ts-client";
@@ -255,8 +255,9 @@ Only `phase: "result", outcome: "completed"` confirms certificate persistence.
 A bank rejection uses `rejected`; processing/storage failures use `failed`; a check
 that did not need renewal uses `skipped`. A request without a final result is incomplete
 evidence. Correlate its events by `operationId` and deduplicate by `eventId` across pages.
-The added fields are optional and depend on the backend deployment; production rollout
-is separate. Raw bank SOAP, credentials and internal exceptions are never audit fields.
+WS API 2.12.0 renewal audit fields are deployed to production and test as of 2026-09-20.
+They remain optional when no valid bank response is available or its text must be omitted.
+Raw bank SOAP, credentials and internal exceptions are never audit fields.
 
 ## Debug Logging
 
