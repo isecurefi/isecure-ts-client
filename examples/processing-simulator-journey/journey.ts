@@ -81,8 +81,9 @@ async function downloadExact(client: SimulatorFilesClient, descriptor: FileDescr
 async function listed(client: SimulatorFilesClient, fileType: SimulatorOutputType): Promise<readonly FileDescriptor[]> {
   const response = assertSuccess(await client.listFiles({ FileType: fileType, Status: "ALL" }), `list ${fileType}`);
   // The existing File Exchange API represents an empty bank listing as null.
-  const descriptors = response.FileDescriptors === null ? [] : response.FileDescriptors;
-  if (!Array.isArray(descriptors)) throw new Error(`The ${fileType} listing has invalid descriptors`);
+  const observed: unknown = response.FileDescriptors;
+  if (observed !== null && !Array.isArray(observed)) throw new Error(`The ${fileType} listing has invalid descriptors`);
+  const descriptors = response.FileDescriptors ?? [];
   if (descriptors.length > MAX_LISTED_FILES_PER_TYPE) {
     throw new Error(`The ${fileType} listing exceeds the example bound`);
   }
