@@ -305,7 +305,8 @@ export class WSChannel {
    * Confirms a TOTP enrollment started via `submitMfaCode(code, { setupTotp: true })`.
    * Pass the `accessToken` from the returned `totpEnrollment` (held in memory by
    * the caller) and the first 6-digit code from the authenticator app. On success
-   * TOTP becomes the preferred factor; SMS stays enabled as a fallback.
+   * Both factors remain enabled. The server's policy determines whether the next
+   * login offers factor selection or goes directly to the preferred factor.
    */
   async verifyTotp(accessToken: string, code: string): Promise<AuthState> {
     const request: VerifyTotpRequest = { AccessToken: accessToken, Code: code };
@@ -394,6 +395,11 @@ export class WSChannel {
         continue;
       }
 
+      // Accepted verification starts a new authentication cycle with fresh MFA.
+      // Keep email/phone counters so repeated verification still stops a loop.
+      if (state.status === "verification_accepted") {
+        driven.mfa = 0;
+      }
       state = await this.login();
     }
 

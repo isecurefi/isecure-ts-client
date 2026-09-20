@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix `loginWithPrompt()` incorrectly returning `stalled` when a fresh login after email verification requires MFA again. Preserve repeated email/phone verification guards and the transition limit; cover SMS, TOTP, and factor selection.
+
 - Add `listAuditEvents()` with typed query, response and audit-event exports for WS API 2.11.0. Reads one authenticated newest-first page, preserving opaque pagination tokens and server-enforced tenant/account scope.
 - Document ten-year audit preservation after account deletion and the current gpgtest rollout.
 
