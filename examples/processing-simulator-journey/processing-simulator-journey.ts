@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { lstat, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { WSChannel } from "../../src/index.js";
@@ -199,7 +200,7 @@ async function persistEvidence(
   }
 }
 
-async function main(): Promise<void> {
+export async function runProcessingSimulatorJourney(providedChannels?: ChannelClients): Promise<void> {
   const runId = await stage("CONFIGURATION_INVALID", () => {
     if (optionalEnv("ISECURE_BANK", "").toLowerCase() !== "simulator") {
       throw new Error("This synthetic journey requires ISECURE_BANK=simulator");
@@ -213,7 +214,8 @@ async function main(): Promise<void> {
     return exactEnv("ISECURE_EXAMPLE_RUN_ID", RUN_ID);
   });
   const filePath = checkpointPath(runId);
-  const channels = await stage("REST_AUTHENTICATION_FAILED", async () => channelClients(await publicRsaKey()));
+  const channels =
+    providedChannels ?? (await stage("REST_AUTHENTICATION_FAILED", async () => channelClients(await publicRsaKey())));
   try {
     requireSharedApiKeyDomain([
       channels.admin.session.apiKey,
@@ -252,10 +254,12 @@ async function main(): Promise<void> {
   );
 }
 
-main().catch((error: unknown) => {
-  const code = error instanceof JourneyStageError ? error.code : "CONFIGURATION_INVALID";
-  console.error(
-    `The synthetic Processing-to-simulator journey stopped safely (${code}); inspect the private checkpoint before retrying.`,
-  );
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  runProcessingSimulatorJourney().catch((error: unknown) => {
+    const code = error instanceof JourneyStageError ? error.code : "CONFIGURATION_INVALID";
+    console.error(
+      `The synthetic Processing-to-simulator journey stopped safely (${code}); inspect the private checkpoint before retrying.`,
+    );
+    process.exitCode = 1;
+  });
+}

@@ -75,6 +75,10 @@ same local signing/upload step, then correlate and verify all three simulator ou
 [Processing-to-simulator journey](examples/processing-simulator-journey/README.md) or run
 `yarn example:processing-simulator`.
 
+The [live-suite runner](examples/live-suite/README.md) wraps this journey with fixture preflight,
+TOTP authentication, cleanup and a sanitized report. It performs one run per invocation and
+requires an admitted synthetic fixture; see its documented provisioning and coverage limits.
+
 ## First Registration
 
 ```ts

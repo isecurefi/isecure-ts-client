@@ -18,7 +18,7 @@ assignment (`admin` submits and `data` approves); deployments can swap them, but
 same identity.
 
 ```sh
-export ISECURE_PROCESSING_BASE_URL='https://.../gpgtest'
+export ISECURE_PROCESSING_BASE_URL='https://processing-api.test.isecure.fi'
 export ISECURE_PROCESSING_AUDIENCE='isecure-processing-gpgtest-v1'
 export ISECURE_PROCESSING_SUBMITTER_MODE='admin'
 export ISECURE_PROCESSING_APPROVER_MODE='data'
