@@ -13,6 +13,8 @@ import {
 } from "../processing-manual-upload/processing-manual-upload.js";
 import { runProcessingSimulatorJourney } from "../processing-simulator-journey/processing-simulator-journey.js";
 
+let phase = "fixture";
+
 function totp(secret: string): string {
   if (!/^[A-Z2-7]{16,128}$/u.test(secret)) throw new Error("Invalid TOTP fixture");
   const bits = Array.from(secret)
@@ -120,14 +122,17 @@ async function main(): Promise<void> {
       mode: 0o600,
     });
   };
+  phase = "shared-authentication";
   for (const client of [admin, data, uploader, adversary]) {
     const result = await client.loginWithPrompt(prompts);
     if (result.status !== "authenticated") throw new Error("Authentication failed");
   }
   if (!totpObserved) throw new Error("TOTP was not exercised");
   await receipt("shared-authentication");
+  phase = "processing-sessions";
   const submitter = await processingClient(admin),
     approver = await processingClient(data);
+  phase = "simulator-permissions";
   const capabilities = await submitter.simulationCapabilities.list({
     data_admission_mode: "synthetic",
     page: { page_size: 1 },
@@ -154,6 +159,7 @@ async function main(): Promise<void> {
     runBankSimulationQualification(input: unknown): Promise<unknown>;
   };
   const bootstrap = (client: WSChannel) => ({ apiKey: client.session.apiKey, idToken: client.session.idToken });
+  phase = "simulator-qualification";
   const attestation = await qualification.runBankSimulationQualification({
     authentication: {
       schemaVersion: 1,
@@ -184,6 +190,7 @@ async function main(): Promise<void> {
     mode: 0o600,
     flag: "wx",
   });
+  phase = "simulator-enrollment";
   const certificates = await uploader.listCerts();
   if (certificates.ResponseCode !== "00") throw new Error("Certificate listing failed");
   if (!certificates.Certs.some((cert) => cert.CertName.toLowerCase().includes("simulator"))) {
@@ -198,6 +205,7 @@ async function main(): Promise<void> {
     if (enrolled.ResponseCode !== "00") throw new Error("Simulator enrollment failed");
   }
   await receipt("simulator-access");
+  phase = "payment-feedback-statement";
   await ensureAuthorizeKey(admin, await signingMaterial());
   const channels: ChannelClients = { admin, data, uploader };
   await runProcessingSimulatorJourney(channels);
@@ -217,10 +225,25 @@ main().catch(async (error: unknown) => {
     Number.isInteger(cause.status) && Number(cause.status) >= 400 && Number(cause.status) <= 599
       ? cause.status
       : undefined;
+  const body = cause.body as { issues?: { issue_code?: unknown }[] } | undefined;
+  const knownIssues = new Set([
+    "processing_dependency_unavailable",
+    "processing_outcome_indeterminate",
+    "processing_invalid_release",
+  ]);
+  const issues = Array.isArray(body?.issues)
+    ? body.issues.flatMap((issue) =>
+        typeof issue.issue_code === "string" && knownIssues.has(issue.issue_code) ? [issue.issue_code] : [],
+      )
+    : [];
   const directory = process.argv[2];
   if (directory && path.isAbsolute(directory))
-    await writeFile(path.join(directory, "failure.json"), JSON.stringify({ code, operation, status }) + "\n", {
-      mode: 0o600,
-    });
+    await writeFile(
+      path.join(directory, "failure.json"),
+      JSON.stringify({ code, phase, operation, status, issues }) + "\n",
+      {
+        mode: 0o600,
+      },
+    );
   process.exitCode = 1;
 });
