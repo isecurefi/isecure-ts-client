@@ -203,7 +203,7 @@ await client.deleteAccount("customer@example.com", "customer@example.com");
 
 ## Audit history
 
-`listAuditEvents()` reads one page of sanitized account-management evidence, newest first.
+`listAuditEvents()` reads one page of sanitized account-management and certificate renewal evidence, newest first.
 An authenticated integrator API-key owner sees its tenant; a customer sees only its own
 account. Both admin and data modes can read. The server checks the session and API-key
 ownership on every request; the SDK does not grant access based on client-side roles.
@@ -244,6 +244,19 @@ includes actors, affected accounts, actions, outcomes and correlation identifier
 it excludes SOAP messages, bank-file contents, credentials and private keys.
 Delivery is asynchronous. Deduplicate by `eventId` across pages because delivery
 retries can repeat events. Integrators can read a deleted customer's retained history.
+
+### Automatic certificate renewal errors (WS API 2.12.0)
+
+Filter `listAuditEvents({ Account: "customer@example.com", Action: "certificate.renew" })`
+to read renewal attempts. Events include UTC timestamps, `actorType: "system"`,
+`operationId`, and optional `bankResponseCode` / `bankResponseText`. Preserve the code
+as a string (including leading zeroes) and render the sanitized message as plain text.
+Only `phase: "result", outcome: "completed"` confirms certificate persistence.
+A bank rejection uses `rejected`; processing/storage failures use `failed`; a check
+that did not need renewal uses `skipped`. A request without a final result is incomplete
+evidence. Correlate its events by `operationId` and deduplicate by `eventId` across pages.
+The added fields are optional and depend on the backend deployment; production rollout
+is separate. Raw bank SOAP, credentials and internal exceptions are never audit fields.
 
 ## Debug Logging
 
