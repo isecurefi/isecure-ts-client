@@ -40,7 +40,7 @@ export interface SimulatorFilesClient {
   listFiles(query: {
     readonly FileType: string;
     readonly Status: string;
-  }): Promise<ResponseEnvelope & { readonly FileDescriptors: readonly FileDescriptor[] }>;
+  }): Promise<ResponseEnvelope & { readonly FileDescriptors: readonly FileDescriptor[] | null }>;
   downloadFile(fileType: string, fileReference: string): Promise<ResponseEnvelope & { readonly Content: string }>;
 }
 
@@ -80,18 +80,21 @@ async function downloadExact(client: SimulatorFilesClient, descriptor: FileDescr
 
 async function listed(client: SimulatorFilesClient, fileType: SimulatorOutputType): Promise<readonly FileDescriptor[]> {
   const response = assertSuccess(await client.listFiles({ FileType: fileType, Status: "ALL" }), `list ${fileType}`);
-  if (response.FileDescriptors.length > MAX_LISTED_FILES_PER_TYPE) {
+  // The existing File Exchange API represents an empty bank listing as null.
+  const descriptors = response.FileDescriptors === null ? [] : response.FileDescriptors;
+  if (!Array.isArray(descriptors)) throw new Error(`The ${fileType} listing has invalid descriptors`);
+  if (descriptors.length > MAX_LISTED_FILES_PER_TYPE) {
     throw new Error(`The ${fileType} listing exceeds the example bound`);
   }
   const references = new Set<string>();
-  for (const descriptor of response.FileDescriptors) {
+  for (const descriptor of descriptors) {
     if (descriptor.FileType !== fileType || descriptor.FileReference.length === 0) {
       throw new Error(`The ${fileType} listing contains a mismatched descriptor`);
     }
     if (references.has(descriptor.FileReference)) throw new Error(`The ${fileType} listing contains a duplicate`);
     references.add(descriptor.FileReference);
   }
-  return response.FileDescriptors;
+  return descriptors;
 }
 
 export async function captureBaseline(

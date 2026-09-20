@@ -167,6 +167,20 @@ describe("synthetic simulator evidence collection", () => {
     });
   });
 
+  it("accepts null empty feedback listings before the first payment", async () => {
+    const client: SimulatorFilesClient = {
+      listFiles: async ({ FileType }) => ({
+        ResponseCode: "00",
+        FileDescriptors: FileType === "camt.053.001.02" ? [descriptor("camt.053.001.02", "initial")] : null,
+      }),
+      downloadFile: async () => ({ ResponseCode: "00", Content: Buffer.from(baseline("100.00")).toString("base64") }),
+    };
+    await expect(captureBaseline(client, IDS.account)).resolves.toMatchObject({
+      before: { closingAmount: "100.00" },
+      priorReferences: { "pain.002.001.10": [], "camt.054.001.02": [], "camt.053.001.02": ["initial"] },
+    });
+  });
+
   it("skips a newer statement for another account and refuses maximum-plus-one listings", async () => {
     const otherAccount = new TextEncoder().encode(
       new TextDecoder().decode(baseline("110.00")).replace(IDS.account, "FI4912345600000786"),
