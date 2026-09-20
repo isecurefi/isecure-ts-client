@@ -37,6 +37,13 @@
 - Added `parseMode` / `parseLogLevel` (and `isMode` / `isLogLevel`) input guards so untrusted values such as environment variables are validated instead of unchecked-cast.
 - Tightened the `classifyErrorReason` "unconfirmed" heuristic to avoid matching unrelated responses that merely contain the word "confirm".
 
+## [2.7.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.7.0...isecure-ts-client-v2.7.1) (2026-09-20)
+
+
+### Bug Fixes
+
+* **auth:** allow fresh MFA after accepted verification ([f85068b](https://github.com/isecurefi/isecure-ts-client/commit/f85068bebef5d2704d272bc51ae3096001259ed4))
+
 ## [2.7.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.6.0...isecure-ts-client-v2.7.0) (2026-09-20)
 
 
