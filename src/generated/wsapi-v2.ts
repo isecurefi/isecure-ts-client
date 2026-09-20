@@ -175,9 +175,9 @@ export interface paths {
         };
         /**
          * ListAuditEvents
-         * @description Read sanitized account-management audit history through the authenticated API. Integrator API key owners can read their entire tenant or select Account; customer accounts can read only their own account. API-key ownership is verified before any log access. Both admin and data modes can read their permitted history.
+         * @description Read sanitized account-management and automatic certificate-renewal audit history through the authenticated API. Integrator API key owners can read their entire tenant or select Account; customer accounts can read only their own account. API-key ownership is verified before any log access. Both admin and data modes can read their permitted history.
          *
-         *     Events include the actor, action, affected account, timestamp, outcome and operation/request correlation. No bank files, SOAP messages, credentials, private keys or raw internal diagnostics are returned. Delivery is asynchronous; deduplicate by eventId across pages because publication retries may repeat an event. Streams survive account deletion and events have ten-year retention. Integrator owners can query deleted-account history without the deleted users-table row.
+         *     Events include the actor, action, affected account, timestamp, outcome and operation/request correlation. Automatic certificate renewal uses action certificate.renew and actorType system. A request event records the attempt time, step events record bank contact and persistence, and a result records rejected, failed, completed or skipped. completed means credentials were stored; a bank acceptance alone is insufficient. Bank rejections include bankResponseCode and, when safe to expose, bankResponseText. A timeout or malformed response has no invented bank code. A request without a result is incomplete; do not infer rejection or success. No bank files, SOAP messages, credentials, private keys or raw internal diagnostics are returned. Delivery is asynchronous; deduplicate by eventId across pages because publication retries may repeat an event. Streams survive account deletion and events have ten-year retention. Integrator owners can query deleted-account history without the deleted users-table row.
          *
          *     Results are paginated newest first across all accounts in the permitted scope. Each page returns up to Limit events; additional pages continue toward older events. Use From and To to select up to 31 days at a time, and follow NextToken even after an empty page. Do not interpret missing or delayed events as proof that an operation did not happen.
          */
@@ -569,7 +569,7 @@ export interface components {
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
         };
         AuditEventDescriptor: {
-            /** @description Account-management action. */
+            /** @description Account-management action or certificate.renew for automatic renewal attempts. */
             action: string;
             /** @description Authenticated actor email when available. */
             actorEmail?: string;
@@ -577,17 +577,21 @@ export interface components {
             actorId?: string;
             /** @description Actor login mode, when known. */
             actorMode?: string;
-            /** @description operator, integrator, customer, authenticated or unauthenticated. Registration has no authenticated actor. */
+            /** @description operator, integrator, customer, authenticated, unauthenticated or system. Automatic renewal uses system; registration has no authenticated actor. */
             actorType?: string;
             /** @description Public bank identifier. */
             bank?: string;
+            /** @description Bank response code for certificate.renew, preserved as text including leading zeroes. Absent when no valid bank response was received. */
+            bankResponseCode?: string;
+            /** @description Bounded, sanitized bank message for certificate.renew. May be omitted or redacted; render only as plain text. Never contains raw SOAP or internal exceptions. */
+            bankResponseText?: string;
             /** @description Number of acknowledged mutation steps; missing resources on a deletion retry do not increment it. */
             completedSteps?: number;
             /** @description Stable operation and sequence identifier; deduplicate publication retries by this value. */
             eventId: string;
             /** @description Identifier for one invocation; retries have different operation IDs. */
             operationId: string;
-            /** @description started, accepted, completed, not_found, rejected, failed or partial_failure. */
+            /** @description started, accepted, completed, not_found, rejected, failed, partial_failure or skipped. */
             outcome: string;
             /** @description Step without acknowledged completion; actual state may be unknown. */
             pendingStep?: string;
@@ -1690,9 +1694,9 @@ export interface operations {
                 From?: string;
                 /** @description Inclusive UTC end time. Defaults to now. Use the same range when continuing a page, or omit From and To to retain the cursor range. */
                 To?: string;
-                /** @description Optional exact audit action, e.g. account.delete or certificate.retire. */
+                /** @description Optional exact audit action, e.g. account.delete, certificate.retire or certificate.renew. */
                 Action?: string;
-                /** @description Optional exact outcome: started, accepted, completed, not_found, rejected, failed or partial_failure. */
+                /** @description Optional exact outcome: started, accepted, completed, not_found, rejected, failed, partial_failure or skipped. */
                 Outcome?: string;
                 /** @description Maximum events per page, from 1 to 100; defaults to 100. */
                 Limit?: number;

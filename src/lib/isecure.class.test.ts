@@ -57,9 +57,12 @@ describe("WSChannel", () => {
         operationId: "operation",
         sequence: 1,
         timestamp: "2026-09-19T12:00:00.000Z",
-        action: "account.delete",
+        action: "certificate.renew",
         phase: "result",
-        outcome: "completed",
+        outcome: "rejected",
+        actorType: "system",
+        bankResponseCode: "030",
+        bankResponseText: "Varmennetta ei saa vielä uusia",
       };
       const first: ListAuditEventsResponse = {
         ResponseCode: "00",
