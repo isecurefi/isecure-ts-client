@@ -109,3 +109,11 @@ yarn test:live cleanup /absolute/path/to/ws-channel-api /private/path/to/fixture
 Recovery performs cleanup only. It never resubmits a payment. Inspect any `upload_started` or
 `upload_uncertain` journey checkpoint before starting another payment run. Enable a schedule only after fixture admission and live acceptance have passed. Do not run two
 invocations concurrently against the same fixture; the exclusive lease prevents that.
+
+## Recorded gpgtest acceptance
+
+Two separate invocations passed on 20 September 2026 against Processing version 233 and simulator
+control version 56. Both used SDK code revision `0ddbc6c`, exercised all five suite stages and the
+21-operation simulator qualification, completed the payment/feedback/statement journey, and passed
+cleanup. The [sanitized acceptance record](acceptance.json) records the exact versions and outcomes.
+This is synthetic test-environment evidence; it does not qualify a production or real-bank connection.

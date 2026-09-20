@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "syntheticOnly": true,
+  "environment": "gpgtest",
+  "clientRepositoryRevision": "0ddbc6c2743d71d7f60f3d65c000ef6e9294d012",
+  "clientVersion": "2.7.1",
+  "processingReleaseId": "processing-4dd19950469666c5841681ef",
+  "processingLambdaVersion": "233",
+  "processingApiDeploymentId": "fui369",
+  "platformReleaseRevision": "e166434e39c7e50120d3d3aaf57c562edce87479",
+  "simulatorReleaseId": "release-9c31fc2f",
+  "simulatorFunctionVersion": "56",
+  "invocations": [
+    {
+      "runId": "run-7bdb323b-de7d-4bdb-986f-fa0428503604",
+      "startedAt": "2026-09-20T20:40:17.270Z",
+      "finishedAt": "2026-09-20T20:46:04.449Z",
+      "status": "passed",
+      "checks": [
+        {
+          "name": "fixture-preflight",
+          "status": "passed"
+        },
+        {
+          "name": "fixture-prepare",
+          "status": "passed"
+        },
+        {
+          "name": "shared-authentication",
+          "status": "passed"
+        },
+        {
+          "name": "simulator-access",
+          "status": "passed"
+        },
+        {
+          "name": "payment-feedback-statement",
+          "status": "passed"
+        }
+      ],
+      "cleanup": "passed",
+      "simulatorOperationCount": 21,
+      "simulatorCheckCount": 22,
+      "paymentJourney": "complete"
+    },
+    {
+      "runId": "run-2b7d9ceb-2a82-473b-9e3d-59e9ad31613d",
+      "startedAt": "2026-09-20T20:46:17.940Z",
+      "finishedAt": "2026-09-20T20:51:53.919Z",
+      "status": "passed",
+      "checks": [
+        {
+          "name": "fixture-preflight",
+          "status": "passed"
+        },
+        {
+          "name": "fixture-prepare",
+          "status": "passed"
+        },
+        {
+          "name": "shared-authentication",
+          "status": "passed"
+        },
+        {
+          "name": "simulator-access",
+          "status": "passed"
+        },
+        {
+          "name": "payment-feedback-statement",
+          "status": "passed"
+        }
+      ],
+      "cleanup": "passed",
+      "simulatorOperationCount": 21,
+      "simulatorCheckCount": 22,
+      "paymentJourney": "complete"
+    }
+  ],
+  "limitations": [
+    "Synthetic gpgtest API qualification only; not production or real-bank qualification.",
+    "Each invocation runs once; payment uploads are not retried automatically.",
+    "Private credentials, exact bank files and reconciliation checkpoints are excluded."
+  ]
+}
