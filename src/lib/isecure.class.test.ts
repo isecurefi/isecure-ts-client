@@ -323,6 +323,87 @@ describe("WSChannel", () => {
     expect(transport.requests[2]?.body).toEqual({ AccessToken: "access-token", Code: "email-code" });
   });
 
+  it.each([
+    ["SMS_MFA", false],
+    ["SOFTWARE_TOKEN_MFA", false],
+    ["SELECT_MFA_TYPE", false],
+    ["SMS_MFA", true],
+    ["SOFTWARE_TOKEN_MFA", true],
+    ["SELECT_MFA_TYPE", true],
+  ] as const)(
+    "allows fresh %s after email verification while preserving the email loop guard (repeat=%s)",
+    async (secondChallenge, repeatEmail) => {
+      const transport = new FakeTransport();
+      const emailResponse = {
+        AccessToken: "verification-access-token",
+        ResponseCode: "00",
+        ResponseText: "Login OK. Verify email address.",
+      };
+      const responses = [
+        response({ Challenge: challenge, ResponseCode: "00", ResponseText: "OK" }),
+        response({ Session: "first-session", ChallengeName: "SMS_MFA", ResponseCode: "00", ResponseText: "OK" }),
+        response(emailResponse),
+        response({ ResponseCode: "00", ResponseText: "Email verification successful." }),
+        response({ Challenge: challenge, ResponseCode: "00", ResponseText: "OK" }),
+        response({
+          Session: "fresh-session",
+          ChallengeName: secondChallenge,
+          MfaOptions: ["SMS_MFA", "SOFTWARE_TOKEN_MFA"],
+          ResponseCode: "00",
+          ResponseText: "OK",
+        }),
+        ...(secondChallenge === "SELECT_MFA_TYPE"
+          ? [
+              response({
+                Session: "selected-session",
+                ChallengeName: "SOFTWARE_TOKEN_MFA",
+                ResponseCode: "00",
+                ResponseText: "OK",
+              }),
+            ]
+          : []),
+        response(
+          repeatEmail
+            ? emailResponse
+            : { IdToken: "id-token", ApiKey: "api-key", ResponseCode: "00", ResponseText: "Login OK" },
+        ),
+      ];
+      transport.respond(() => responses.shift());
+      const client = new WSChannel(props(), { transport });
+      const promptedMethods: string[] = [];
+      let emailPrompts = 0;
+      const state = await client.loginWithPrompt({
+        async requestMfaCode(mfa) {
+          promptedMethods.push(mfa.method);
+          return promptedMethods.length === 1 ? "111111" : "222222";
+        },
+        async requestEmailCode() {
+          emailPrompts += 1;
+          return "333333";
+        },
+        async requestPhoneCode() {
+          throw new Error("Phone is already confirmed");
+        },
+      });
+
+      expect(state).toMatchObject(
+        repeatEmail ? { status: "stalled", step: "email_verification" } : { status: "authenticated" },
+      );
+      expect(promptedMethods).toEqual(["sms", secondChallenge === "SMS_MFA" ? "sms" : "totp"]);
+      expect(emailPrompts).toBe(1);
+      expect(responses).toHaveLength(0);
+      const mfaRequests = transport.requests.filter((request) => request.url.endsWith("/mfacode"));
+      expect(mfaRequests.map((request) => request.body)).toEqual([
+        { Code: "111111", Session: "first-session", ChallengeName: "SMS_MFA" },
+        {
+          Code: "222222",
+          Session: secondChallenge === "SELECT_MFA_TYPE" ? "selected-session" : "fresh-session",
+          ChallengeName: secondChallenge === "SMS_MFA" ? "SMS_MFA" : "SOFTWARE_TOKEN_MFA",
+        },
+      ]);
+    },
+  );
+
   it("drives MFA and phone verification through prompt adapters", async () => {
     const transport = new FakeTransport();
     const responses = [

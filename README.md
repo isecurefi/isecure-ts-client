@@ -131,8 +131,10 @@ if (state.status === "needs_phone_verification") {
 ### Enrolling Google Authenticator (TOTP)
 
 Request enrollment while completing an admin login, render the returned QR
-(`otpauthUri`) or secret, then confirm the first code. TOTP becomes the preferred
-factor; SMS stays enabled as a fallback.
+(`otpauthUri`) or secret, then confirm the first code. The backend's enrollment
+policy determines whether TOTP becomes preferred or both factors are offered on
+the next login. Follow the returned challenge; SMS is selectable only when the
+backend offers factor selection.
 
 ```ts
 // Complete login with the SMS code AND ask to set up TOTP in one step:
@@ -142,11 +144,14 @@ if (state.status === "authenticated" && state.totpEnrollment) {
   const { secret, otpauthUri, accessToken } = state.totpEnrollment;
   // Render otpauthUri as a QR code (or show `secret` for manual entry).
   // accessToken is held in memory only — do not persist it.
-  await client.verifyTotp(accessToken, codeFromAuthenticatorApp);
+  const verification = await client.verifyTotp(accessToken, codeFromAuthenticatorApp);
+  if (verification.status !== "verification_accepted") {
+    throw new Error("TOTP enrollment was not confirmed");
+  }
 }
 ```
 
-For CLI scripts, pass a prompt adapter. `loginWithPrompt` drives the whole MFA → email → phone verification machine to completion and is bounded, so you never re-implement the verify/re-login loop yourself:
+For CLI scripts, pass a prompt adapter. `loginWithPrompt` follows the returned authentication states, including fresh MFA after accepted email or phone verification. It stops on repeated verification or the transition limit and returns `stalled`. HTTP and transport errors still throw; handle those separately from returned authentication states.
 
 ```ts
 const state = await client.loginWithPrompt({
