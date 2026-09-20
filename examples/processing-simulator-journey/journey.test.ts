@@ -167,18 +167,27 @@ describe("synthetic simulator evidence collection", () => {
     });
   });
 
-  it("accepts null empty feedback listings before the first payment", async () => {
+  it("serializes bank listings and accepts null feedback folders before the first payment", async () => {
+    let active = 0;
+    let maximumActive = 0;
     const client: SimulatorFilesClient = {
-      listFiles: async ({ FileType }) => ({
-        ResponseCode: "00",
-        FileDescriptors: FileType === "camt.053.001.02" ? [descriptor("camt.053.001.02", "initial")] : null,
-      }),
+      listFiles: async ({ FileType }) => {
+        active += 1;
+        maximumActive = Math.max(maximumActive, active);
+        await Promise.resolve();
+        active -= 1;
+        return {
+          ResponseCode: "00",
+          FileDescriptors: FileType === "camt.053.001.02" ? [descriptor("camt.053.001.02", "initial")] : null,
+        };
+      },
       downloadFile: async () => ({ ResponseCode: "00", Content: Buffer.from(baseline("100.00")).toString("base64") }),
     };
     await expect(captureBaseline(client, IDS.account)).resolves.toMatchObject({
       before: { closingAmount: "100.00" },
       priorReferences: { "pain.002.001.10": [], "camt.054.001.02": [], "camt.053.001.02": ["initial"] },
     });
+    expect(maximumActive).toBe(1);
   });
 
   it("skips a newer statement for another account and refuses maximum-plus-one listings", async () => {
