@@ -35,6 +35,13 @@
 - Added `parseMode` / `parseLogLevel` (and `isMode` / `isLogLevel`) input guards so untrusted values such as environment variables are validated instead of unchecked-cast.
 - Tightened the `classifyErrorReason` "unconfirmed" heuristic to avoid matching unrelated responses that merely contain the word "confirm".
 
+## [2.7.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.6.0...isecure-ts-client-v2.7.0) (2026-09-20)
+
+
+### Features
+
+* expose certificate renewal bank response audit fields ([#66](https://github.com/isecurefi/isecure-ts-client/issues/66)) ([25dd85c](https://github.com/isecurefi/isecure-ts-client/commit/25dd85c6d88751e6275cde2805d81aca3e2c8c07))
+
 ## [2.6.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.5.0...isecure-ts-client-v2.6.0) (2026-09-19)
 
 
