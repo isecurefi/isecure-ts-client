@@ -3,6 +3,7 @@ import {
   EvidenceCorrelationMismatchError,
   SIMULATOR_OUTPUT_TYPES,
   statementBalance,
+  statementBalanceLinks,
   verifyCamt053Transition,
   verifyCamt054,
   verifyPain002,
@@ -101,6 +102,7 @@ async function listed(client: SimulatorFilesClient, fileType: SimulatorOutputTyp
 export async function captureBaseline(
   client: SimulatorFilesClient,
   debtorIban: string,
+  ordering: "timestamp" | "balance-chain" = "timestamp",
 ): Promise<Pick<JourneyCheckpoint, "priorReferences" | "before">> {
   // Bank connections can serialize their protocol state even for file-list requests.
   const listings: (readonly [SimulatorOutputType, readonly FileDescriptor[]])[] = [];
@@ -114,6 +116,17 @@ export async function captureBaseline(
     "camt.053.001.02": references("camt.053.001.02"),
   };
   const statements = listings.find(([fileType]) => fileType === "camt.053.001.02")?.[1] ?? [];
+  if (ordering === "balance-chain") {
+    const observations: StatementBalance[] = [];
+    for (const candidate of statements) {
+      try {
+        observations.push(statementBalance(await downloadExact(client, candidate), debtorIban));
+      } catch (error) {
+        if (!(error instanceof EvidenceCorrelationMismatchError)) throw error;
+      }
+    }
+    return { priorReferences, before: currentStatementBalance(observations) };
+  }
   const ordered = [...statements].sort((left, right) => {
     const leftTime = Date.parse(left.FileTimestamp);
     const rightTime = Date.parse(right.FileTimestamp);
@@ -128,6 +141,38 @@ export async function captureBaseline(
     }
   }
   throw new Error("No simulator statement exists for the debtor account before the payment upload");
+}
+
+function currentStatementBalance(observations: readonly StatementBalance[]): StatementBalance {
+  const links = observations.map(statementBalanceLinks);
+  const successors = new Map<string, Set<string>>();
+  for (const { opening, closing } of links) {
+    if (opening === closing) continue;
+    const next = successors.get(opening) ?? new Set<string>();
+    next.add(closing);
+    successors.set(opening, next);
+  }
+  const terminal = new Set(links.filter(({ closing }) => !successors.has(closing)).map(({ closing }) => closing));
+  if (terminal.size !== 1) throw new Error("Statement history has no unique current balance");
+  const finalBalance = [...terminal][0];
+  const verified = new Set<string>();
+  const visiting = new Set<string>();
+  const reachesCurrent = (key: string): boolean => {
+    if (key === finalBalance || verified.has(key)) return true;
+    if (visiting.has(key)) return false;
+    const next = successors.get(key);
+    if (!next?.size) return false;
+    visiting.add(key);
+    const valid = [...next].every(reachesCurrent);
+    visiting.delete(key);
+    if (valid) verified.add(key);
+    return valid;
+  };
+  if (!links.every(({ opening }) => reachesCurrent(opening)))
+    throw new Error("Statement history is disconnected or cyclic");
+  const result = observations.find((_, index) => links[index]?.closing === finalBalance);
+  if (!result) throw new Error("No simulator statement exists for the debtor account before the payment upload");
+  return result;
 }
 
 function verify(

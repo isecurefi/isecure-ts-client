@@ -167,6 +167,38 @@ describe("synthetic simulator evidence collection", () => {
     });
   });
 
+  it("links retained balances when file timestamps tie and references sort out of order", async () => {
+    const client = new FakeFiles(
+      [
+        descriptor("camt.053.001.02", "z-initial"),
+        descriptor("camt.053.001.02", "m-first"),
+        descriptor("camt.053.001.02", "a-latest"),
+      ],
+      new Map([
+        ["camt.053.001.02:z-initial", baseline("100.00")],
+        ["camt.053.001.02:m-first", camt053("100.000", "90.0")],
+        ["camt.053.001.02:a-latest", camt053("90.00", "87.66")],
+      ]),
+    );
+    await expect(captureBaseline(client, IDS.account, "balance-chain")).resolves.toMatchObject({
+      before: { closingAmount: "87.66" },
+    });
+    expect(client.downloads).toHaveBeenCalledTimes(3);
+  });
+
+  it("refuses disconnected or cyclic statement histories instead of guessing a current balance", async () => {
+    for (const values of [
+      [camt053("100.00", "90.00"), camt053("80.00", "70.00")],
+      [camt053("100.00", "90.00"), camt053("90.00", "100.00"), baseline("80.00")],
+    ]) {
+      const client = new FakeFiles(
+        values.map((_, index) => descriptor("camt.053.001.02", String(index))),
+        new Map(values.map((bytes, index) => [`camt.053.001.02:${String(index)}`, bytes])),
+      );
+      await expect(captureBaseline(client, IDS.account, "balance-chain")).rejects.toThrow("Statement history");
+    }
+  });
+
   it("serializes bank listings and accepts null feedback folders before the first payment", async () => {
     let active = 0;
     let maximumActive = 0;

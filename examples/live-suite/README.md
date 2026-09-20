@@ -20,6 +20,12 @@ validates, finalizes, independently approves and releases a payment; downloads a
 its XML; signs and uploads it once; and checks `pain.002`, `camt.054` and the exact `camt.053`
 balance transition.
 
+File listings run one at a time, and empty feedback folders may contain `FileDescriptors: null`.
+The retained fixture's statements are linked by their exact opening and closing balances to find
+one current balance, because simulator listing timestamps can tie. Disconnected or cyclic histories
+stop the run before upload. The suite reads at most 256 descriptors per file type; rotate the admitted
+fixture when that bound is reached, preserving its audit history.
+
 The suite also reuses the platform's existing 21-operation Bank Simulator qualification: workspace
 and scenario management, synthetic runs, clocks, checkpoints, branches, feedback artifact references,
 revision and replay checks, cross-tenant denial, and authenticated event streaming. Each invocation
