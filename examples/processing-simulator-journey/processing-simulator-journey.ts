@@ -44,6 +44,7 @@ type JourneyFailureCode =
   | "PROCESSING_SESSION_FAILED"
   | "PROCESSING_SESSION_UNAVAILABLE"
   | "REST_AUTHENTICATION_FAILED"
+  | "SIMULATOR_BASELINE_UNAVAILABLE"
   | "SIMULATOR_CONNECTION_UNAVAILABLE"
   | "UPLOAD_REFUSED";
 
@@ -109,7 +110,12 @@ async function processingIdentities(channels: ChannelClients): Promise<{
   }
 }
 
-async function prepareAndUpload(channels: ChannelClients, runId: string, filePath: string): Promise<JourneyCheckpoint> {
+async function prepareAndUpload(
+  channels: ChannelClients,
+  runId: string,
+  filePath: string,
+  baselineOrdering: "timestamp" | "balance-chain",
+): Promise<JourneyCheckpoint> {
   requireExplicitUploadConfirmation();
   const identities = await stage("PROCESSING_SESSION_FAILED", async () => processingIdentities(channels));
   const approved = await stage("PAYMENT_PREPARATION_FAILED", async () =>
@@ -126,8 +132,8 @@ async function prepareAndUpload(channels: ChannelClients, runId: string, filePat
     requirePain001(downloaded.bytes);
     return paymentCorrelation(downloaded.bytes);
   });
-  const baseline = await stage("SIMULATOR_CONNECTION_UNAVAILABLE", async () =>
-    captureBaseline(channels.uploader, correlation.debtorIban),
+  const baseline = await stage("SIMULATOR_BASELINE_UNAVAILABLE", async () =>
+    captureBaseline(channels.uploader, correlation.debtorIban, baselineOrdering),
   );
   const checkpoint: JourneyCheckpoint = {
     version: 1,
@@ -200,7 +206,10 @@ async function persistEvidence(
   }
 }
 
-export async function runProcessingSimulatorJourney(providedChannels?: ChannelClients): Promise<void> {
+export async function runProcessingSimulatorJourney(
+  providedChannels?: ChannelClients,
+  baselineOrdering: "timestamp" | "balance-chain" = "timestamp",
+): Promise<void> {
   const runId = await stage("CONFIGURATION_INVALID", () => {
     if (optionalEnv("ISECURE_BANK", "").toLowerCase() !== "simulator") {
       throw new Error("This synthetic journey requires ISECURE_BANK=simulator");
@@ -239,7 +248,7 @@ export async function runProcessingSimulatorJourney(providedChannels?: ChannelCl
     await stage("CHECKPOINT_INVALID", async () => writeCheckpoint(filePath, uncertainCheckpoint));
     checkpoint = uncertainCheckpoint;
   }
-  checkpoint ??= await prepareAndUpload(channels, runId, filePath);
+  checkpoint ??= await prepareAndUpload(channels, runId, filePath, baselineOrdering);
   const readyCheckpoint: JourneyCheckpoint = checkpoint;
 
   const evidence = await stage("OUTPUT_RECONCILIATION_FAILED", async () =>

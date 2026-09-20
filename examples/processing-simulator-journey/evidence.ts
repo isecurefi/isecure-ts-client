@@ -266,6 +266,24 @@ function align(value: Decimal, scale: number): bigint {
   return value.coefficient * 10n ** BigInt(scale - value.scale);
 }
 
+/** Exact balance identities for linking retained statements without trusting listing timestamps. */
+export function statementBalanceLinks(value: StatementBalance): { opening: string; closing: string } {
+  const key = (amount: string, direction: "CRDT" | "DBIT"): string => {
+    const parsed = decimal(amount, direction);
+    let coefficient = parsed.coefficient;
+    let scale = parsed.scale;
+    while (scale > 0 && coefficient % 10n === 0n) {
+      coefficient /= 10n;
+      scale -= 1;
+    }
+    return `${value.currency}:${coefficient.toString()}:${String(scale)}`;
+  };
+  return {
+    opening: key(value.openingAmount, value.openingDirection),
+    closing: key(value.closingAmount, value.closingDirection),
+  };
+}
+
 function equal(left: Decimal, right: Decimal): boolean {
   const scale = Math.max(left.scale, right.scale);
   return align(left, scale) === align(right, scale);

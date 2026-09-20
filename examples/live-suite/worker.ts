@@ -208,7 +208,7 @@ async function main(): Promise<void> {
   phase = "payment-feedback-statement";
   await ensureAuthorizeKey(admin, await signingMaterial());
   const channels: ChannelClients = { admin, data, uploader };
-  await runProcessingSimulatorJourney(channels);
+  await runProcessingSimulatorJourney(channels, "balance-chain");
   await receipt("payment-feedback-statement");
 }
 main().catch(async (error: unknown) => {
