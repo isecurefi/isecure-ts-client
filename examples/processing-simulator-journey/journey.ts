@@ -102,9 +102,9 @@ export async function captureBaseline(
   client: SimulatorFilesClient,
   debtorIban: string,
 ): Promise<Pick<JourneyCheckpoint, "priorReferences" | "before">> {
-  const listings = await Promise.all(
-    SIMULATOR_OUTPUT_TYPES.map(async (fileType) => [fileType, await listed(client, fileType)] as const),
-  );
+  // Bank connections can serialize their protocol state even for file-list requests.
+  const listings: (readonly [SimulatorOutputType, readonly FileDescriptor[]])[] = [];
+  for (const fileType of SIMULATOR_OUTPUT_TYPES) listings.push([fileType, await listed(client, fileType)]);
   const byType = new Map(listings);
   const references = (fileType: SimulatorOutputType): readonly string[] =>
     (byType.get(fileType) ?? []).map((value) => value.FileReference);
