@@ -136,3 +136,28 @@ control version 56. Both used SDK code revision `0ddbc6c`, exercised all five su
 21-operation simulator qualification, completed the payment/feedback/statement journey, and passed
 cleanup. The [sanitized acceptance record](acceptance.json) records the exact versions and outcomes.
 This is synthetic test-environment evidence; it does not qualify a production or real-bank connection.
+
+## Prepared GitHub schedule
+
+`.github/workflows/live-gpgtest.yml` supports manual dispatch and a daily 05:17 UTC schedule.
+Its job is disabled unless repository variable `ISECURE_LIVE_SUITE_ENABLED` is exactly `true`.
+No runner or credential is provisioned by this workflow. It requires a dedicated trusted runner
+labelled `isecure-gpgtest`, Node.js 24 and a protected `gpgtest` environment. Do not expose that
+runner to pull-request jobs or unreviewed workflow changes.
+
+Configure the six path/revision variables listed in the workflow. `ISECURE_WSAPI_ROOT` identifies
+the `ws-channel-api` subdirectory of the pinned AWS repository; `ISECURE_SDK_ROOT` identifies the
+pinned SDK checkout. Install dependencies and compile SDK/examples before credentialed execution.
+Keep the fixture config's `sdkRoot` and `clientRevision` aligned with that checkout. The private AWS
+profile remains `dforsber`, and the backend verifies the test account independently.
+
+`ISECURE_LIVE_WORK_DIR` must be a durable private directory outside disposable checkout/runner
+workspaces. Retain its `.isecure-live-suite` history across jobs and updates. Repository concurrency
+queues runs without cancelling an active payment; the fixture operator also acquires its tenant
+lease. An interrupted run leaves history that blocks future scheduled work until operator recovery.
+Do not automatically clear leases, archive failures, resubmit uploads or delete audit evidence.
+
+Before enabling the variable, admit the fixture and run the scheduled command manually from that
+same working directory with the exact pinned revisions. Review a passing report and cleanup, then
+enable dispatch/scheduling. The workflow uploads no private artifacts. GitHub shows failed jobs;
+notification delivery follows the repository's configured Actions notification settings.
