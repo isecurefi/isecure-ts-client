@@ -112,9 +112,10 @@ Recovery performs cleanup only. It never resubmits a payment. Inspect any `uploa
 `upload_uncertain` journey checkpoint before starting another payment run. Enable a schedule only after fixture admission and live acceptance have passed. Do not run two
 invocations concurrently against the same fixture; the exclusive lease prevents that.
 
-## Unattended execution
+## Optional retained-history guard
 
-Use `yarn test:live scheduled <backend-root> <private-config>` for a scheduler. This still performs
+Use `yarn test:live scheduled <backend-root> <private-config>` to add a retained-history guard.
+The `scheduled` argument is only the command name; it does not install or enable a schedule. It performs
 exactly one run and adds a preflight guard: every prior `run-*` directory must have a complete,
 successful report with successful cleanup. Interrupted, failed, malformed or missing reports stop
 execution before fixture preparation. Review and reconcile the exact payment checkpoint, perform
@@ -122,12 +123,13 @@ cleanup recovery if needed, then move the reviewed run directory to a private re
 outside `.isecure-live-suite`. Never delete audit evidence or clear a failure just to restart.
 
 Keep the working directory and private run history on durable storage across invocations. Use one
-scheduler concurrency group per fixture, with cancellation disabled. Protect credentials and signing
+execution concurrency group per fixture, with cancellation disabled. Protect credentials and signing
 keys outside the checkout; run only reviewed, pinned source with the config's `clientRevision`
 updated to that exact commit. Export only the sanitized `report.json`, never the run directory.
 An ephemeral runner without restored durable history is not suitable for this guard.
 
-A runner and protected credentials must be provisioned before enabling recurring execution.
+Run the suite on demand from the existing configured operator environment. No recurring execution
+is configured or planned; a GitHub runner is not required for local invocation.
 
 ## Recorded gpgtest acceptance
 
@@ -137,9 +139,9 @@ control version 56. Both used SDK code revision `0ddbc6c`, exercised all five su
 cleanup. The [sanitized acceptance record](acceptance.json) records the exact versions and outcomes.
 This is synthetic test-environment evidence; it does not qualify a production or real-bank connection.
 
-## Prepared GitHub schedule
+## Optional on-demand GitHub execution
 
-`.github/workflows/live-gpgtest.yml` supports manual dispatch and a daily 05:17 UTC schedule.
+`.github/workflows/live-gpgtest.yml` supports manual dispatch only. It has no scheduled trigger.
 Its job is disabled unless repository variable `ISECURE_LIVE_SUITE_ENABLED` is exactly `true`.
 No runner or credential is provisioned by this workflow. It requires a dedicated trusted runner
 labelled `isecure-gpgtest`, Node.js 24 and a protected `gpgtest` environment. Do not expose that
@@ -154,10 +156,10 @@ profile remains `dforsber`, and the backend verifies the test account independen
 `ISECURE_LIVE_WORK_DIR` must be a durable private directory outside disposable checkout/runner
 workspaces. Retain its `.isecure-live-suite` history across jobs and updates. Repository concurrency
 queues runs without cancelling an active payment; the fixture operator also acquires its tenant
-lease. An interrupted run leaves history that blocks future scheduled work until operator recovery.
+lease. An interrupted run leaves history that blocks future guarded runs until operator recovery.
 Do not automatically clear leases, archive failures, resubmit uploads or delete audit evidence.
 
-Before enabling the variable, admit the fixture and run the scheduled command manually from that
+Before enabling the variable, admit the fixture and run the guarded command manually from that
 same working directory with the exact pinned revisions. Review a passing report and cleanup, then
-enable dispatch/scheduling. The workflow uploads no private artifacts. GitHub shows failed jobs;
+enable manual dispatch. The workflow uploads no private artifacts. GitHub shows failed jobs;
 notification delivery follows the repository's configured Actions notification settings.
