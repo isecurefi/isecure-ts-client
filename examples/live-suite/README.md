@@ -18,7 +18,9 @@ Processing sessions, discovers the Bank Simulator API's synthetic capability and
 the approver lacks simulator control permission. The existing payment journey then creates,
 validates, finalizes, independently approves and releases a payment; downloads and integrity-checks
 its XML; signs and uploads it once; and checks `pain.002`, `camt.054` and the exact `camt.053`
-balance transition.
+balance transition. Before and after the payment, it also checks that file creation timestamps remain
+stable across repeated listings separated by a clock tick and downloads. Existing files must retain
+their timestamps when new payment outputs arrive. These checks are suite code, not SDK behavior.
 
 File listings run one at a time, and empty feedback folders may contain `FileDescriptors: null`.
 The retained fixture's statements are linked by their exact opening and closing balances to find
@@ -109,6 +111,23 @@ yarn test:live cleanup /absolute/path/to/ws-channel-api /private/path/to/fixture
 Recovery performs cleanup only. It never resubmits a payment. Inspect any `upload_started` or
 `upload_uncertain` journey checkpoint before starting another payment run. Enable a schedule only after fixture admission and live acceptance have passed. Do not run two
 invocations concurrently against the same fixture; the exclusive lease prevents that.
+
+## Unattended execution
+
+Use `yarn test:live scheduled <backend-root> <private-config>` for a scheduler. This still performs
+exactly one run and adds a preflight guard: every prior `run-*` directory must have a complete,
+successful report with successful cleanup. Interrupted, failed, malformed or missing reports stop
+execution before fixture preparation. Review and reconcile the exact payment checkpoint, perform
+cleanup recovery if needed, then move the reviewed run directory to a private retained archive
+outside `.isecure-live-suite`. Never delete audit evidence or clear a failure just to restart.
+
+Keep the working directory and private run history on durable storage across invocations. Use one
+scheduler concurrency group per fixture, with cancellation disabled. Protect credentials and signing
+keys outside the checkout; run only reviewed, pinned source with the config's `clientRevision`
+updated to that exact commit. Export only the sanitized `report.json`, never the run directory.
+An ephemeral runner without restored durable history is not suitable for this guard.
+
+A runner and protected credentials must be provisioned before enabling recurring execution.
 
 ## Recorded gpgtest acceptance
 

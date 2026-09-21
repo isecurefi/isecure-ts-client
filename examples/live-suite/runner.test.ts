@@ -1,8 +1,8 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanupInterrupted, PrerequisiteUnavailable, runSuite, type Adapter } from "./runner.js";
+import { cleanupInterrupted, requireSettledRuns, PrerequisiteUnavailable, runSuite, type Adapter } from "./runner.js";
 const roots: string[] = [];
 async function location() {
   const root = await mkdtemp(path.join(os.tmpdir(), "live-suite-test-"));
@@ -112,5 +112,34 @@ describe("live suite orchestration", () => {
     await runSuite(a, dir);
     const contents = await readFile(path.join(dir, "report.json"), "utf8");
     expect(contents).not.toMatch(/password|secret|private key|payment payload/u);
+  });
+});
+
+describe("unattended live runs", () => {
+  it("admits clean history and a completed, cleaned-up run", async () => {
+    const directory = await location();
+    const root = path.dirname(directory);
+    await expect(requireSettledRuns(root)).resolves.toBeUndefined();
+    await runSuite(adapter(), path.join(root, "run-complete"));
+    await expect(requireSettledRuns(root)).resolves.toBeUndefined();
+  });
+  it.each(["missing", "failed", "cleanup-failed"])("refuses %s history before another payment", async (kind) => {
+    const root = path.dirname(await location());
+    const run = path.join(root, "run-prior");
+    if (kind === "missing") await mkdir(run);
+    else {
+      const a = adapter();
+      if (kind === "failed") a.journey = () => Promise.reject(new Error("uncertain"));
+      else a.cleanup = () => Promise.reject(new Error("cleanup"));
+      await runSuite(a, run);
+    }
+    await expect(requireSettledRuns(root)).rejects.toThrow("LIVE_HISTORY_REQUIRES_REVIEW");
+  });
+  it("refuses a report with missing checks even if its status says passed", async () => {
+    const root = path.dirname(await location());
+    const run = path.join(root, "run-prior");
+    const report = await runSuite(adapter(), run);
+    await writeFile(path.join(run, "report.json"), JSON.stringify({ ...report, checks: [] }));
+    await expect(requireSettledRuns(root)).rejects.toThrow("LIVE_HISTORY_REQUIRES_REVIEW");
   });
 });
