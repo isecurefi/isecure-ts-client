@@ -50,7 +50,7 @@ export function mergeTokens(current: SessionTokens, response: AuthResponse): Ses
   return {
     accessToken: response.AccessToken ?? current.accessToken,
     apiKey: response.ApiKey ?? current.apiKey,
-    expiresIn: response.ExpiresIn ?? current.expiresIn,
+    expiresIn: response.ExpiresIn === undefined ? current.expiresIn : String(response.ExpiresIn),
     idToken: response.IdToken ?? current.idToken,
     session: "Session" in response ? (response.Session ?? current.session) : current.session,
   };

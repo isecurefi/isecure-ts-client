@@ -31,10 +31,9 @@ export type InitLoginResponse = JsonResponse<"InitLogin", 200>;
 export type LoginRequest = JsonRequest<"Login">;
 
 /**
- * TOTP-related fields layered on top of the generated login/MFA shapes. They are
- * declared here (rather than regenerated into wsapi-v2.ts) so the SDK can add
- * Google Authenticator support ahead of the OpenAPI spec being regenerated; once
- * the spec carries them these intersections become redundant no-ops.
+ * Shared optional authentication fields for compatible high-level response types.
+ * The generated contract remains the exact REST reference; these fields also let
+ * existing callers represent intermediate verification and failure responses.
  */
 type TotpResponseFields = {
   /** Cognito challenge name echoed by login: `SMS_MFA`, `SOFTWARE_TOKEN_MFA`, or `SELECT_MFA_TYPE`. */
@@ -64,7 +63,7 @@ export interface SelectMfaRequest {
 }
 
 /** Response envelope for `PUT /session/{Email}/{Mode}/selectmfa`. */
-export type SelectMfaResponse = ApiResponse & TotpResponseFields;
+export type SelectMfaResponse = ApiResponse & Partial<JsonResponse<"SelectMFA", 200>> & TotpResponseFields;
 
 /**
  * Server-decided facts about the authenticated account (WS API 2.10.0):
@@ -73,14 +72,16 @@ export type SelectMfaResponse = ApiResponse & TotpResponseFields;
  * preview `Features`. Present on authenticated `Login`/`LoginMFA` responses.
  */
 export type SessionAccount = components["schemas"]["SessionAccountDescriptor"];
-export type LoginResponse = JsonResponse<"Login", 200> & TotpResponseFields;
+/** Accept legacy textual expiry values while the generated REST contract specifies integer seconds. */
+type CompatibleLoginResponse<T> = Omit<T, "ExpiresIn"> & { ExpiresIn?: number | string } & TotpResponseFields;
+export type LoginResponse = CompatibleLoginResponse<JsonResponse<"Login", 200>>;
 export type LoginMfaRequest = JsonRequest<"LoginMFA"> & {
   /** Echo the `ChallengeName` from the login response so the API answers the right factor. */
   ChallengeName?: string;
   /** Request TOTP enrollment: the response then also carries SecretCode/OtpauthUri/AccessToken. */
   SetupTOTP?: boolean;
 };
-export type LoginMfaResponse = JsonResponse<"LoginMFA", 200> & TotpResponseFields;
+export type LoginMfaResponse = CompatibleLoginResponse<JsonResponse<"LoginMFA", 200>>;
 
 export type VerifyTotpRequest = JsonRequest<"VerifyTOTP">;
 export type VerifyTotpResponse = JsonResponse<"VerifyTOTP", 200>;

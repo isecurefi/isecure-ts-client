@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { SUPPORTED_OPERATIONS, UNSUPPORTED_OPERATIONS, type OperationId } from "./api-types.js";
@@ -279,6 +280,18 @@ const contract = {
 } satisfies Record<OperationId, OperationContract>;
 
 describe("OpenAPI contract honesty", () => {
+  it("retains the exact upstream contract pinned in its source metadata", () => {
+    const source = JSON.parse(readFileSync(new URL("../../wsapi_v2.source.json", import.meta.url), "utf8")) as {
+      commit: string;
+      source: string;
+      sha256: string;
+    };
+    const bytes = readFileSync(new URL("../../wsapi_v2.json", import.meta.url));
+    expect(source.commit).toMatch(/^[a-f0-9]{40}$/);
+    expect(source.source).toBe(`https://raw.githubusercontent.com/isecurefi/wsapi-v2/${source.commit}/wsapi_v2.json`);
+    expect(createHash("sha256").update(bytes).digest("hex")).toBe(source.sha256);
+  });
+
   it("supports every operationId declared in wsapi_v2.json", () => {
     expect(operationIdsFromSpec()).toEqual([...SUPPORTED_OPERATIONS].sort());
     expect(Object.keys(contract).sort()).toEqual(operationIdsFromSpec());
