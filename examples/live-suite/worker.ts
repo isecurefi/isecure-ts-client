@@ -13,6 +13,8 @@ import {
 } from "../processing-manual-upload/processing-manual-upload.js";
 import { runProcessingSimulatorJourney } from "../processing-simulator-journey/processing-simulator-journey.js";
 
+import { assertRetainedFileTimes, verifyStableFileTimes } from "./timestamps.js";
+
 let phase = "fixture";
 
 function totp(secret: string): string {
@@ -205,10 +207,14 @@ async function main(): Promise<void> {
     if (enrolled.ResponseCode !== "00") throw new Error("Simulator enrollment failed");
   }
   await receipt("simulator-access");
+  phase = "file-timestamps-before";
+  const retainedFileTimes = await verifyStableFileTimes(uploader);
   phase = "payment-feedback-statement";
   await ensureAuthorizeKey(admin, await signingMaterial());
   const channels: ChannelClients = { admin, data, uploader };
   await runProcessingSimulatorJourney(channels, "balance-chain");
+  phase = "file-timestamps-after";
+  assertRetainedFileTimes(retainedFileTimes, await verifyStableFileTimes(uploader));
   await receipt("payment-feedback-statement");
 }
 main().catch(async (error: unknown) => {

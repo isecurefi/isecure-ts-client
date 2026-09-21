@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { lstat, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { cleanupInterrupted, PrerequisiteUnavailable, runSuite, type Adapter } from "./runner.js";
+import { cleanupInterrupted, requireSettledRuns, PrerequisiteUnavailable, runSuite, type Adapter } from "./runner.js";
 
 async function command(script: string, args: string[], milliseconds: number): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -31,9 +31,12 @@ async function main(): Promise<void> {
   if (process.versions.node.split(".")[0] !== "24") throw new Error("Node.js 24 is required");
   const args = process.argv.slice(2);
   const recover = args[0] === "cleanup";
-  const values = recover ? args.slice(1) : args;
+  const scheduled = args[0] === "scheduled";
+  const values = recover || scheduled ? args.slice(1) : args;
   if (values.length !== (recover ? 3 : 2))
-    throw new Error("Usage: test:live [cleanup] <ws-channel-api-root> <private-fixture-config.json> [run-directory]");
+    throw new Error(
+      "Usage: test:live [cleanup|scheduled] <ws-channel-api-root> <private-fixture-config.json> [run-directory]",
+    );
   const [backendRoot, config] = values as [string, string];
   if (!path.isAbsolute(backendRoot) || !path.isAbsolute(config)) throw new Error("Absolute paths are required");
   const operator = path.join(backendRoot, "scripts/live-suite-fixture.mjs");
@@ -43,6 +46,7 @@ async function main(): Promise<void> {
   const rootInfo = await lstat(root);
   if (!rootInfo.isDirectory() || rootInfo.isSymbolicLink() || (rootInfo.mode & 0o077) !== 0)
     throw new Error("Run root must be a private directory");
+  if (scheduled) await requireSettledRuns(root);
   const directory = recover ? path.resolve(values[2] ?? "") : path.join(root, `run-${randomUUID()}`);
   const driver = async (action: string) => {
     const code = await command(operator, [action, config, directory], 240000);

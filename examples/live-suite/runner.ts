@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export const CHECKS = [
@@ -100,4 +100,29 @@ export async function cleanupInterrupted(adapter: Adapter, directory: string): P
     JSON.stringify({ version: 1, status: "passed", finishedAt: new Date().toISOString() }) + "\n",
     { mode: 0o600 },
   );
+}
+
+/** Unattended invocations must stop until an operator reviews any incomplete or failed run. */
+export async function requireSettledRuns(root: string): Promise<void> {
+  for (const entry of await readdir(root, { withFileTypes: true })) {
+    if (!entry.name.startsWith("run-")) continue;
+    if (!entry.isDirectory() || entry.isSymbolicLink()) throw new Error("LIVE_HISTORY_REQUIRES_REVIEW");
+    let report: Report;
+    try {
+      report = JSON.parse(await readFile(path.join(root, entry.name, "report.json"), "utf8")) as Report;
+    } catch {
+      throw new Error("LIVE_HISTORY_REQUIRES_REVIEW");
+    }
+    if (
+      report.version !== 1 ||
+      report.environment !== "test" ||
+      report.status !== "passed" ||
+      report.cleanup !== "passed" ||
+      !Number.isFinite(Date.parse(report.finishedAt)) ||
+      !Array.isArray(report.checks) ||
+      report.checks.length !== CHECKS.length ||
+      !CHECKS.every((name, i) => report.checks[i]?.name === name && report.checks[i]?.status === "passed")
+    )
+      throw new Error("LIVE_HISTORY_REQUIRES_REVIEW");
+  }
 }
