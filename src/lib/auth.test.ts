@@ -3,6 +3,12 @@ import { classifyAuthResponse, classifyVerificationResponse, mergeTokens } from 
 import type { LoginResponse } from "./api-types.js";
 
 describe("auth state classification", () => {
+  it("normalizes numeric REST expiry while accepting legacy textual expiry", () => {
+    for (const ExpiresIn of [3600, "3600"]) {
+      expect(mergeTokens({}, { ResponseCode: "00", ResponseText: "Login OK", ExpiresIn }).expiresIn).toBe("3600");
+    }
+  });
+
   it("merges session tokens without losing existing values", () => {
     expect(
       mergeTokens(

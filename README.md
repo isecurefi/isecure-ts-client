@@ -2,7 +2,7 @@
 
 TypeScript SDK for the ISECure WS Channel API.
 
-The checked-in OpenAPI contract is [`wsapi_v2.json`](wsapi_v2.json). The live source at <https://isecure.fi/wsapi_v2.json> currently matches this repository copy and reports API version `v2.6.0`.
+The checked-in OpenAPI contract is [`wsapi_v2.json`](wsapi_v2.json), pinned to the upstream revision in [`wsapi_v2.source.json`](wsapi_v2.source.json). It describes API `v2.12.0`. The [live REST API reference](https://www.isecure.fi/wsapi_v2/) documents the same operations; its published examples include website sanitization and SDK samples.
 
 ## Install
 
@@ -134,11 +134,30 @@ if (state.status === "needs_phone_verification") {
 
 ### Enrolling Google Authenticator (TOTP)
 
-Request enrollment while completing an admin login, render the returned QR
-(`otpauthUri`) or secret, then confirm the first code. The backend's enrollment
-policy determines whether TOTP becomes preferred or both factors are offered on
-the next login. Follow the returned challenge; SMS is selectable only when the
-backend offers factor selection.
+An existing SMS user can start using Google Authenticator or another TOTP app without
+registering again. First finish phone and email verification. Start a fresh admin
+login and submit its SMS code with `{ setupTotp: true }`; do not reuse a completed
+MFA session. If login offers `needs_mfa_selection`, choose `"sms"` only if it is
+included in `state.methods`.
+
+Show the returned `otpauthUri` as a QR code, or use `secret` for manual entry. Scan
+it with the authenticator, then confirm a current six-digit code with `verifyTotp`.
+Enrollment is complete only when its result is `verification_accepted`. If login
+instead requests phone or email verification, finish that step and start a fresh
+login before requesting enrollment again.
+
+As verified on 21 September 2026, production makes TOTP preferred for new
+enrollments. Test enables both factors without a preference. Both keep SMS enabled;
+existing accounts retain their preferences. On subsequent logins, follow
+`needs_mfa.method`. Offer a choice only for `needs_mfa_selection`, using
+`selectMfaType` and the returned state. Selection applies to that login and does
+not change stored preferences.
+
+A direct TOTP challenge cannot be switched to SMS. If the authenticator is lost
+and SMS is not offered, contact support. The public API has no MFA-reset or
+backup-code endpoint; password reset does not reset MFA. See the live REST
+reference's **Initial registration with TOTP**, **Login after TOTP enrollment**,
+and **Interrupted enrollment and lost authenticators** sections.
 
 ```ts
 // Complete login with the SMS code AND ask to set up TOTP in one step:

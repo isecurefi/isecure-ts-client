@@ -46,19 +46,19 @@ export interface paths {
         get: operations["InitRegister"];
         /**
          * Register
-         * @description You need to register both *admin* and *data* accounts with the same email address. Both accounts share the same data, but are used for different purposes. *Admin* account must be registered first, then *data* account.
+         * @description Register the *admin* account first. For automated file exchange, also register a *data* account with the same email address. Both accounts share the same data, but are used for different purposes. *Admin* account must be registered first, then *data* account.
          *
          *     *Admin* account is used to configure setup with **Certs** and **Pgp** operations, while the *data* account is used with **Files** operations only. Both accounts use **Account** and **Session** operations.
          *
          *     *Admin* account always requires MFA during login. SMS MFA remains available, and TOTP can be enrolled after SMS bootstrap. *Data* account does not require MFA. Generally, the *data* account is considered *read-only* when no PGP keys are configured, since PGP Keys are used to verify file upload signatures and are thus required to successfully upload files with **Files** *UploadFile* operation.
          *
-         *     Registrations are independent for both accounts, *admin* and *data* and both require phone number and email verifications.
+         *     The *admin* and *data* modes are separate Cognito users. Phone and email must be verified for a full session in either mode. Before registering an additional mode, the existing account must have both verifications recorded. Complete any verification requested for the new mode.
          *
          *     `email` is the login username for both accounts and `mode` defines the selected "mode" for the login, i.e. *admin* or *data*.
          *
          *     Before registration client must fetch challenge from API (see Account InitRegister operation) and pass it back within the `ChResp` parameter.
          *
-         *     The following parameters `name`, `phone`, and `company` are required and must be valid (`phone`, `email`) as they need to be confirmed before registration becomes successful and login possible.
+         *     The following parameters `name`, `phone`, and `company` are required and must be valid (`phone`, `email`) because phone and email ownership must be verified before a full API session is issued.
          *
          *     Client must RSA encrypt (OAEP padding) the _password_ and the challenge _timestamp_ as string in the form `password||timestamp`, base64 encode it and provide the resulting string as `Encrypted` parameter. The RSA encryption can be done e.g. for illustration purposes within command line with openssl rsautl:
          *     ```
@@ -103,11 +103,17 @@ export interface paths {
          *     **NOTE:** Password must be at least 20 characters long, have lower and upper case letters, numbers, and special characters.
          *
          *     **NOTE:** Phone number must be provided with country code, e.g. `+358404982201`.
+         *
+         *     **Normal admin sequence:** `InitRegister` → `Register` → `VerifyPhone` (registration SMS) → `InitLogin` → `Login` → `LoginMFA` (new SMS) → `VerifyEmail` → fresh login and MFA. Registration enables SMS MFA automatically; the registration SMS confirms signup, not MFA activation. See **Admin registration and first login** for the diagram, response states, and lost-code recovery.
          */
         put: operations["Register"];
         /**
          * VerifyEmail
-         * @description Provide the _Code_ received by email and the _AccessToken_ received during login. The access token is only used to complete verification and should not be persisted.
+         * @description Provide the _Code_ received by email and the _AccessToken_ returned by `Login` or `LoginMFA` with `Login OK. Verify email address.`. For a normal admin SMS login, this prompt follows successful `LoginMFA`; the initial `Login` first returns an MFA challenge.
+         *
+         *     The backend requests the email code when authentication reaches the unverified-email check. This is a separate code from registration SMS and login MFA. Keep `AccessToken` in memory and send it in the request body, not as the business API `Authorization` header.
+         *
+         *     On `Email verification successful.`, start a fresh `InitLogin` → `Login` cycle and complete admin MFA again. Verification does not return an `IdToken` or resume the previous MFA session. If the code is lost or the token is unavailable, repeat login and MFA to request another email code and obtain an `AccessToken`.
          *
          *     **NOTE:** Phone and email verification bypass is an integrator-level policy option for deployments where the integrator has already verified those attributes. Contact ISECure support if this is required for your API key.
          */
@@ -128,6 +134,8 @@ export interface paths {
         /**
          * InitPasswordReset
          * @description Start password reset for the selected email and mode. Cognito sends a confirmation code to the configured recovery channel. This flow is separate from admin login MFA.
+         *
+         *     A successful response says `Password reset started`; it contains no encryption `Challenge`. After receiving the recovery code, call `InitLogin` for a fresh challenge, then submit `PasswordReset`. Do not call this endpoint again to obtain a challenge: another call requests another recovery code.
          */
         get: operations["InitPasswordReset"];
         put?: never;
@@ -136,6 +144,8 @@ export interface paths {
          * @description Set a new _password_ for the selected email and mode. Provide the confirmation _Code_ from the password reset flow.
          *
          *     **NOTE:** The new password must be RSA encrypted with the challenge timestamp; see Register for encryption details.
+         *
+         *     Obtain `Code` from `InitPasswordReset`, and fetch `ChResp` separately with `InitLogin` for the same email and mode. `InitPasswordReset` does not return a challenge. After success, update the client password and start a fresh login; admin MFA remains required. See **Password recovery**.
          */
         post: operations["PasswordReset"];
         delete?: never;
@@ -155,7 +165,11 @@ export interface paths {
         put?: never;
         /**
          * VerifyPhone
-         * @description Confirm the phone number for the _Email_ and _Mode_ user with the _Code_ received by SMS.
+         * @description Confirm signup for the _Email_ and _Mode_ user using the **registration SMS code** in `Code`. Call this after `Register` returns `Sign up successful. Verify phone number.`, before admin login and MFA. The `Phone` path parameter is the registered phone number, not a change-phone operation.
+         *
+         *     This operation calls signup confirmation. It does not accept a login MFA code, does not activate MFA, and does not return an authenticated session. Registration already enables SMS MFA for admin accounts. On `Phone confirmation successful.`, start `InitLogin` → `Login`.
+         *
+         *     If the registration SMS is lost while signup is unconfirmed, start a login attempt to request another signup-confirmation code, then submit that code here. Already-confirmed accounts with an unverified phone attribute require support; this operation does not verify a phone attribute using an `AccessToken`.
          *
          *     **NOTE:** Phone and email verification bypass is an integrator-level policy option for deployments where the integrator has already verified those attributes. Contact ISECure support if this is required for your API key.
          */
@@ -266,6 +280,26 @@ export interface paths {
          * @description Provide WS-Channel user id, _WsUserId_, _Company_, and PIN _Code_ for _Bank_ certificate enrollment. _Company_ must match with the contract with the bank and is part of enrollment process. Note that certificate private key is securely generated and stored encrypted with AWS KMS encrypted authentication on API side. Certificates are automatically renewed when needed.
          *
          *     **NOTE:** For OP bank, ensure that you set the PIN code blocks 1 and 2 in correct order. If not initially in correct order, bank will lock the registration and you need to call them for unlock.
+         *
+         *     ### Simulator enrollment in the test environment
+         *
+         *     For `Bank: "simulator"`, use the test base URL `https://ws-api.test.isecure.fi/v2`. Bank Simulator is a separately enabled paid tenant feature; registration does not grant access. Complete admin login and MFA before calling this operation.
+         *
+         *     `Code`, `WsUserId`, and `Company` are still required. Generate your own synthetic `WsUserId` (1–16 printable ASCII bytes) and fresh `Code` (16–32 printable ASCII bytes, no whitespace). Use the registered test account's `Company`. No bank-issued credentials or separate credential-retrieval endpoint are involved. With an authenticated `adminClient` configured for the test API and `Bank: "simulator"`:
+         *
+         *     ~~~ts
+         *     const suffix = crypto.randomUUID().replaceAll("-", "");
+         *     const result = await adminClient.enrollCert({
+         *       Company: adminClient.props.Company,
+         *       WsUserId: `SIM-${suffix.slice(0, 12)}`,
+         *       Code: `SIM-${suffix.slice(0, 24)}`,
+         *     });
+         *     if (result.ResponseCode !== "00") {
+         *       throw new Error(result.ResponseText);
+         *     }
+         *     ~~~
+         *
+         *     Access enablement does not enroll a certificate automatically. See **Simulator bank enrollment (test only)** in the introduction and the [Bank Simulator guide](https://www.isecure.fi/en/bank-simulator/) for the full workflow.
          */
         post: operations["EnrollCert"];
         /**
@@ -425,7 +459,7 @@ export interface paths {
         put?: never;
         /**
          * Login
-         * @description After `getchallenge`, call `login` with _Email_, _Mode_, and RSA encrypted _admin_ or _data_ account _password_ and _challenge timestamp_. For further API calls (requiring authorization), include the received _IdToken_ into the Authorization header of the request (pass idtoken as required parameter with the client SDK API calls). The _IdToken_ expires in _ExpiresIn_ seconds, after which new login must be performed.
+         * @description After `InitLogin`, call `Login` with _Email_, _Mode_, and RSA encrypted _admin_ or _data_ account _password_ and _challenge timestamp_. For further API calls (requiring authorization), include the received _IdToken_ into the Authorization header of the request (pass idtoken as required parameter with the client SDK API calls). The _IdToken_ expires in _ExpiresIn_ seconds, after which new login must be performed.
          *
          *     **NOTE:** In case MFA _Code_ is required, the call returns _Session_, _ChallengeName_, _ResponseCode_, and _ResponseText_ as the login process continues with the _LoginMFA_ API call. Echo _ChallengeName_ back to `LoginMFA` so the API can distinguish SMS (`SMS_MFA`) from authenticator/TOTP (`SOFTWARE_TOKEN_MFA`) codes.
          *
@@ -436,13 +470,40 @@ export interface paths {
          *     TIMESTAMP=$(echo $CHALLENGE | cut -f 2 -d \|)
          *     ENCRYPTED=$(echo -n testPassword..123455677098811\|\|$TIMESTAMP | openssl rsautl -oaep -encrypt -pubin -inkey prod.pem | base64)
          *     ~~~
+         *
+         *     **Login is a sequence, not a single success flag.** `ResponseCode: "00"` can mean MFA or verification is still required. For normal admin registration, complete `VerifyPhone` first. An unconfirmed signup instead triggers another registration SMS; submit it to `VerifyPhone`, not `LoginMFA`. `SELECT_MFA_TYPE` requires `SelectMFA` before `LoginMFA`. Only a response containing `IdToken` and `ApiKey` establishes an API session. See **Recognizing the next login step** and **Lost codes and interrupted registration**.
+         *
+         *     **Example: MFA required**
+         *
+         *     ~~~json
+         *     {
+         *       "ResponseCode": "00",
+         *       "ResponseText": "Give SMS code",
+         *       "Session": "example-mfa-session",
+         *       "ChallengeName": "SMS_MFA"
+         *     }
+         *     ~~~
+         *
+         *     **Example: email verification required (after authentication)**
+         *
+         *     ~~~json
+         *     {
+         *       "ResponseCode": "00",
+         *       "ResponseText": "Login OK. Verify email address.",
+         *       "AccessToken": "example-access-token"
+         *     }
+         *     ~~~
          */
         post: operations["Login"];
         /**
          * Logout
-         * @description Logout user.
+         * @description Request Cognito global sign-out for the authenticated email and mode, using `Authorization: <IdToken>` and `x-api-key: <ApiKey>`. There is no optional `AccessToken` parameter.
          *
-         *     **NOTE**: AWS Cognito allows user logout, but the received authorization _IdToken_ **is still valid**. When the optional _AccessToken_ parameter is also provided, the _IdToken_ is also revoked.
+         *     Discard local session and enrollment material when signing out. The SDK clears its local session after the request returns. If it throws, discard the client instance and clear the application session explicitly. Do not interpret a transport or backend failure as confirmation that server-side sign-out completed.
+         *
+         *     Previously issued JWTs can still be accepted until expiry by services that validate signature and expiration without checking revocation. Do not rely on logout for immediate invalidation at every API boundary. See **Logout and token lifetime**.
+         *
+         *     Successful sign-out returns `ResponseCode: "00"`. A Cognito sign-out failure returns HTTP 400 with `ResponseCode: "01"` and `ResponseText: "Failed to sign out"`.
          */
         delete: operations["Logout"];
         options?: never;
@@ -460,7 +521,40 @@ export interface paths {
         get?: never;
         /**
          * LoginMFA
-         * @description Send MFA _Code_ along with the previously received _Session_ token. For SMS MFA use the SMS code; for software-token MFA use the authenticator/TOTP code and echo `ChallengeName: SOFTWARE_TOKEN_MFA`. If _Email_ has not been yet verified, successful login provides only _ResponseCode_, _ResponseText_, and an _AccessToken_ that must be used to verify email address. If email is already verified and the login succeeds, add the _IdToken_ from the login response as Authorization header in API requests requiring authorization (i.e. pass as parameter to client SDK API calls). _IdToken_ expires in _ExpiresIn_ seconds.
+         * @description Submit the code for the current login challenge with the latest `Session` and `ChallengeName` from `Login` or `SelectMFA`. For `SMS_MFA`, use the **login SMS code**, not the registration SMS code. For `SOFTWARE_TOKEN_MFA`, use the current authenticator code. A lost SMS or expired session requires a fresh login cycle.
+         *
+         *     If phone is verified but email is unverified, successful MFA requests an email verification code and returns only `ResponseCode`, `ResponseText: "Login OK. Verify email address."`, and `AccessToken`. Submit the email code and token to `VerifyEmail`, then start a fresh login and MFA cycle. No `IdToken`, `ApiKey`, or `Account` is returned at this intermediate step.
+         *
+         *     Once verification and MFA are complete, the response includes `IdToken`, `ApiKey`, `ExpiresIn`, and `Account`. Send `IdToken` as `Authorization` and `ApiKey` as `x-api-key` for protected operations. The session expires after `ExpiresIn` seconds.
+         *
+         *     For optional TOTP enrollment, include the boolean `SetupTOTP: true` on this same MFA submission. Enrollment details are returned only after phone and email verification are complete. Do not reuse an already-consumed `Session` to request enrollment.
+         *
+         *     **Example: authenticated session**
+         *
+         *     ~~~json
+         *     {
+         *       "ResponseCode": "00",
+         *       "ResponseText": "Login OK",
+         *       "IdToken": "example-id-token",
+         *       "ApiKey": "example-integrator-api-key",
+         *       "ExpiresIn": 3600,
+         *       "Account": {
+         *         "Type": "customer",
+         *         "Entitlements": [],
+         *         "Features": []
+         *       }
+         *     }
+         *     ~~~
+         *
+         *     **Example: email verification required (after authentication)**
+         *
+         *     ~~~json
+         *     {
+         *       "ResponseCode": "00",
+         *       "ResponseText": "Login OK. Verify email address.",
+         *       "AccessToken": "example-access-token"
+         *     }
+         *     ~~~
          */
         put: operations["LoginMFA"];
         post?: never;
@@ -481,6 +575,8 @@ export interface paths {
         /**
          * SelectMFA
          * @description When login returns a `SELECT_MFA_TYPE` challenge (the account has both SMS and authenticator MFA enabled with neither preferred), choose which factor to use by sending the previously received _Session_ and the chosen _MfaType_. Returns the chosen factor's challenge (`SMS_MFA` or `SOFTWARE_TOKEN_MFA`) with a fresh _Session_; complete it with `LoginMFA`. Choosing `SMS_MFA` sends the SMS.
+         *
+         *     Offer only factors returned in `MfaOptions`. Selection applies to this login and does not change stored preferences. A direct `SOFTWARE_TOKEN_MFA` challenge cannot be switched to SMS with this operation. See **Login after TOTP enrollment** for both login paths.
          */
         put: operations["SelectMFA"];
         post?: never;
@@ -500,7 +596,13 @@ export interface paths {
         get?: never;
         /**
          * VerifyTOTP
-         * @description Confirm Google Authenticator (TOTP) enrollment. After a `LoginMFA` call with `SetupTOTP: true`, scan the returned `OtpauthUri`/`SecretCode` into an authenticator app and submit the generated 6-digit _Code_ together with the _AccessToken_ from that login response. On success, TOTP becomes the preferred MFA factor (SMS remains enabled as a fallback). No phone number parameter is required.
+         * @description Complete TOTP enrollment started by a successful `LoginMFA` request with `SetupTOTP: true`. Submit the current six-digit authenticator `Code` and the enrollment `AccessToken` in the body. The token must belong to the same `Email` and `admin` account named in the route. No phone parameter is required.
+         *
+         *     Scanning the QR code or receiving an authenticated session does not complete enrollment. Require `ResponseCode: "00"` and `TOTP enabled`; with the TypeScript SDK, require `status: "verification_accepted"`. Failed verification can be a logical failure response, while transport and some backend failures throw SDK errors.
+         *
+         *     On success, SMS and TOTP remain enabled. Depending on deployment policy, TOTP becomes preferred or neither factor is preferred. In the test environment, new enrollments use no preference and subsequent login offers `SELECT_MFA_TYPE`. Follow the returned challenge; existing accounts can retain different preferences. `SelectMFA` is available only for a selection challenge, not as an automatic fallback from a direct TOTP challenge.
+         *
+         *     For invalid codes, expired enrollment tokens, partial preference failures, or a lost authenticator, see **Interrupted enrollment and lost authenticators**. Keep enrollment material in memory and out of logs.
          */
         put: operations["VerifyTOTP"];
         post?: never;
@@ -740,11 +842,11 @@ export interface components {
          *     }
          */
         EnrollCertReq: {
-            /** @description Full PIN code from bank (e.g. combined from SMS and letter) */
+            /** @description Full PIN code issued by the real bank (e.g. combined from SMS and letter). For the test-only `simulator`, generate a fresh synthetic code: 16–32 printable ASCII bytes without whitespace or control characters; no bank-issued PIN is needed. */
             Code: string;
-            /** @description Company name as registered with bank (e.g. full capital letters, see contract). **NOTE**: The value of this field is not compared with the account company name set during registration because the format for cert enrollment differs between banks. */
+            /** @description For real banks, the company name as registered with the bank (e.g. full capital letters; see the bank contract). Real-bank enrollment does not compare this field with the account company name because formats differ between banks. For the test-only `simulator`, use the company value from the registered test account. */
             Company: string;
-            /** @description *SEPA WebServices* channel user id as in contract with bank */
+            /** @description *SEPA WebServices* channel user ID from the real-bank contract. For the test-only `simulator`, generate a synthetic identifier: 1–16 printable ASCII bytes without control characters. */
             WsUserId: string;
         };
         ErrorResponse: {
@@ -937,7 +1039,7 @@ export interface components {
          *       "ChallengeName": "SMS_MFA",
          *       "Code": "123456",
          *       "Session": "...",
-         *       "SetupTOTP": "string"
+         *       "SetupTOTP": false
          *     }
          */
         LoginMFAReq: {
@@ -947,53 +1049,36 @@ export interface components {
             Code: string;
             /** @description Session token from login response */
             Session: string;
-            /** @description When `true`, a successful login also returns `SecretCode`, `OtpauthUri`, and `AccessToken` to begin Google Authenticator (TOTP) enrollment. Optional */
+            /** @description Optional boolean. Set true on the current MFA submission to start TOTP enrollment after phone and email verification. An intermediate verification response contains no enrollment secret. */
             SetupTOTP?: boolean;
         };
         /**
          * @example {
-         *       "AccessToken": "eyJraWQiO...CzzcdcdAdEzKIcJPR7Fda0A",
          *       "Account": {
-         *         "Entitlements": [
-         *           "bank-simulator"
-         *         ],
+         *         "Entitlements": [],
          *         "Features": [],
-         *         "Type": "integrator"
+         *         "Type": "customer"
          *       },
-         *       "ApiKey": "4vN6hGHrav31smM0Ha1k15MDlZKOEGn43UToWTt2",
-         *       "ExpiresIn": "3600",
-         *       "IdToken": "eyJraWQiOiJ...jExlzbFU4GlGtml7AWQHDYi05IpA",
-         *       "OtpauthUri": "otpauth://totp/ISECure:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=ISECure",
-         *       "ResponseCode": "..",
-         *       "ResponseText": "..",
-         *       "SecretCode": "JBSWY3DPEHPK3PXP"
+         *       "ApiKey": "example-integrator-api-key",
+         *       "ExpiresIn": 3600,
+         *       "IdToken": "example-id-token",
+         *       "ResponseCode": "00",
+         *       "ResponseText": "Login OK"
          *     }
          */
         LoginMFAResp: {
-            /**
-             * @description Access token
-             *     - **Only** present when Email verification is required, or when `SetupTOTP` was requested (held by the client in memory only, posted back to `VerifyTOTP`)
-             */
+            /** @description Token for the indicated verification step; keep in memory. Not a business API IdToken. Also returned with TOTP enrollment details when requested after all verification checks pass. */
             AccessToken?: string;
             Account?: components["schemas"]["SessionAccountDescriptor"];
-            /**
-             * @description Integrator API Key
-             *     - **Not** present when Email verification is required
-             */
+            /** @description Integrator API key. Present only on an authenticated session, not on MFA or verification prompts. */
             ApiKey?: string;
-            /**
-             * @description Session expiration time
-             *     - **Not** present when Email verification is required
-             */
-            ExpiresIn?: string;
-            /**
-             * @description ID token
-             *     - **Not** present when Email verification is required
-             */
+            /** @description Session lifetime in seconds. Present only on an authenticated session, not on MFA or verification prompts. */
+            ExpiresIn?: number;
+            /** @description ID token for the Authorization header. Present only on an authenticated session, not on MFA or verification prompts. */
             IdToken?: string;
             /**
              * @description `otpauth://` URI for rendering the enrollment QR code
-             *     - **Only** present when `SetupTOTP` was requested
+             *     - **Only** present when `SetupTOTP` was requested and phone and email verification have already completed
              */
             OtpauthUri?: string;
             /** @description Two digit response code in string format */
@@ -1002,7 +1087,7 @@ export interface components {
             ResponseText: string;
             /**
              * @description TOTP shared secret
-             *     - **Only** present when `SetupTOTP` was requested
+             *     - **Only** present when `SetupTOTP` was requested and phone and email verification have already completed
              */
             SecretCode?: string;
         };
@@ -1020,60 +1105,34 @@ export interface components {
         };
         /**
          * @example {
-         *       "AccessToken": "eyJraWQiO...CzzcdcdAdEzKIcJPR7Fda0A",
-         *       "Account": {
-         *         "Entitlements": [
-         *           "bank-simulator"
-         *         ],
-         *         "Features": [],
-         *         "Type": "integrator"
-         *       },
-         *       "ApiKey": "4vN6hGHrav31smM0Ha1k15MDlZKOEGn43UToWTt2",
-         *       "ChallengeName": "SOFTWARE_TOKEN_MFA",
-         *       "ExpiresIn": "3600",
-         *       "IdToken": "eyJraWQiOiJ...jExlzbFU4GlGtml7AWQHDYi05IpA",
-         *       "ResponseCode": "..",
-         *       "ResponseText": "..",
-         *       "Session": "xxxxxxxx"
+         *       "ChallengeName": "SMS_MFA",
+         *       "ResponseCode": "00",
+         *       "ResponseText": "Give SMS code",
+         *       "Session": "example-mfa-session"
          *     }
          */
         LoginResp: {
-            /**
-             * @description Access token
-             *     - **Not** present on MFA login initiation, i.e. `admin` mode
-             *     - **Only** present when Email verification is required
-             */
+            /** @description Token for the indicated verification step; keep in memory. Not a business API IdToken. */
             AccessToken?: string;
             Account?: components["schemas"]["SessionAccountDescriptor"];
-            /**
-             * @description Integrator API Key
-             *     - **Not** present on MFA login initiation, i.e. `admin` mode
-             */
+            /** @description Integrator API key. Present only on an authenticated session, not on MFA or verification prompts. */
             ApiKey?: string;
-            /**
-             * @description MFA challenge returned by Cognito
-             *     - **Only** present on MFA login initiation (`SMS_MFA` or `SOFTWARE_TOKEN_MFA`)
-             */
+            /** @description Next MFA step: SMS_MFA, SOFTWARE_TOKEN_MFA, or SELECT_MFA_TYPE. Not present on an authenticated session. */
             ChallengeName?: string;
-            /**
-             * @description Session expiration time
-             *     - **Not** present on MFA login initiation, i.e. `admin` mode)
-             */
-            ExpiresIn?: string;
-            /**
-             * @description ID token
-             *     - **Not** present on MFA login initiation, i.e. `admin` mode
-             */
+            /** @description Session lifetime in seconds. Present only on an authenticated session, not on MFA or verification prompts. */
+            ExpiresIn?: number;
+            /** @description ID token for the Authorization header. Present only on an authenticated session, not on MFA or verification prompts. */
             IdToken?: string;
+            /** @description Offered factors when ChallengeName is SELECT_MFA_TYPE, for example SMS_MFA and SOFTWARE_TOKEN_MFA. */
+            MfaOptions?: string[];
             /** @description Two digit response code in string format */
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
-            /**
-             * @description Session token
-             *     - **Only** present on MFA login initiation, i.e. `admin` mode)
-             */
+            /** @description Current MFA challenge session. Pass to SelectMFA or LoginMFA as indicated; do not reuse after completing the challenge. */
             Session?: string;
+            /** @description Masked SMS destination when returned with SELECT_MFA_TYPE; may be empty. */
+            SmsDestination?: string;
         };
         /**
          * @example {
@@ -1131,9 +1190,9 @@ export interface components {
         };
         /**
          * @example {
-         *       "ApiKey": "4vN6hGHrav31smM0Ha1k15MDlZKOEGn43UToWTt2",
-         *       "ResponseCode": "..",
-         *       "ResponseText": ".."
+         *       "ApiKey": "example-integrator-api-key",
+         *       "ResponseCode": "00",
+         *       "ResponseText": "Sign up successful. Verify phone number."
          *     }
          */
         RegisterResp: {
@@ -1188,9 +1247,30 @@ export interface components {
          *     }
          */
         SelectMFAReq: {
-            /** @description Chosen MFA factor: `SMS_MFA` or `SOFTWARE_TOKEN_MFA` */
-            MfaType: string;
+            /**
+             * @description Chosen MFA factor: `SMS_MFA` or `SOFTWARE_TOKEN_MFA`
+             * @enum {string}
+             */
+            MfaType: "SMS_MFA" | "SOFTWARE_TOKEN_MFA";
             /** @description Session token from the SELECT_MFA_TYPE login response */
+            Session: string;
+        };
+        /**
+         * @example {
+         *       "ChallengeName": "SOFTWARE_TOKEN_MFA",
+         *       "ResponseCode": "00",
+         *       "ResponseText": "Give authenticator code",
+         *       "Session": "example-selected-mfa-session"
+         *     }
+         */
+        SelectMFAResp: {
+            /** @description Selected factor challenge: SMS_MFA or SOFTWARE_TOKEN_MFA. Echo this in LoginMFA. */
+            ChallengeName: string;
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+            /** @description New challenge session returned after selecting the factor. Use this session in LoginMFA. */
             Session: string;
         };
         /** @description Server-decided facts about the authenticated account for client presentation. Authorization is enforced by each operation regardless of these values. */
@@ -1268,8 +1348,11 @@ export interface components {
         UploadKeyReq: {
             /** @description ASCII armored PGP Key */
             PgpKey: string;
-            /** @description PGP key purpose, i.e. `export` (exporting cert private key) or `authorize` (upload content authorization verification). */
-            PgpKeyPurpose: string;
+            /**
+             * @description PGP key purpose, i.e. `export` (exporting cert private key) or `authorize` (upload content authorization verification).
+             * @enum {string}
+             */
+            PgpKeyPurpose: "export" | "authorize";
         };
         /**
          * @example {
@@ -1289,7 +1372,7 @@ export interface components {
          *     }
          */
         VerifyPhoneReq: {
-            /** @description Code from SMS */
+            /** @description Registration SMS confirmation code. Not a login SMS MFA code. */
             Code: string;
         };
         /**
@@ -2197,7 +2280,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
             };
             cookie?: never;
@@ -2348,7 +2431,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
             };
             cookie?: never;
@@ -2417,7 +2500,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
             };
             cookie?: never;
@@ -2491,7 +2574,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
                 /** @description File type from list files */
                 FileType: string;
@@ -2564,7 +2647,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
                 /** @description File reference *id* from list files */
                 FileType: string;
@@ -3080,8 +3163,8 @@ export interface operations {
             path: {
                 /** @description Email address as the account username, e.g. `user@example.com` */
                 Email: string;
-                /** @description Administer account with `admin` mode, exchange files with `data` mode */
-                Mode: "admin" | "data";
+                /** @description MFA login is an admin-mode operation. */
+                Mode: "admin";
             };
             cookie?: never;
         };
@@ -3150,7 +3233,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Response"];
+                    "application/json": components["schemas"]["SelectMFAResp"];
                 };
             };
             /** @description Request validation error */
