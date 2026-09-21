@@ -1,0 +1,56 @@
+name: Gpgtest live API suite
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gpgtest-live-api-fixture
+  cancel-in-progress: false
+
+jobs:
+  live:
+    # Disabled until an operator provisions the runner, pinned checkouts and private fixture.
+    if: github.ref == 'refs/heads/main' && vars.ISECURE_LIVE_SUITE_ENABLED == 'true'
+    environment: gpgtest
+    runs-on: [self-hosted, isecure-gpgtest]
+    timeout-minutes: 25
+    env:
+      ISECURE_SDK_ROOT: ${{ vars.ISECURE_SDK_ROOT }}
+      ISECURE_SDK_REVISION: ${{ vars.ISECURE_SDK_REVISION }}
+      ISECURE_WSAPI_ROOT: ${{ vars.ISECURE_WSAPI_ROOT }}
+      ISECURE_WSAPI_REVISION: ${{ vars.ISECURE_WSAPI_REVISION }}
+      ISECURE_LIVE_CONFIG: ${{ vars.ISECURE_LIVE_CONFIG }}
+      ISECURE_LIVE_WORK_DIR: ${{ vars.ISECURE_LIVE_WORK_DIR }}
+      AWS_PROFILE: dforsber
+    steps:
+      # No checkout, dependency installation or secrets materialization on the credentialed runner.
+      # The operator provisions exact reviewed source, compiled examples and durable private history.
+      - name: Verify pinned runner inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e 'if (process.versions.node.split(".")[0] !== "24") process.exit(1)'
+          for name in ISECURE_SDK_ROOT ISECURE_WSAPI_ROOT ISECURE_LIVE_CONFIG ISECURE_LIVE_WORK_DIR; do
+            value="${!name}"
+            [[ "$value" == /* ]] || { echo "Absolute runner paths are required"; exit 1; }
+          done
+          for name in ISECURE_SDK_REVISION ISECURE_WSAPI_REVISION; do
+            [[ "${!name}" =~ ^[a-f0-9]{40}$ ]] || { echo "Exact revisions are required"; exit 1; }
+          done
+          test "$(git -C "$ISECURE_SDK_ROOT" rev-parse HEAD)" = "$ISECURE_SDK_REVISION"
+          test "$(git -C "$ISECURE_WSAPI_ROOT" rev-parse HEAD)" = "$ISECURE_WSAPI_REVISION"
+          git -C "$ISECURE_SDK_ROOT" diff --quiet HEAD
+          git -C "$ISECURE_WSAPI_ROOT" diff --quiet HEAD
+          test -d "$ISECURE_LIVE_WORK_DIR"
+      - name: Run once with retained-history guard and fixture cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$ISECURE_LIVE_WORK_DIR"
+          node "$ISECURE_SDK_ROOT/dist-examples/examples/live-suite/cli.js" scheduled \
+            "$ISECURE_WSAPI_ROOT" "$ISECURE_LIVE_CONFIG"
