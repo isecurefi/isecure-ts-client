@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0 (2026-09-22)
+
+- Add `listAccountUsage()` for authenticated daily and monthly distinct observed bank accounts, preserving server-decided scope and explicit missing/partial coverage.
+
 ## [2.7.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.7.1...isecure-ts-client-v2.7.2) (2026-09-21)
 
 ### Bug Fixes

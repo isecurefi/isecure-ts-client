@@ -112,6 +112,8 @@ export type AuditEventDescriptor = components["schemas"]["AuditEventDescriptor"]
 export type ListAuditEventsResponse = JsonResponse<"ListAuditEvents", 200>;
 /** Optional scope, UTC time range, action/outcome filters and opaque pagination cursor. */
 export type ListAuditEventsQuery = NonNullable<operations["ListAuditEvents"]["parameters"]["query"]>;
+export type ListAccountUsageResponse = JsonResponse<"ListAccountUsage", 200>;
+export type ListAccountUsageQuery = NonNullable<operations["ListAccountUsage"]["parameters"]["query"]>;
 export type RetireCertResponse = JsonResponse<"RetireCert", 200>;
 /** Optional `Account` query: the integrator API key owner retiring a customer account's certificate. */
 export interface RetireCertQuery {
@@ -152,6 +154,7 @@ export const SUPPORTED_OPERATIONS = [
   "DeleteFile",
   "ListAccounts",
   "ListAuditEvents",
+  "ListAccountUsage",
   "DeleteAccount",
   "ListKeys",
   "DeleteKey",

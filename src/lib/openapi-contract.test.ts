@@ -235,6 +235,14 @@ const contract = {
         NextToken: "opaque-next-page",
       }),
   },
+  ListAccountUsage: {
+    sdkMethod: "listAccountUsage",
+    method: "GET",
+    path: "/usage/accounts",
+    setup: authenticate,
+    invoke: (client) =>
+      client.listAccountUsage({ Month: "2026-09", Tenant: "synthetic-tenant", Account: "customer@example.test" }),
+  },
   ListAccounts: {
     sdkMethod: "listAccounts",
     method: "GET",
@@ -479,6 +487,22 @@ function createContractTransport(): FakeTransport {
 
 function contractResponse(request: TransportRequest, transport: FakeTransport): TransportResponse<unknown> | undefined {
   const path = pathname(request.url);
+  if (request.method === "GET" && path === "/usage/accounts") {
+    return response({
+      Usage: {
+        Tenant: "synthetic-tenant",
+        Month: "2026-09",
+        Timezone: "Europe/Helsinki",
+        Basis: "observed-camt-accounts@1",
+        Accounts: [],
+        Daily: [],
+        MissingDays: [],
+        Issues: [],
+      },
+      ResponseCode: "00",
+      ResponseText: "Account usage",
+    });
+  }
   if (request.method === "GET" && path === "/audit") {
     return response({ Events: [], ResponseCode: "00", ResponseText: "Audit history" });
   }

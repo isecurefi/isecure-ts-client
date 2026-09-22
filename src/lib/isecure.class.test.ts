@@ -40,6 +40,40 @@ function match(method: string, suffix: string) {
 }
 
 describe("WSChannel", () => {
+  it.each(["admin", "data"] as const)("reads account usage with authenticated headers in %s mode", async (Mode) => {
+    const transport = new FakeTransport();
+    const payload = {
+      ResponseCode: "00",
+      ResponseText: "Account usage",
+      Usage: { Month: "2026-09", UniqueAccounts: 3, Issues: ["partial_day"] },
+    };
+    transport.respond((request) => {
+      if (request.method === "GET" && request.url.includes("/session/"))
+        return response({ Challenge: challenge, ResponseCode: "00", ResponseText: "OK" });
+      if (request.method === "POST" && request.url.includes("/session/"))
+        return response({ IdToken: "id-token", ApiKey: "tenant-api-key", ResponseCode: "00", ResponseText: "OK" });
+      if (request.url.endsWith("/usage/accounts")) return response(payload);
+      return undefined;
+    });
+    const client = new WSChannel(props({ Mode }), { transport });
+    await expect(client.listAccountUsage()).rejects.toThrow(/Cannot call authenticated/);
+    expect(transport.requests).toHaveLength(0);
+    await client.login();
+    expect(await client.listAccountUsage()).toEqual(payload);
+    expect(
+      await client.listAccountUsage({
+        Month: "2026-09",
+        Tenant: "synthetic-tenant",
+        Account: "customer+usage@example.test",
+      }),
+    ).toEqual(payload);
+    expect(transport.requests.at(-1)).toMatchObject({
+      method: "GET",
+      headers: { Authorization: "id-token", "x-api-key": "tenant-api-key" },
+      query: { Month: "2026-09", Tenant: "synthetic-tenant", Account: "customer+usage@example.test" },
+    });
+    expect(transport.requests.at(-1)?.body).toBeUndefined();
+  });
   it("documents operation coverage from the generated OpenAPI operation ids", () => {
     expect(SUPPORTED_OPERATIONS).toContain("Login");
     expect(SUPPORTED_OPERATIONS).toContain("ListFiles");

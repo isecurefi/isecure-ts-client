@@ -612,6 +612,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/usage/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * ListAccountUsage
+         * @description Read daily and monthly distinct accounts observed in supported CAMT bank files. Monthly and tenant totals are set unions, never sums of daily or user counts. Missing days, partial captures and unreadable payloads remain explicit. These are observed-usage figures, not a complete inventory of contracted or idle accounts and not an issued invoice. Payment rows are outside this basis. Authentication and API-key ownership are checked before reading. Integrator owners see their tenant and its users; customer accounts see only themselves; the ISECure operator may select another tenant. No bank account numbers, account tokens, bank messages or keys are returned.
+         */
+        get: operations["ListAccountUsage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -669,6 +689,32 @@ export interface components {
             Phone: string;
             /** @description Certificates retired with RetireCert or set aside by ISECure */
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
+        };
+        AccountUsageDayDescriptor: {
+            Date: string;
+            Issues: string[];
+            /** @description Absent when no daily result exists. */
+            UniqueAccounts?: number;
+        };
+        AccountUsageDescriptor: {
+            Accounts: components["schemas"]["AccountUsageUserDescriptor"][];
+            /** @enum {string} */
+            Basis: "observed-camt-accounts@1";
+            /** Format: date-time */
+            CollectedAt?: string;
+            Daily: components["schemas"]["AccountUsageDayDescriptor"][];
+            Issues: string[];
+            MissingDays: string[];
+            Month: string;
+            Tenant: string;
+            /** @enum {string} */
+            Timezone: "Europe/Helsinki";
+            /** @description Distinct observed accounts across all available days in the selected scope; absent when no results exist. */
+            UniqueAccounts?: number;
+        };
+        AccountUsageUserDescriptor: {
+            Email: string;
+            UniqueAccounts: number;
         };
         AuditEventDescriptor: {
             /** @description Account-management action or certificate.renew for automatic renewal attempts. */
@@ -949,6 +995,20 @@ export interface components {
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
+        };
+        /**
+         * @example {
+         *       "ResponseCode": "..",
+         *       "ResponseText": "..",
+         *       "Usage": []
+         *     }
+         */
+        ListAccountUsageResp: {
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+            Usage: components["schemas"]["AccountUsageDescriptor"];
         };
         /**
          * @example {
@@ -3289,6 +3349,79 @@ export interface operations {
             };
             /** @description Request validation error */
             400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ListAccountUsage: {
+        parameters: {
+            query?: {
+                /** @description Calendar month YYYY-MM in Europe/Helsinki; defaults to the current month. */
+                Month?: string;
+                /** @description Only the authenticated ISECure operator may select another tenant. Other callers are restricted to their verified API key. */
+                Tenant?: string;
+                /** @description Optional account email. Tenant owners may select a user in their tenant; other users see only themselves. */
+                Account?: string;
+            };
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListAccountUsageResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
                 headers: {
                     "Access-Control-Allow-Origin"?: string;
                     [name: string]: unknown;

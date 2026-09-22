@@ -63,6 +63,8 @@ export {
   type ListAccountsResponse,
   type ListAuditEventsQuery,
   type ListAuditEventsResponse,
+  type ListAccountUsageQuery,
+  type ListAccountUsageResponse,
   type AuditEventDescriptor,
   type SessionAccount,
   type RetireCertQuery,
