@@ -617,3 +617,16 @@ The npm package must also be configured with a trusted publisher:
 - Workflow filename: `publish.yml`
 - Environment name: `npm`
 - Allowed action: `npm publish`
+
+## Account usage
+
+`client.listAccountUsage({ Month: "2026-09" })` reads observed bank-account usage through
+the authenticated API. Tenant owners see their tenant and its users; customer accounts
+see only themselves. The ISECure operator may pass `Tenant` to select another tenant.
+`Account` narrows the result to one permitted user.
+
+The server calculates monthly distinct accounts as the union of daily observations.
+Do not sum daily values or user counts to calculate tenant totals. `MissingDays`,
+daily `Issues`, and an absent `UniqueAccounts` preserve missing coverage. The basis
+covers accounts observed in supported CAMT files, not all contracted or idle accounts.
+Payment rows and invoice issuance are outside this operation.

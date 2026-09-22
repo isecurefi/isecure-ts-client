@@ -28,6 +28,8 @@ import {
   type ListAccountsResponse,
   type ListAuditEventsQuery,
   type ListAuditEventsResponse,
+  type ListAccountUsageQuery,
+  type ListAccountUsageResponse,
   type RetireCertQuery,
   type RetireCertResponse,
   type DeleteAccountRequest,
@@ -524,6 +526,11 @@ export class WSChannel {
 
   async listAccounts(): Promise<ListAccountsResponse> {
     return this.call<ListAccountsResponse>("GET", this.urls.integratorAccounts(), { auth: true });
+  }
+
+  /** Daily and monthly distinct observed accounts; authority and coverage are server-decided. */
+  async listAccountUsage(query: ListAccountUsageQuery = {}): Promise<ListAccountUsageResponse> {
+    return this.call<ListAccountUsageResponse>("GET", this.urls.accountUsage(), { auth: true, query: { ...query } });
   }
 
   /**

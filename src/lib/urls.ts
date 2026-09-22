@@ -69,6 +69,10 @@ export class UrlBuilder {
     return this.url("audit");
   }
 
+  accountUsage(): string {
+    return this.url("usage", "accounts");
+  }
+
   integratorAccounts(): string {
     return this.url("integrator", "accounts");
   }

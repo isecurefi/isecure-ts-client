@@ -39,6 +39,7 @@ describe("UrlBuilder", () => {
       "https://ws-api.test.isecure.fi/v2/account/customer%40example.test",
     );
     expect(urls.audit()).toBe("https://ws-api.test.isecure.fi/v2/audit");
+    expect(urls.accountUsage()).toBe("https://ws-api.test.isecure.fi/v2/usage/accounts");
     expect(urls.pgp()).toBe("https://ws-api.test.isecure.fi/v2/pgp");
   });
 

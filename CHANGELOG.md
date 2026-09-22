@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0 (2026-09-22)
+
+- Add `listAccountUsage()` for authenticated daily and monthly distinct observed bank accounts, preserving server-decided scope and explicit missing/partial coverage.
+
 ## Unreleased
 
 - Align the bundled REST contract and generated MFA types with the published reference, document SMS-to-TOTP enrollment and recovery, and preserve legacy textual session expiry in the high-level client.

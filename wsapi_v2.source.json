@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/isecurefi/wsapi-v2",
-  "source": "https://raw.githubusercontent.com/isecurefi/wsapi-v2/86d4e6c78e234833e9de0a5cbe7bfcf8f91e4282/wsapi_v2.json",
-  "ref": "86d4e6c",
-  "commit": "86d4e6c78e234833e9de0a5cbe7bfcf8f91e4282",
-  "sha256": "4f91d7f091a5cf5367d822db7935b291f1390827a2fbd98f98636daabf72d1a7"
+  "source": "https://raw.githubusercontent.com/isecurefi/wsapi-v2/2408f7e17887922648db21be156b38c5e1285aa7/wsapi_v2.json",
+  "ref": "2408f7e",
+  "commit": "2408f7e17887922648db21be156b38c5e1285aa7",
+  "sha256": "a79f425d37ab539ec90bfa58d61798608cfcaaa3f977ca94e0c3777b1a9b4d94"
 }
