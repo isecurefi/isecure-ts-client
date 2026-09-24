@@ -690,6 +690,17 @@ export interface components {
             /** @description Certificates retired with RetireCert or set aside by ISECure */
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
         };
+        /** @description Persistent status of collection for yesterday in Europe/Helsinki. Reading this status never starts a job. */
+        AccountUsageCollectionDescriptor: {
+            /** Format: date */
+            Date: string;
+            /** Format: date-time */
+            FinishedAt?: string;
+            /** Format: date-time */
+            StartedAt?: string;
+            /** @enum {string} */
+            State: "not_started" | "running" | "completed" | "failed" | "interrupted" | "recorded";
+        };
         AccountUsageDayDescriptor: {
             Date: string;
             Issues: string[];
@@ -702,8 +713,10 @@ export interface components {
             Basis: "observed-camt-accounts@1";
             /** Format: date-time */
             CollectedAt?: string;
+            Collection?: components["schemas"]["AccountUsageCollectionDescriptor"];
             Daily: components["schemas"]["AccountUsageDayDescriptor"][];
             Issues: string[];
+            Licenses?: components["schemas"]["AccountUsageLicensesDescriptor"];
             MissingDays: string[];
             Month: string;
             Tenant: string;
@@ -711,6 +724,29 @@ export interface components {
             Timezone: "Europe/Helsinki";
             /** @description Distinct observed accounts across all available days in the selected scope; absent when no results exist. */
             UniqueAccounts?: number;
+        };
+        /** @description Current user-license estimate for the requested tenant or user. Each non-retired user contributes max(1, monthly distinct own bank accounts); Admin/Data modes count together and retired users contribute zero. Tenant figures sum users. Provisional estimates use current membership, not a final invoice. Historical eligibility is unavailable until snapshots exist. */
+        AccountUsageLicensesDescriptor: {
+            /**
+             * Format: date-time
+             * @description Time current eligibility was read; present only with an estimate.
+             */
+            AsOf?: string;
+            /** @enum {string} */
+            Basis: "non-retired-user-own-accounts@1";
+            /** @description Current non-retired user identities, independent of registered sign-in modes. */
+            BillableUsers?: number;
+            /** @description Present only for provisional estimates. A known zero remains distinct from an unavailable estimate. */
+            Count?: number;
+            /** @description Retained users with retired bank material and no remaining direct or authorized linked bank certificate. */
+            RetiredUsers?: number;
+            /**
+             * @description Customers receive only user scope. Authorized owners/operators may receive tenant scope.
+             * @enum {string}
+             */
+            Scope: "tenant" | "user";
+            /** @enum {string} */
+            State: "provisional" | "unavailable" | "historical_unavailable";
         };
         AccountUsageUserDescriptor: {
             Email: string;
