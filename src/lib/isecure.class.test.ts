@@ -4,6 +4,7 @@ import {
   SUPPORTED_OPERATIONS,
   UNSUPPORTED_OPERATIONS,
   type SessionAccount,
+  type ListAccountUsageResponse,
   type ListAuditEventsQuery,
   type ListAuditEventsResponse,
   type AuditEventDescriptor,
@@ -42,10 +43,29 @@ function match(method: string, suffix: string) {
 describe("WSChannel", () => {
   it.each(["admin", "data"] as const)("reads account usage with authenticated headers in %s mode", async (Mode) => {
     const transport = new FakeTransport();
-    const payload = {
+    const payload: ListAccountUsageResponse = {
       ResponseCode: "00",
       ResponseText: "Account usage",
-      Usage: { Month: "2026-09", UniqueAccounts: 3, Issues: ["partial_day"] },
+      Usage: {
+        Tenant: "synthetic-tenant",
+        Month: "2026-09",
+        Timezone: "Europe/Helsinki",
+        Basis: "observed-camt-accounts@1",
+        UniqueAccounts: 3,
+        Accounts: [],
+        Daily: [],
+        MissingDays: [],
+        Issues: ["partial_day"],
+        Licenses: {
+          Basis: "non-retired-user-own-accounts@1",
+          Scope: "tenant",
+          State: "provisional",
+          Count: 5,
+          BillableUsers: 3,
+          RetiredUsers: 1,
+          AsOf: "2026-09-24T10:00:00Z",
+        },
+      },
     };
     transport.respond((request) => {
       if (request.method === "GET" && request.url.includes("/session/"))

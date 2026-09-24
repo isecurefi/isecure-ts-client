@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Generate the additive `ListAccountUsage.Licenses` contract for current retirement-aware user-license estimates. Counts stay server-owned; historical eligibility and failed reads remain explicitly unavailable.
+
 - Align the bundled REST contract and generated MFA types with the published reference, document SMS-to-TOTP enrollment and recovery, and preserve legacy textual session expiry in the high-level client.
 
 - Fix `loginWithPrompt()` incorrectly returning `stalled` when a fresh login after email verification requires MFA again. Preserve repeated email/phone verification guards and the transition limit; cover SMS, TOTP, and factor selection.
