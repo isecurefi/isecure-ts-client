@@ -226,6 +226,7 @@ const contract = {
     setup: authenticate,
     invoke: (client) =>
       client.listAuditEvents({
+        Tenant: "selected-tenant",
         Account: "customer@example.test",
         From: "2026-09-19T00:00:00Z",
         To: "2026-09-20T00:00:00Z",

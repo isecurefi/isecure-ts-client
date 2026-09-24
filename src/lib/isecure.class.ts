@@ -513,7 +513,9 @@ export class WSChannel {
   /**
    * Reads one newest-first audit page. Integrator owners see their tenant;
    * customers see only their own account. Both admin and data modes may read.
-   * Follow NextToken even after an empty page, keeping Account unchanged.
+   * Follow NextToken even after an empty page, keeping Tenant and Account unchanged.
+   * Operators may select Tenant, or let the server resolve a live Account's tenant.
+   * Deleted-account reads by an operator require Tenant.
    * Defaults: past seven days, up to 100 events; maximum range is 31 days.
    * Delivery is asynchronous and account deletion preserves the evidence.
    */

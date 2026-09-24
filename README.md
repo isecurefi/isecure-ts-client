@@ -236,6 +236,11 @@ An authenticated integrator API-key owner sees its tenant; a customer sees only 
 account. Both admin and data modes can read. The server checks the session and API-key
 ownership on every request; the SDK does not grant access based on client-side roles.
 
+WS API 2.15 adds optional `Tenant` for verified superadmins. With `Account` alone, the server
+resolves the account's current tenant; deleted accounts require explicit `Tenant`. Integrators
+keep access to their own deleted-account history without a lookup. Keep Tenant and Account
+unchanged while following NextToken. The server decides operator authority, not the SDK.
+
 Available since WS API 2.11.0 and deployed to production and test as of 2026-09-20.
 Use `BaseUrl: "https://ws-api.isecure.fi/v2"` for production or
 `BaseUrl: "https://ws-api.test.isecure.fi/v2"` for test.

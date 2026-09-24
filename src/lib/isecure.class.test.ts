@@ -149,6 +149,7 @@ describe("WSChannel", () => {
       });
       const query: ListAuditEventsQuery = {
         Account: "customer+deleted@example.test",
+        Tenant: "selected-tenant",
         Limit: 2,
         NextToken: first.NextToken,
       };

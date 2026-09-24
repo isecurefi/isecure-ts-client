@@ -189,7 +189,7 @@ export interface paths {
         };
         /**
          * ListAuditEvents
-         * @description Read sanitized account-management and automatic certificate-renewal audit history through the authenticated API. Integrator API key owners can read their entire tenant or select Account; customer accounts can read only their own account. API-key ownership is verified before any log access. Both admin and data modes can read their permitted history.
+         * @description Read sanitized account-management and automatic certificate-renewal audit history through the authenticated API. Integrator API key owners can read their entire tenant or select Account; customer accounts can read only their own account. Verified superadmins may select Tenant explicitly. With Account alone, a superadmin reads the account's current tenant resolved by an exact server-side lookup. Deleted accounts require explicit Tenant for superadmins; integrator owners retain deleted history in their own tenant without a lookup. Omitting both selectors reads the caller's own tenant, never all tenants. API-key ownership and server-owned operator authority are verified before any log access. Both admin and data modes can read their permitted history.
          *
          *     Events include the actor, action, affected account, timestamp, outcome and operation/request correlation. Automatic certificate renewal uses action certificate.renew and actorType system. A request event records the attempt time, step events record bank contact and persistence, and a result records rejected, failed, completed or skipped. completed means credentials were stored; a bank acceptance alone is insufficient. Bank rejections include bankResponseCode and, when safe to expose, bankResponseText. A timeout or malformed response has no invented bank code. A request without a result is incomplete; do not infer rejection or success. No bank files, SOAP messages, credentials, private keys or raw internal diagnostics are returned. Delivery is asynchronous; deduplicate by eventId across pages because publication retries may repeat an event. Streams survive account deletion and events have ten-year retention. Integrator owners can query deleted-account history without the deleted users-table row.
          *
@@ -1867,7 +1867,9 @@ export interface operations {
     ListAuditEvents: {
         parameters: {
             query?: {
-                /** @description Optional customer email. Integrator owners may select any account history in their tenant, including deleted accounts. Other users may select only their own email; omitted means their own account. For an integrator, omitted means the entire tenant. */
+                /** @description Optional exact tenant API-key identifier. Verified superadmins may select another tenant, including retained history after account deletion. Other callers may only specify their own tenant. Keep Tenant and Account unchanged while following NextToken. With Account alone a superadmin resolves its current tenant; a missing target requires Tenant. */
+                Tenant?: string;
+                /** @description Optional customer email. Integrator owners may select any account history in their tenant, including deleted accounts. Other users may select only their own email; omitted means their own account. For an integrator, omitted means the entire tenant. Superadmins can select an account in another tenant; specify Tenant for deleted accounts. */
                 Account?: string;
                 /** @description Inclusive UTC start time on or after 2024-01-01, e.g. 2026-09-19T00:00:00.000Z. Defaults to seven days ago. Maximum range: 31 days. */
                 From?: string;
