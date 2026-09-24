@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Generate the v2.15 audit `Tenant` selector for operator reads. Existing Account-only requests let the server resolve current tenant ownership; explicit Tenant preserves deleted-account history.
+
 - Generate the additive `ListAccountUsage.Licenses` contract for current retirement-aware user-license estimates. Counts stay server-owned; historical eligibility and failed reads remain explicitly unavailable.
 
 - Align the bundled REST contract and generated MFA types with the published reference, document SMS-to-TOTP enrollment and recovery, and preserve legacy textual session expiry in the high-level client.
