@@ -312,6 +312,16 @@ describe("OpenAPI contract honesty", () => {
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(source.sha256);
   });
 
+  it("requires a stable full-enrollment digest alongside current assignments", () => {
+    const claims = spec.definitions.WorkspaceAuthorityClaims;
+    expect(claims?.required).toContain("enrollmentDigest");
+    expect(claims?.properties?.enrollmentDigest).toMatchObject({
+      type: "string",
+      minLength: 71,
+      maxLength: 71,
+      pattern: "^sha256:[a-f0-9]{64}$",
+    });
+  });
   it("supports every operationId declared in wsapi_v2.json", () => {
     expect(operationIdsFromSpec()).toEqual([...SUPPORTED_OPERATIONS].sort());
     expect(Object.keys(contract).sort()).toEqual(operationIdsFromSpec());

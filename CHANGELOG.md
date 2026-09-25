@@ -6,6 +6,9 @@
 
 ## Unreleased
 
+- Require the signed `enrollmentDigest` in workspace claims so native persistence can distinguish
+  scheduled active-role transitions from changed enrollment at the same revision pair.
+
 - Add the owning WS API 2.16 contract and `readWorkspaceAuthority()` for challenge-bound company
   authority transport, with cancellation, no automatic retries and explicit assertion redaction.
   Generated types retain the signed header/claims schema; trust verification and effective roles

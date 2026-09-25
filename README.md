@@ -359,8 +359,9 @@ retries and transport-wide opt-ins. Custom transports must honor `TransportReque
 
 The response's `Assertion` is opaque signed evidence. The SDK does not decode it, retain it in the
 session, cache it or turn it into permissions. The trusted native consumer must verify its signature,
-fixed environment trust, schema, session/challenge binding, expiry and enrollment revisions before
-using it. A login/session change while the request is pending requires a new native challenge; the
+fixed environment trust, schema, session/challenge binding, expiry and enrollment revisions/digest before
+using it. At an unchanged company/membership revision pair, `enrollmentDigest` must remain fixed;
+the current assignment array may change at scheduled time boundaries. A login/session change while the request is pending requires a new native challenge; the
 old response must not be adopted. Both Challenge and Assertion are always redacted from SDK logs,
 even if the server returns malformed evidence. Treat native acceptance as a separate result from
 successful HTTP transport. The backend route and native onboarding are not yet live-qualified.

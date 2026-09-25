@@ -1817,6 +1817,13 @@
           "pattern": "^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$",
           "type": "string"
         },
+        "enrollmentDigest": {
+          "description": "Stable digest of the complete validated company/member enrollment, including inactive scheduled assignments. Equal company/membership revisions must retain this digest; current active assignments may change at their time boundaries.",
+          "maxLength": 71,
+          "minLength": 71,
+          "pattern": "^sha256:[a-f0-9]{64}$",
+          "type": "string"
+        },
         "environment": {
           "enum": [
             "test",
@@ -1881,6 +1888,7 @@
         "identityIssuer",
         "identitySubject",
         "subscriptionTenant",
+        "enrollmentDigest",
         "sessionDigest",
         "challenge",
         "workspace",
