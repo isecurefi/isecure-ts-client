@@ -26,6 +26,26 @@ function recordingClient(responder: (config: Record<string, unknown>, attempt: n
 const ok = { status: 200, statusText: "OK", data: { ok: true }, headers: {} };
 
 describe("transport adapters", () => {
+  it.each([429, 503, "network"] as const)(
+    "honors per-request retry refusal for %s even with global retries enabled",
+    async (failure) => {
+      const client = recordingClient(() =>
+        failure === "network"
+          ? new Error("socket failure")
+          : { status: failure, statusText: "Unavailable", data: {}, headers: {} },
+      );
+      const transport = new AxiosTransport({
+        client: client as never,
+        retryNonIdempotent: true,
+        retryBaseDelayMs: 0,
+        random: () => 0,
+      });
+      await expect(
+        transport.request({ method: "POST", url: "https://example.test/authority", retry: false }),
+      ).rejects.toBeInstanceOf(failure === "network" ? ISecureNetworkError : ISecureHttpError);
+      expect(client.calls).toHaveLength(1);
+    },
+  );
   it("maps SDK transport requests to axios config", async () => {
     const client = recordingClient(() => ({ status: 202, statusText: "Accepted", data: { ok: true }, headers: {} }));
     const transport = new AxiosTransport({ client: client as never });

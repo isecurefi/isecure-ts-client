@@ -316,6 +316,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/desktop/workspace-authority": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * ReadWorkspaceAuthority
+         * @description Read short-lived signed company workspace authority for the current verified Admin session and explicit company enrollment. The only input is a native one-use challenge. Tenant selection, operator status and feature flags do not grant company membership or roles. No bank or provider request is performed. The native application must verify the signature, supported contract, session/challenge binding and expiry before use; decoding this string is not authorization. Requires the separately configured workspace authority service and enrollment. Do not log, cache or persist the assertion in browser storage.
+         */
+        post: operations["ReadWorkspaceAuthority"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/files/{Bank}": {
         parameters: {
             query?: never;
@@ -1262,6 +1282,33 @@ export interface components {
         };
         /**
          * @example {
+         *       "Challenge": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE"
+         *     }
+         */
+        ReadWorkspaceAuthorityReq: {
+            /** @description Native-generated canonical base64url encoding of 32 random bytes, without padding. */
+            Challenge: string;
+        };
+        /**
+         * @example {
+         *       "Assertion": "header.payload.signature",
+         *       "RequestId": "synthetic-request",
+         *       "ResponseCode": "..",
+         *       "ResponseText": ".."
+         *     }
+         */
+        ReadWorkspaceAuthorityResp: {
+            /** @description RS256 compact JWS for native verification. At most 60 seconds of authority; this is never a provider credential. */
+            Assertion: string;
+            /** @description Opaque request identifier for support. */
+            RequestId: string;
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+        };
+        /**
+         * @example {
          *       "ApiKey": "hzYAVO9Sg98nsNh81M84O2kyXVy6K1xwHD8",
          *       "ChResp": "ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e",
          *       "Company": "ISECure Oy",
@@ -1482,6 +1529,55 @@ export interface components {
             AccessToken: string;
             /** @description 6-digit code from the authenticator app */
             Code: string;
+        };
+        WorkspaceAuthorityAssignment: {
+            assignedByActorId: components["schemas"]["WorkspaceAuthorityUuid"];
+            effectiveFrom: components["schemas"]["WorkspaceAuthorityEpoch"];
+            effectiveUntil: components["schemas"]["WorkspaceAuthorityEpoch"];
+            id: components["schemas"]["WorkspaceAuthorityUuid"];
+            roleId: string;
+        };
+        /** @description Decoded signed payload for native verification, not a JSON authority response. Require the pinned signature/issuer/audience/environment/key, exact session digest and one-use challenge, exp > now and exp <= iat + 60, current enrollment revisions and exact generated profile. Assignment intervals and role names are validated against that profile; no role implies another role. Schema validity alone grants nothing. */
+        WorkspaceAuthorityClaims: {
+            assignments: components["schemas"]["WorkspaceAuthorityAssignment"][];
+            aud: string;
+            challenge: string;
+            /** @enum {string} */
+            environment: "test" | "production";
+            exp: components["schemas"]["WorkspaceAuthorityEpoch"];
+            iat: components["schemas"]["WorkspaceAuthorityEpoch"];
+            identityIssuer: string;
+            identitySubject: string;
+            iss: string;
+            profile: components["schemas"]["WorkspaceAuthorityProfile"];
+            /** @enum {integer} */
+            schemaVersion: 1;
+            sessionDigest: string;
+            subscriptionTenant: string;
+            workspace: components["schemas"]["WorkspaceAuthorityWorkspace"];
+        };
+        WorkspaceAuthorityEpoch: number;
+        WorkspaceAuthorityHeader: {
+            /** @enum {string} */
+            alg: "RS256";
+            kid: string;
+            /** @enum {string} */
+            typ: "JWT";
+        };
+        WorkspaceAuthorityProfile: {
+            digest: string;
+            id: string;
+            revisionId: components["schemas"]["WorkspaceAuthorityUuid"];
+            version: components["schemas"]["WorkspaceAuthorityRevision"];
+        };
+        WorkspaceAuthorityRevision: number;
+        WorkspaceAuthorityUuid: string;
+        WorkspaceAuthorityWorkspace: {
+            actorId: components["schemas"]["WorkspaceAuthorityUuid"];
+            companyRevision: components["schemas"]["WorkspaceAuthorityRevision"];
+            legalEntityId: components["schemas"]["WorkspaceAuthorityUuid"];
+            membershipRevision: components["schemas"]["WorkspaceAuthorityRevision"];
+            platformTenantId: components["schemas"]["WorkspaceAuthorityUuid"];
         };
     };
     responses: never;
@@ -2506,6 +2602,82 @@ export interface operations {
             500: {
                 headers: {
                     "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ReadWorkspaceAuthority: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Account parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReadWorkspaceAuthorityReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadWorkspaceAuthorityResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
                     [name: string]: unknown;
                 };
                 content: {

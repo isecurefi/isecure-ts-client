@@ -15,6 +15,8 @@ export interface TransportRequest<Body = unknown> {
   body?: Body;
   /** Aborts the request (and any pending retry backoff) when signalled. */
   signal?: AbortSignal;
+  /** Explicitly prevent replay, overriding even transport-wide retry opt-ins. */
+  retry?: false;
 }
 
 export interface TransportResponse<Body> {
@@ -113,6 +115,7 @@ export class AxiosTransport implements Transport {
     request: TransportRequest<RequestBody>,
   ): Promise<TransportResponse<ResponseBody>> {
     const config = this.buildConfig(request);
+    const retries = request.retry === false ? 0 : this.retries;
     const retriable = this.retryNonIdempotent || isIdempotentMethod(request.method);
 
     for (let attempt = 0; ; attempt += 1) {
@@ -127,7 +130,7 @@ export class AxiosTransport implements Transport {
         }
         // A network error may have reached the server, so only retry when the
         // method is safe to replay.
-        if (retriable && attempt < this.retries) {
+        if (retriable && attempt < retries) {
           await this.backoff(attempt, undefined, request.signal);
           continue;
         }
@@ -140,7 +143,7 @@ export class AxiosTransport implements Transport {
 
       const canRetryStatus =
         response.status === ALWAYS_RETRYABLE_STATUS || (retriable && RETRYABLE_STATUSES.has(response.status));
-      if (canRetryStatus && attempt < this.retries) {
+      if (canRetryStatus && attempt < retries) {
         await this.backoff(attempt, retryAfterMs(response.headers), request.signal);
         continue;
       }

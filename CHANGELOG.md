@@ -6,6 +6,11 @@
 
 ## Unreleased
 
+- Add the owning WS API 2.16 contract and `readWorkspaceAuthority()` for challenge-bound company
+  authority transport, with cancellation, no automatic retries and explicit assertion redaction.
+  Generated types retain the signed header/claims schema; trust verification and effective roles
+  remain native/server responsibilities. This does not deploy the endpoint or enable plugins.
+
 - Generate the v2.15 audit `Tenant` selector for operator reads. Existing Account-only requests let the server resolve current tenant ownership; explicit Tenant preserves deleted-account history.
 
 - Generate the additive `ListAccountUsage.Licenses` contract for current retirement-aware user-license estimates. Counts stay server-owned; historical eligibility and failed reads remain explicitly unavailable.
