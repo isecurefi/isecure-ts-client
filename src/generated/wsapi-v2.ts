@@ -1542,6 +1542,8 @@ export interface components {
             assignments: components["schemas"]["WorkspaceAuthorityAssignment"][];
             aud: string;
             challenge: string;
+            /** @description Stable digest of the complete validated company/member enrollment, including inactive scheduled assignments. Equal company/membership revisions must retain this digest; current active assignments may change at their time boundaries. */
+            enrollmentDigest: string;
             /** @enum {string} */
             environment: "test" | "production";
             exp: components["schemas"]["WorkspaceAuthorityEpoch"];
