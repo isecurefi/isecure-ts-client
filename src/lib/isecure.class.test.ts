@@ -41,6 +41,66 @@ function match(method: string, suffix: string) {
 }
 
 describe("WSChannel", () => {
+  it("transports native workspace challenges with the current session and no selected tenant", async () => {
+    const transport = new FakeTransport();
+    const entries: unknown[] = [];
+    const logger: Logger = {
+      debug(_message, data) {
+        entries.push(data);
+      },
+      info() {},
+      warn() {},
+      error() {},
+    };
+    const payload = { ResponseCode: "00", ResponseText: "Workspace authority", Assertion: "synthetic-signed-evidence" };
+    transport.respond((request) => {
+      if (request.method === "GET" && request.url.includes("/session/"))
+        return response({ Challenge: challenge, ResponseCode: "00", ResponseText: "OK" });
+      if (request.method === "POST" && request.url.includes("/session/"))
+        return response({ IdToken: "id-token", ApiKey: "tenant-api-key", ResponseCode: "00", ResponseText: "OK" });
+      if (request.url.endsWith("/desktop/workspace-authority")) return response(payload);
+      return undefined;
+    });
+    const client = new WSChannel(props(), { transport, logger });
+    const nativeChallenge = "a".repeat(42) + "A";
+    await expect(client.readWorkspaceAuthority(nativeChallenge)).rejects.toThrow(/Cannot call authenticated/);
+    expect(transport.requests).toHaveLength(0);
+    await client.login();
+    const controller = new AbortController();
+    const untrustedOptions = { signal: controller.signal, auth: false, retry: true, body: { Tenant: "foreign" } };
+    expect(await client.readWorkspaceAuthority(nativeChallenge, untrustedOptions)).toEqual(payload);
+    expect(transport.requests.at(-1)).toMatchObject({
+      method: "POST",
+      headers: { Authorization: "id-token", "x-api-key": "tenant-api-key" },
+      body: { Challenge: nativeChallenge },
+    });
+    expect(transport.requests.at(-1)?.query).toBeUndefined();
+    expect(transport.requests.at(-1)?.retry).toBe(false);
+    expect(transport.requests.at(-1)?.signal).toBe(controller.signal);
+    expect(transport.requests.at(-1)?.body).toEqual({ Challenge: nativeChallenge });
+    expect(client.session).not.toHaveProperty("Assertion");
+    const log = JSON.stringify(entries);
+    expect(log).not.toContain(payload.Assertion);
+    expect(log).not.toContain(nativeChallenge);
+    // Every call is a new read; the SDK must neither cache nor interpret signed authority.
+    payload.Assertion = "replacement-evidence";
+    expect((await client.readWorkspaceAuthority(nativeChallenge)).Assertion).toBe(payload.Assertion);
+    expect(transport.requests.filter((r) => r.url.endsWith("/desktop/workspace-authority"))).toHaveLength(2);
+  });
+  it.each([
+    "",
+    "a".repeat(42),
+    "a".repeat(44),
+    "a".repeat(43),
+    "a".repeat(42) + "=",
+    " " + "a".repeat(42),
+    "a".repeat(42) + "A\n",
+  ])("rejects malformed native challenge %j before transport", async (value) => {
+    const transport = new FakeTransport();
+    const client = new WSChannel(props(), { transport });
+    await expect(client.readWorkspaceAuthority(value)).rejects.toThrow("Invalid workspace authority challenge");
+    expect(transport.requests).toHaveLength(0);
+  });
   it.each(["admin", "data"] as const)("reads account usage with authenticated headers in %s mode", async (Mode) => {
     const transport = new FakeTransport();
     const payload: ListAccountUsageResponse = {

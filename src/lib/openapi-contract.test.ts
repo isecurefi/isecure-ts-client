@@ -236,6 +236,13 @@ const contract = {
         NextToken: "opaque-next-page",
       }),
   },
+  ReadWorkspaceAuthority: {
+    sdkMethod: "readWorkspaceAuthority",
+    method: "POST",
+    path: "/desktop/workspace-authority",
+    setup: authenticate,
+    invoke: (client) => client.readWorkspaceAuthority("a".repeat(42) + "A"),
+  },
   ListAccountUsage: {
     sdkMethod: "listAccountUsage",
     method: "GET",
@@ -291,13 +298,17 @@ const contract = {
 describe("OpenAPI contract honesty", () => {
   it("retains the exact upstream contract pinned in its source metadata", () => {
     const source = JSON.parse(readFileSync(new URL("../../wsapi_v2.source.json", import.meta.url), "utf8")) as {
+      repository: string;
+      path: string;
       commit: string;
       source: string;
       sha256: string;
     };
     const bytes = readFileSync(new URL("../../wsapi_v2.json", import.meta.url));
     expect(source.commit).toMatch(/^[a-f0-9]{40}$/);
-    expect(source.source).toBe(`https://raw.githubusercontent.com/isecurefi/wsapi-v2/${source.commit}/wsapi_v2.json`);
+    expect(source.repository).toBe("https://github.com/isecurefi/aws");
+    expect(source.path).toBe("ws-channel-api/wsapi_v2.json");
+    expect(source.source).toBe(`https://raw.githubusercontent.com/isecurefi/aws/${source.commit}/${source.path}`);
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(source.sha256);
   });
 
@@ -488,6 +499,9 @@ function createContractTransport(): FakeTransport {
 
 function contractResponse(request: TransportRequest, transport: FakeTransport): TransportResponse<unknown> | undefined {
   const path = pathname(request.url);
+  if (request.method === "POST" && path === "/desktop/workspace-authority") {
+    return response({ Assertion: "synthetic-evidence", ResponseCode: "00", ResponseText: "Workspace authority" });
+  }
   if (request.method === "GET" && path === "/usage/accounts") {
     return response({
       Usage: {
