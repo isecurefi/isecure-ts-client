@@ -226,6 +226,7 @@ const contract = {
     setup: authenticate,
     invoke: (client) =>
       client.listAuditEvents({
+        Tenant: "selected-tenant",
         Account: "customer@example.test",
         From: "2026-09-19T00:00:00Z",
         To: "2026-09-20T00:00:00Z",
@@ -234,6 +235,13 @@ const contract = {
         Limit: 50,
         NextToken: "opaque-next-page",
       }),
+  },
+  ReadWorkspaceAuthority: {
+    sdkMethod: "readWorkspaceAuthority",
+    method: "POST",
+    path: "/desktop/workspace-authority",
+    setup: authenticate,
+    invoke: (client) => client.readWorkspaceAuthority("a".repeat(42) + "A"),
   },
   ListAccountUsage: {
     sdkMethod: "listAccountUsage",
@@ -290,16 +298,47 @@ const contract = {
 describe("OpenAPI contract honesty", () => {
   it("retains the exact upstream contract pinned in its source metadata", () => {
     const source = JSON.parse(readFileSync(new URL("../../wsapi_v2.source.json", import.meta.url), "utf8")) as {
+      repository: string;
+      path: string;
       commit: string;
       source: string;
       sha256: string;
     };
     const bytes = readFileSync(new URL("../../wsapi_v2.json", import.meta.url));
     expect(source.commit).toMatch(/^[a-f0-9]{40}$/);
-    expect(source.source).toBe(`https://raw.githubusercontent.com/isecurefi/wsapi-v2/${source.commit}/wsapi_v2.json`);
+    expect(source.repository).toBe("https://github.com/isecurefi/aws");
+    expect(source.path).toBe("ws-channel-api/wsapi_v2.json");
+    expect(source.source).toBe(`https://raw.githubusercontent.com/isecurefi/aws/${source.commit}/${source.path}`);
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(source.sha256);
   });
 
+  it("requires a stable full-enrollment digest alongside current assignments", () => {
+    const claims = spec.definitions.WorkspaceAuthorityClaims;
+    expect(claims?.required).toContain("enrollmentDigest");
+    expect(claims?.properties?.enrollmentDigest).toMatchObject({
+      type: "string",
+      minLength: 71,
+      maxLength: 71,
+      pattern: "^sha256:[a-f0-9]{64}$",
+    });
+  });
+  it("requires explicit bounded platform directory facts in signed schema v2", () => {
+    const claims = spec.definitions.WorkspaceAuthorityClaims;
+    expect(claims?.required).toContain("directory");
+    expect(claims?.properties?.schemaVersion).toEqual({ type: "integer", enum: [2] });
+    expect(claims?.properties?.identityIssuer).toMatchObject({ maxLength: 512 });
+    expect(claims?.properties?.directory).toEqual({ $ref: "#/definitions/WorkspaceAuthorityDirectory" });
+    const directory = spec.definitions.WorkspaceAuthorityDirectory;
+    const names = ["tenantName", "legalEntityName", "legalEntityExternalId"];
+    const times = ["tenantCreatedAt", "legalEntityEffectiveFrom", "legalEntityEffectiveUntil", "actorCreatedAt"];
+    expect(directory).toMatchObject({ type: "object", additionalProperties: false });
+    expect([...(directory?.required ?? [])].sort()).toEqual([...names, ...times].sort());
+    expect(Object.keys(directory?.properties ?? {}).sort()).toEqual([...names, ...times].sort());
+    for (const field of names)
+      expect(directory?.properties?.[field]).toEqual({ type: "string", minLength: 1, maxLength: 256 });
+    for (const field of times)
+      expect(directory?.properties?.[field]).toEqual({ $ref: "#/definitions/WorkspaceAuthorityEpoch" });
+  });
   it("supports every operationId declared in wsapi_v2.json", () => {
     expect(operationIdsFromSpec()).toEqual([...SUPPORTED_OPERATIONS].sort());
     expect(Object.keys(contract).sort()).toEqual(operationIdsFromSpec());
@@ -487,6 +526,9 @@ function createContractTransport(): FakeTransport {
 
 function contractResponse(request: TransportRequest, transport: FakeTransport): TransportResponse<unknown> | undefined {
   const path = pathname(request.url);
+  if (request.method === "POST" && path === "/desktop/workspace-authority") {
+    return response({ Assertion: "synthetic-evidence", ResponseCode: "00", ResponseText: "Workspace authority" });
+  }
   if (request.method === "GET" && path === "/usage/accounts") {
     return response({
       Usage: {

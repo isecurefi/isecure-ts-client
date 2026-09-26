@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest";
 import { redactUrl, redactValue, REDACTED } from "./redact.js";
 
 describe("redactValue (balanced)", () => {
+  it("redacts signed authority even when malformed or returned as an object", () => {
+    expect(redactValue({ Assertion: { arbitrary: "private-membership" }, Challenge: "short-invalid" })).toEqual({
+      Assertion: REDACTED,
+      Challenge: REDACTED,
+    });
+    expect(redactValue({ assertion: "not-a-jwt" })).toEqual({ assertion: REDACTED });
+  });
   it("redacts known sensitive fields and PII by name", () => {
     expect(
       redactValue({

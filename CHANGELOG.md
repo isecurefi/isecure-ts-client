@@ -6,6 +6,20 @@
 
 ## Unreleased
 
+- Synchronize signed workspace schema v2: explicit server-enrolled company and actor directory facts, bounded by the platform model. Legacy missing facts are refused; transport remains opaque and grants no authority.
+
+- Require the signed `enrollmentDigest` in workspace claims so native persistence can distinguish
+  scheduled active-role transitions from changed enrollment at the same revision pair.
+
+- Add the owning WS API 2.16 contract and `readWorkspaceAuthority()` for challenge-bound company
+  authority transport, with cancellation, no automatic retries and explicit assertion redaction.
+  Generated types retain the signed header/claims schema; trust verification and effective roles
+  remain native/server responsibilities. This does not deploy the endpoint or enable plugins.
+
+- Generate the v2.15 audit `Tenant` selector for operator reads. Existing Account-only requests let the server resolve current tenant ownership; explicit Tenant preserves deleted-account history.
+
+- Generate the additive `ListAccountUsage.Licenses` contract for current retirement-aware user-license estimates. Counts stay server-owned; historical eligibility and failed reads remain explicitly unavailable.
+
 - Align the bundled REST contract and generated MFA types with the published reference, document SMS-to-TOTP enrollment and recovery, and preserve legacy textual session expiry in the high-level client.
 
 - Fix `loginWithPrompt()` incorrectly returning `stalled` when a fresh login after email verification requires MFA again. Preserve repeated email/phone verification guards and the transition limit; cover SMS, TOTP, and factor selection.

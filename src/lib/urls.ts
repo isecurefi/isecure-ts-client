@@ -69,6 +69,10 @@ export class UrlBuilder {
     return this.url("audit");
   }
 
+  workspaceAuthority(): string {
+    return this.url("desktop", "workspace-authority");
+  }
+
   accountUsage(): string {
     return this.url("usage", "accounts");
   }
