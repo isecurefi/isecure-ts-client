@@ -322,6 +322,23 @@ describe("OpenAPI contract honesty", () => {
       pattern: "^sha256:[a-f0-9]{64}$",
     });
   });
+  it("requires explicit bounded platform directory facts in signed schema v2", () => {
+    const claims = spec.definitions.WorkspaceAuthorityClaims;
+    expect(claims?.required).toContain("directory");
+    expect(claims?.properties?.schemaVersion).toEqual({ type: "integer", enum: [2] });
+    expect(claims?.properties?.identityIssuer).toMatchObject({ maxLength: 512 });
+    expect(claims?.properties?.directory).toEqual({ $ref: "#/definitions/WorkspaceAuthorityDirectory" });
+    const directory = spec.definitions.WorkspaceAuthorityDirectory;
+    const names = ["tenantName", "legalEntityName", "legalEntityExternalId"];
+    const times = ["tenantCreatedAt", "legalEntityEffectiveFrom", "legalEntityEffectiveUntil", "actorCreatedAt"];
+    expect(directory).toMatchObject({ type: "object", additionalProperties: false });
+    expect([...(directory?.required ?? [])].sort()).toEqual([...names, ...times].sort());
+    expect(Object.keys(directory?.properties ?? {}).sort()).toEqual([...names, ...times].sort());
+    for (const field of names)
+      expect(directory?.properties?.[field]).toEqual({ type: "string", minLength: 1, maxLength: 256 });
+    for (const field of times)
+      expect(directory?.properties?.[field]).toEqual({ $ref: "#/definitions/WorkspaceAuthorityEpoch" });
+  });
   it("supports every operationId declared in wsapi_v2.json", () => {
     expect(operationIdsFromSpec()).toEqual([...SUPPORTED_OPERATIONS].sort());
     expect(Object.keys(contract).sort()).toEqual(operationIdsFromSpec());

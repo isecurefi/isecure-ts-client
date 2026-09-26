@@ -1817,6 +1817,9 @@
           "pattern": "^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$",
           "type": "string"
         },
+        "directory": {
+          "$ref": "#/definitions/WorkspaceAuthorityDirectory"
+        },
         "enrollmentDigest": {
           "description": "Stable digest of the complete validated company/member enrollment, including inactive scheduled assignments. Equal company/membership revisions must retain this digest; current active assignments may change at their time boundaries.",
           "maxLength": 71,
@@ -1838,7 +1841,7 @@
           "$ref": "#/definitions/WorkspaceAuthorityEpoch"
         },
         "identityIssuer": {
-          "maxLength": 2048,
+          "maxLength": 512,
           "minLength": 1,
           "pattern": "^https://",
           "type": "string"
@@ -1859,7 +1862,7 @@
         },
         "schemaVersion": {
           "enum": [
-            1
+            2
           ],
           "type": "integer"
         },
@@ -1893,7 +1896,51 @@
         "challenge",
         "workspace",
         "profile",
-        "assignments"
+        "assignments",
+        "directory"
+      ],
+      "type": "object"
+    },
+    "WorkspaceAuthorityDirectory": {
+      "additionalProperties": false,
+      "description": "Explicit server-enrolled platform identity facts. These are not display values supplied by the desktop and do not contain role-administration records.",
+      "properties": {
+        "actorCreatedAt": {
+          "$ref": "#/definitions/WorkspaceAuthorityEpoch"
+        },
+        "legalEntityEffectiveFrom": {
+          "$ref": "#/definitions/WorkspaceAuthorityEpoch"
+        },
+        "legalEntityEffectiveUntil": {
+          "$ref": "#/definitions/WorkspaceAuthorityEpoch"
+        },
+        "legalEntityExternalId": {
+          "maxLength": 256,
+          "minLength": 1,
+          "type": "string"
+        },
+        "legalEntityName": {
+          "maxLength": 256,
+          "minLength": 1,
+          "type": "string"
+        },
+        "tenantCreatedAt": {
+          "$ref": "#/definitions/WorkspaceAuthorityEpoch"
+        },
+        "tenantName": {
+          "maxLength": 256,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "tenantName",
+        "tenantCreatedAt",
+        "legalEntityExternalId",
+        "legalEntityName",
+        "legalEntityEffectiveFrom",
+        "legalEntityEffectiveUntil",
+        "actorCreatedAt"
       ],
       "type": "object"
     },
