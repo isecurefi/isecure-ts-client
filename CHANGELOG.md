@@ -1,5 +1,55 @@
 # Changelog
 
+## [3.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.8.0...isecure-ts-client-v3.0.0) (2026-09-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Node.js 22 is no longer supported. Consumers must use Node.js 24 or newer.
+
+### Features
+
+* add authenticated audit history pagination ([2310b0d](https://github.com/isecurefi/isecure-ts-client/commit/2310b0de2b90fd0bda292af72a50be0343792fdf))
+* add experimental ISO observation client ([f2a6dc5](https://github.com/isecurefi/isecure-ts-client/commit/f2a6dc591388cee6411f4cc39a062fd0a4a858e6))
+* add manual processing payment upload example ([6f50d7e](https://github.com/isecurefi/isecure-ts-client/commit/6f50d7eb37f7365818a6f6101bdf9f9b6514dac2))
+* add payment operations to ISO client ([0dc71ec](https://github.com/isecurefi/isecure-ts-client/commit/0dc71ec49386236c2bd4e57945df4eae2c8566ec))
+* add RetireCert, DeleteAccount and SelectMFA operations ([2cad6d1](https://github.com/isecurefi/isecure-ts-client/commit/2cad6d1f1bed794e2ab910a1e76072c59669352b))
+* add signed company workspace authority transport ([d9eb7d6](https://github.com/isecurefi/isecure-ts-client/commit/d9eb7d60df71d5853070a29e72e93f02897aeb0d))
+* add verified payment export client ([d8634f8](https://github.com/isecurefi/isecure-ts-client/commit/d8634f88d8c41dfec97460291ea94b5e8a4cb9ad))
+* **examples:** add Processing simulator journey ([27aa9c1](https://github.com/isecurefi/isecure-ts-client/commit/27aa9c124e656f840f0a882b6b4f5482da6b9b04))
+* expose certificate renewal bank response audit fields ([#66](https://github.com/isecurefi/isecure-ts-client/issues/66)) ([25dd85c](https://github.com/isecurefi/isecure-ts-client/commit/25dd85c6d88751e6275cde2805d81aca3e2c8c07))
+* harden SDK auth/verification surface (1.0.2) ([#5](https://github.com/isecurefi/isecure-ts-client/issues/5)) ([2bffed2](https://github.com/isecurefi/isecure-ts-client/commit/2bffed2739f0a64ab5b41ab09759ac9ca8eb7a94))
+* **iso20022:** add bank simulation control client ([15d592c](https://github.com/isecurefi/isecure-ts-client/commit/15d592c6c57ab23a90854196284b96c757b79c1c))
+* **iso20022:** add payment submission client ([b3bd7a9](https://github.com/isecurefi/isecure-ts-client/commit/b3bd7a9384ce0769be6a0b821f669158d3174e08))
+* **iso20022:** expose authenticated processing event stream ([f3dede6](https://github.com/isecurefi/isecure-ts-client/commit/f3dede6da846a2f59a67478947c30bf99dffcb74))
+* **mfa:** add login-time MFA factor selection (SELECT_MFA_TYPE) ([#20](https://github.com/isecurefi/isecure-ts-client/issues/20)) ([f6eaa74](https://github.com/isecurefi/isecure-ts-client/commit/f6eaa74a12bdb2f9313d5656afafe11ebc60cc63))
+* redaction hardening + modularity (3/5) ([#9](https://github.com/isecurefi/isecure-ts-client/issues/9)) ([5f2540a](https://github.com/isecurefi/isecure-ts-client/commit/5f2540ad4a21b44dff99122840f526b971a5762d))
+* require Node.js 24 or newer ([#39](https://github.com/isecurefi/isecure-ts-client/issues/39)) ([7311e51](https://github.com/isecurefi/isecure-ts-client/commit/7311e51bbdf168cf32f9f300cd692568726cc5bd))
+* resilient transport + typed errors (2/5) ([#8](https://github.com/isecurefi/isecure-ts-client/issues/8)) ([352742c](https://github.com/isecurefi/isecure-ts-client/commit/352742ce6662b1f66bcedfa6153a8dadb5e94be5))
+* session lifecycle + refresh hook (4/5) ([#10](https://github.com/isecurefi/isecure-ts-client/issues/10)) ([6cf5b24](https://github.com/isecurefi/isecure-ts-client/commit/6cf5b24eb1c053dac9429a48d87b4e4b2d5963e6))
+* support browser bundlers ([33d3b89](https://github.com/isecurefi/isecure-ts-client/commit/33d3b89333e042060f9bc681a8ab5ec938feeb89))
+* **totp:** Google Authenticator (TOTP) MFA support ([#18](https://github.com/isecurefi/isecure-ts-client/issues/18)) ([5f854ea](https://github.com/isecurefi/isecure-ts-client/commit/5f854ea122ac05b4251079036eaaae48b3f1f120))
+* transport signed company workspace authority without retries ([b8338ea](https://github.com/isecurefi/isecure-ts-client/commit/b8338ea6c67396e40a1014d94569de733f80c0f7))
+* type effective bank connections ([0273aaa](https://github.com/isecurefi/isecure-ts-client/commit/0273aaa2261ce085e412bb006e585ed8d518ffb6))
+* type the session Account object on authenticated logins ([549e783](https://github.com/isecurefi/isecure-ts-client/commit/549e7834daea69f64c422efdb15bf42668173237))
+* type the session Account object on authenticated logins ([7f205b0](https://github.com/isecurefi/isecure-ts-client/commit/7f205b0d11df10fd696770a07f97693b31d5fb63))
+
+
+### Bug Fixes
+
+* align MFA contract and enrollment guidance with live API ([195f4e0](https://github.com/isecurefi/isecure-ts-client/commit/195f4e0413bdcbad3a9157ace5acd1a4515ee75f))
+* **auth:** allow fresh MFA after accepted verification ([f85068b](https://github.com/isecurefi/isecure-ts-client/commit/f85068bebef5d2704d272bc51ae3096001259ed4))
+* **auth:** explain password challenge length limit ([e191236](https://github.com/isecurefi/isecure-ts-client/commit/e191236d86d418b7ca32350b8cd16ea1096a3c44))
+* **auth:** explain password challenge length limit ([6d1830a](https://github.com/isecurefi/isecure-ts-client/commit/6d1830a56a1b5b1598d99969198eb5c3b23a0077))
+* **deps:** refresh dependencies and resolve audit alerts ([#34](https://github.com/isecurefi/isecure-ts-client/issues/34)) ([5ec76e6](https://github.com/isecurefi/isecure-ts-client/commit/5ec76e65a5d48f28c6d81fe2848b26b5a42a3408))
+* **example:** bound payment end-to-end identifier ([b23a68c](https://github.com/isecurefi/isecure-ts-client/commit/b23a68c2958c3f87feafdfe3bc801ec67f72940d))
+* **iso20022:** expose simulation capability reference ([92a679b](https://github.com/isecurefi/isecure-ts-client/commit/92a679b23e88a9b60d5668bd4d4855fd9971d548))
+* **iso20022:** require bank simulation management authority ([823d410](https://github.com/isecurefi/isecure-ts-client/commit/823d410203edaf34fa75496396774358795b95b9))
+* **metadata:** point package to canonical repository ([#37](https://github.com/isecurefi/isecure-ts-client/issues/37)) ([cf52639](https://github.com/isecurefi/isecure-ts-client/commit/cf5263974e3bf1b89eaeecba8ee5bf68d8619ae1))
+* refresh audited build dependencies ([f1e321d](https://github.com/isecurefi/isecure-ts-client/commit/f1e321d262436d849377fc17956f68aa911f5af0))
+* repin payment export profile lifecycle contract ([14445b2](https://github.com/isecurefi/isecure-ts-client/commit/14445b2d51c7dc010676b9362c91a0c812167fe3))
+* resolve js-yaml audit advisory ([1e594ba](https://github.com/isecurefi/isecure-ts-client/commit/1e594ba5c38195d481061fac78bb072eb572b6a9))
+
 ## 2.8.0 (2026-09-22)
 
 - Add `listAccountUsage()` for authenticated daily and monthly distinct observed bank accounts, preserving server-decided scope and explicit missing/partial coverage.
