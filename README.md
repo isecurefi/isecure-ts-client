@@ -357,6 +357,8 @@ it accepts no tenant selector, company, actor or role input. It follows the exis
 hook and forwards cancellation. This request explicitly disables Axios retries, including rate-limit
 retries and transport-wide opt-ins. Custom transports must honor `TransportRequest.retry: false`.
 
+Signed schema v2 includes explicit enrolled company names, external identity and platform registration dates. These facts must stay in protected native storage and must not be logged. The SDK never supplies missing directory facts or migrates legacy evidence.
+
 The response's `Assertion` is opaque signed evidence. The SDK does not decode it, retain it in the
 session, cache it or turn it into permissions. The trusted native consumer must verify its signature,
 fixed environment trust, schema, session/challenge binding, expiry and enrollment revisions/digest before

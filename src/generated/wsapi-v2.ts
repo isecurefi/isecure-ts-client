@@ -1542,6 +1542,7 @@ export interface components {
             assignments: components["schemas"]["WorkspaceAuthorityAssignment"][];
             aud: string;
             challenge: string;
+            directory: components["schemas"]["WorkspaceAuthorityDirectory"];
             /** @description Stable digest of the complete validated company/member enrollment, including inactive scheduled assignments. Equal company/membership revisions must retain this digest; current active assignments may change at their time boundaries. */
             enrollmentDigest: string;
             /** @enum {string} */
@@ -1553,10 +1554,20 @@ export interface components {
             iss: string;
             profile: components["schemas"]["WorkspaceAuthorityProfile"];
             /** @enum {integer} */
-            schemaVersion: 1;
+            schemaVersion: 2;
             sessionDigest: string;
             subscriptionTenant: string;
             workspace: components["schemas"]["WorkspaceAuthorityWorkspace"];
+        };
+        /** @description Explicit server-enrolled platform identity facts. These are not display values supplied by the desktop and do not contain role-administration records. */
+        WorkspaceAuthorityDirectory: {
+            actorCreatedAt: components["schemas"]["WorkspaceAuthorityEpoch"];
+            legalEntityEffectiveFrom: components["schemas"]["WorkspaceAuthorityEpoch"];
+            legalEntityEffectiveUntil: components["schemas"]["WorkspaceAuthorityEpoch"];
+            legalEntityExternalId: string;
+            legalEntityName: string;
+            tenantCreatedAt: components["schemas"]["WorkspaceAuthorityEpoch"];
+            tenantName: string;
         };
         WorkspaceAuthorityEpoch: number;
         WorkspaceAuthorityHeader: {

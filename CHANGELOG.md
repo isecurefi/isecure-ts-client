@@ -6,6 +6,8 @@
 
 ## Unreleased
 
+- Synchronize signed workspace schema v2: explicit server-enrolled company and actor directory facts, bounded by the platform model. Legacy missing facts are refused; transport remains opaque and grants no authority.
+
 - Require the signed `enrollmentDigest` in workspace claims so native persistence can distinguish
   scheduled active-role transitions from changed enrollment at the same revision pair.
 
