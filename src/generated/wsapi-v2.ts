@@ -189,7 +189,7 @@ export interface paths {
         };
         /**
          * ListAuditEvents
-         * @description Read sanitized account-management and automatic certificate-renewal audit history through the authenticated API. Integrator API key owners can read their entire tenant or select Account; customer accounts can read only their own account. API-key ownership is verified before any log access. Both admin and data modes can read their permitted history.
+         * @description Read sanitized account-management and automatic certificate-renewal audit history through the authenticated API. Integrator API key owners can read their entire tenant or select Account; customer accounts can read only their own account. Verified superadmins may select Tenant explicitly. With Account alone, a superadmin reads the account's current tenant resolved by an exact server-side lookup. Deleted accounts require explicit Tenant for superadmins; integrator owners retain deleted history in their own tenant without a lookup. Omitting both selectors reads the caller's own tenant, never all tenants. API-key ownership and server-owned operator authority are verified before any log access. Both admin and data modes can read their permitted history.
          *
          *     Events include the actor, action, affected account, timestamp, outcome and operation/request correlation. Automatic certificate renewal uses action certificate.renew and actorType system. A request event records the attempt time, step events record bank contact and persistence, and a result records rejected, failed, completed or skipped. completed means credentials were stored; a bank acceptance alone is insufficient. Bank rejections include bankResponseCode and, when safe to expose, bankResponseText. A timeout or malformed response has no invented bank code. A request without a result is incomplete; do not infer rejection or success. No bank files, SOAP messages, credentials, private keys or raw internal diagnostics are returned. Delivery is asynchronous; deduplicate by eventId across pages because publication retries may repeat an event. Streams survive account deletion and events have ten-year retention. Integrator owners can query deleted-account history without the deleted users-table row.
          *
@@ -311,6 +311,26 @@ export interface paths {
          *     Retiring a bank that has no active certificate fails, so a repeated call is a clean error rather than a second rename.
          */
         delete: operations["RetireCert"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/desktop/workspace-authority": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * ReadWorkspaceAuthority
+         * @description Read short-lived signed company workspace authority for the current verified Admin session and explicit company enrollment. The only input is a native one-use challenge. Tenant selection, operator status and feature flags do not grant company membership or roles. No bank or provider request is performed. The native application must verify the signature, supported contract, session/challenge binding and expiry before use; decoding this string is not authorization. Requires the separately configured workspace authority service and enrollment. Do not log, cache or persist the assertion in browser storage.
+         */
+        post: operations["ReadWorkspaceAuthority"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -690,6 +710,17 @@ export interface components {
             /** @description Certificates retired with RetireCert or set aside by ISECure */
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
         };
+        /** @description Persistent status of collection for yesterday in Europe/Helsinki. Reading this status never starts a job. */
+        AccountUsageCollectionDescriptor: {
+            /** Format: date */
+            Date: string;
+            /** Format: date-time */
+            FinishedAt?: string;
+            /** Format: date-time */
+            StartedAt?: string;
+            /** @enum {string} */
+            State: "not_started" | "running" | "completed" | "failed" | "interrupted" | "recorded";
+        };
         AccountUsageDayDescriptor: {
             Date: string;
             Issues: string[];
@@ -702,8 +733,10 @@ export interface components {
             Basis: "observed-camt-accounts@1";
             /** Format: date-time */
             CollectedAt?: string;
+            Collection?: components["schemas"]["AccountUsageCollectionDescriptor"];
             Daily: components["schemas"]["AccountUsageDayDescriptor"][];
             Issues: string[];
+            Licenses?: components["schemas"]["AccountUsageLicensesDescriptor"];
             MissingDays: string[];
             Month: string;
             Tenant: string;
@@ -711,6 +744,29 @@ export interface components {
             Timezone: "Europe/Helsinki";
             /** @description Distinct observed accounts across all available days in the selected scope; absent when no results exist. */
             UniqueAccounts?: number;
+        };
+        /** @description Current user-license estimate for the requested tenant or user. Each non-retired user contributes max(1, monthly distinct own bank accounts); Admin/Data modes count together and retired users contribute zero. Tenant figures sum users. Provisional estimates use current membership, not a final invoice. Historical eligibility is unavailable until snapshots exist. */
+        AccountUsageLicensesDescriptor: {
+            /**
+             * Format: date-time
+             * @description Time current eligibility was read; present only with an estimate.
+             */
+            AsOf?: string;
+            /** @enum {string} */
+            Basis: "non-retired-user-own-accounts@1";
+            /** @description Current non-retired user identities, independent of registered sign-in modes. */
+            BillableUsers?: number;
+            /** @description Present only for provisional estimates. A known zero remains distinct from an unavailable estimate. */
+            Count?: number;
+            /** @description Retained users with retired bank material and no remaining direct or authorized linked bank certificate. */
+            RetiredUsers?: number;
+            /**
+             * @description Customers receive only user scope. Authorized owners/operators may receive tenant scope.
+             * @enum {string}
+             */
+            Scope: "tenant" | "user";
+            /** @enum {string} */
+            State: "provisional" | "unavailable" | "historical_unavailable";
         };
         AccountUsageUserDescriptor: {
             Email: string;
@@ -1226,6 +1282,33 @@ export interface components {
         };
         /**
          * @example {
+         *       "Challenge": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE"
+         *     }
+         */
+        ReadWorkspaceAuthorityReq: {
+            /** @description Native-generated canonical base64url encoding of 32 random bytes, without padding. */
+            Challenge: string;
+        };
+        /**
+         * @example {
+         *       "Assertion": "header.payload.signature",
+         *       "RequestId": "synthetic-request",
+         *       "ResponseCode": "..",
+         *       "ResponseText": ".."
+         *     }
+         */
+        ReadWorkspaceAuthorityResp: {
+            /** @description RS256 compact JWS for native verification. At most 60 seconds of authority; this is never a provider credential. */
+            Assertion: string;
+            /** @description Opaque request identifier for support. */
+            RequestId: string;
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+        };
+        /**
+         * @example {
          *       "ApiKey": "hzYAVO9Sg98nsNh81M84O2kyXVy6K1xwHD8",
          *       "ChResp": "ezwXceQ63fV9oWTSJBAE2Zq1Cw5tBIJe+7+Rl8jrgbk=|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e",
          *       "Company": "ISECure Oy",
@@ -1446,6 +1529,68 @@ export interface components {
             AccessToken: string;
             /** @description 6-digit code from the authenticator app */
             Code: string;
+        };
+        WorkspaceAuthorityAssignment: {
+            assignedByActorId: components["schemas"]["WorkspaceAuthorityUuid"];
+            effectiveFrom: components["schemas"]["WorkspaceAuthorityEpoch"];
+            effectiveUntil: components["schemas"]["WorkspaceAuthorityEpoch"];
+            id: components["schemas"]["WorkspaceAuthorityUuid"];
+            roleId: string;
+        };
+        /** @description Decoded signed payload for native verification, not a JSON authority response. Require the pinned signature/issuer/audience/environment/key, exact session digest and one-use challenge, exp > now and exp <= iat + 60, current enrollment revisions and exact generated profile. Assignment intervals and role names are validated against that profile; no role implies another role. Schema validity alone grants nothing. */
+        WorkspaceAuthorityClaims: {
+            assignments: components["schemas"]["WorkspaceAuthorityAssignment"][];
+            aud: string;
+            challenge: string;
+            directory: components["schemas"]["WorkspaceAuthorityDirectory"];
+            /** @description Stable digest of the complete validated company/member enrollment, including inactive scheduled assignments. Equal company/membership revisions must retain this digest; current active assignments may change at their time boundaries. */
+            enrollmentDigest: string;
+            /** @enum {string} */
+            environment: "test" | "production";
+            exp: components["schemas"]["WorkspaceAuthorityEpoch"];
+            iat: components["schemas"]["WorkspaceAuthorityEpoch"];
+            identityIssuer: string;
+            identitySubject: string;
+            iss: string;
+            profile: components["schemas"]["WorkspaceAuthorityProfile"];
+            /** @enum {integer} */
+            schemaVersion: 2;
+            sessionDigest: string;
+            subscriptionTenant: string;
+            workspace: components["schemas"]["WorkspaceAuthorityWorkspace"];
+        };
+        /** @description Explicit server-enrolled platform identity facts. These are not display values supplied by the desktop and do not contain role-administration records. */
+        WorkspaceAuthorityDirectory: {
+            actorCreatedAt: components["schemas"]["WorkspaceAuthorityEpoch"];
+            legalEntityEffectiveFrom: components["schemas"]["WorkspaceAuthorityEpoch"];
+            legalEntityEffectiveUntil: components["schemas"]["WorkspaceAuthorityEpoch"];
+            legalEntityExternalId: string;
+            legalEntityName: string;
+            tenantCreatedAt: components["schemas"]["WorkspaceAuthorityEpoch"];
+            tenantName: string;
+        };
+        WorkspaceAuthorityEpoch: number;
+        WorkspaceAuthorityHeader: {
+            /** @enum {string} */
+            alg: "RS256";
+            kid: string;
+            /** @enum {string} */
+            typ: "JWT";
+        };
+        WorkspaceAuthorityProfile: {
+            digest: string;
+            id: string;
+            revisionId: components["schemas"]["WorkspaceAuthorityUuid"];
+            version: components["schemas"]["WorkspaceAuthorityRevision"];
+        };
+        WorkspaceAuthorityRevision: number;
+        WorkspaceAuthorityUuid: string;
+        WorkspaceAuthorityWorkspace: {
+            actorId: components["schemas"]["WorkspaceAuthorityUuid"];
+            companyRevision: components["schemas"]["WorkspaceAuthorityRevision"];
+            legalEntityId: components["schemas"]["WorkspaceAuthorityUuid"];
+            membershipRevision: components["schemas"]["WorkspaceAuthorityRevision"];
+            platformTenantId: components["schemas"]["WorkspaceAuthorityUuid"];
         };
     };
     responses: never;
@@ -1831,7 +1976,9 @@ export interface operations {
     ListAuditEvents: {
         parameters: {
             query?: {
-                /** @description Optional customer email. Integrator owners may select any account history in their tenant, including deleted accounts. Other users may select only their own email; omitted means their own account. For an integrator, omitted means the entire tenant. */
+                /** @description Optional exact tenant API-key identifier. Verified superadmins may select another tenant, including retained history after account deletion. Other callers may only specify their own tenant. Keep Tenant and Account unchanged while following NextToken. With Account alone a superadmin resolves its current tenant; a missing target requires Tenant. */
+                Tenant?: string;
+                /** @description Optional customer email. Integrator owners may select any account history in their tenant, including deleted accounts. Other users may select only their own email; omitted means their own account. For an integrator, omitted means the entire tenant. Superadmins can select an account in another tenant; specify Tenant for deleted accounts. */
                 Account?: string;
                 /** @description Inclusive UTC start time on or after 2024-01-01, e.g. 2026-09-19T00:00:00.000Z. Defaults to seven days ago. Maximum range: 31 days. */
                 From?: string;
@@ -2468,6 +2615,82 @@ export interface operations {
             500: {
                 headers: {
                     "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ReadWorkspaceAuthority: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Account parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReadWorkspaceAuthorityReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadWorkspaceAuthorityResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
                     [name: string]: unknown;
                 };
                 content: {

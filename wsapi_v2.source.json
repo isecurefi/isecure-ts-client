@@ -1,7 +1,8 @@
 {
-  "repository": "https://github.com/isecurefi/wsapi-v2",
-  "source": "https://raw.githubusercontent.com/isecurefi/wsapi-v2/2408f7e17887922648db21be156b38c5e1285aa7/wsapi_v2.json",
-  "ref": "2408f7e",
-  "commit": "2408f7e17887922648db21be156b38c5e1285aa7",
-  "sha256": "a79f425d37ab539ec90bfa58d61798608cfcaaa3f977ca94e0c3777b1a9b4d94"
+  "repository": "https://github.com/isecurefi/aws",
+  "path": "ws-channel-api/wsapi_v2.json",
+  "source": "https://raw.githubusercontent.com/isecurefi/aws/8e943e7c8ed9f583eabafdc56e3223c499b904cc/ws-channel-api/wsapi_v2.json",
+  "ref": "8e943e7c",
+  "commit": "8e943e7c8ed9f583eabafdc56e3223c499b904cc",
+  "sha256": "eb879766165fd304d7142916e3d75c3838f45e6f98e9b5dae78ed69c806eb2ce"
 }

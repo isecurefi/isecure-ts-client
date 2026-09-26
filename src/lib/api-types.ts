@@ -125,6 +125,11 @@ export type ListKeysResponse = JsonResponse<"ListKeys", 200>;
 export type DeleteKeyRequest = JsonRequest<"DeleteKey">;
 export type DeleteKeyResponse = JsonResponse<"DeleteKey", 200>;
 export type LogoutResponse = JsonResponse<"Logout", 200>;
+/** Opaque signed evidence for native verification; the SDK does not grant workspace authority. */
+export type ReadWorkspaceAuthorityRequest = JsonRequest<"ReadWorkspaceAuthority">;
+export type ReadWorkspaceAuthorityResponse = JsonResponse<"ReadWorkspaceAuthority", 200>;
+export type WorkspaceAuthorityHeader = components["schemas"]["WorkspaceAuthorityHeader"];
+export type WorkspaceAuthorityClaims = components["schemas"]["WorkspaceAuthorityClaims"];
 export type OperationId = keyof operations;
 
 export const SUPPORTED_OPERATIONS = [
@@ -155,6 +160,7 @@ export const SUPPORTED_OPERATIONS = [
   "ListAccounts",
   "ListAuditEvents",
   "ListAccountUsage",
+  "ReadWorkspaceAuthority",
   "DeleteAccount",
   "ListKeys",
   "DeleteKey",

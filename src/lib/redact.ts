@@ -30,6 +30,7 @@ const SENSITIVE_FIELDS = new Set(
     "code",
     "chresp",
     "challenge",
+    "assertion",
     "privatekey",
     "encprivatekey",
     "encryptedprivatekey",

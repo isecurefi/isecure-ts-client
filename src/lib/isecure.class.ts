@@ -10,6 +10,7 @@ import {
 } from "./auth.js";
 import {
   type ApiResponse,
+  type ReadWorkspaceAuthorityResponse,
   type ConfigCertsRequest,
   type ConfigCertsResponse,
   type DeleteFileResponse,
@@ -72,6 +73,7 @@ import {
   type HttpMethod,
   type QueryParams,
   type Transport,
+  type TransportRequest,
 } from "./transport.js";
 
 export interface IWSChannel {
@@ -513,7 +515,9 @@ export class WSChannel {
   /**
    * Reads one newest-first audit page. Integrator owners see their tenant;
    * customers see only their own account. Both admin and data modes may read.
-   * Follow NextToken even after an empty page, keeping Account unchanged.
+   * Follow NextToken even after an empty page, keeping Tenant and Account unchanged.
+   * Operators may select Tenant, or let the server resolve a live Account's tenant.
+   * Deleted-account reads by an operator require Tenant.
    * Defaults: past seven days, up to 100 events; maximum range is 31 days.
    * Delivery is asynchronous and account deletion preserves the evidence.
    */
@@ -526,6 +530,26 @@ export class WSChannel {
 
   async listAccounts(): Promise<ListAccountsResponse> {
     return this.call<ListAccountsResponse>("GET", this.urls.integratorAccounts(), { auth: true });
+  }
+
+  /** Transport an exact native challenge. Verify the returned assertion in the trusted native host. */
+  async readWorkspaceAuthority(
+    Challenge: string,
+    options: { signal?: AbortSignal } = {},
+  ): Promise<ReadWorkspaceAuthorityResponse> {
+    if (
+      typeof Challenge !== "string" ||
+      Challenge.length !== 43 ||
+      !/^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/.test(Challenge)
+    ) {
+      throw new ISecureError("Invalid workspace authority challenge");
+    }
+    return this.call<ReadWorkspaceAuthorityResponse>("POST", this.urls.workspaceAuthority(), {
+      auth: true,
+      body: { Challenge },
+      retry: false,
+      ...(options.signal ? { signal: options.signal } : {}),
+    });
   }
 
   /** Daily and monthly distinct observed accounts; authority and coverage are server-decided. */
@@ -570,19 +594,28 @@ export class WSChannel {
   private async call<Res, Req = unknown>(
     method: HttpMethod,
     url: string,
-    options: { body?: Req; query?: QueryParams; auth?: boolean; skipFreshness?: boolean } = {},
+    options: {
+      body?: Req;
+      query?: QueryParams;
+      auth?: boolean;
+      skipFreshness?: boolean;
+      signal?: AbortSignal;
+      retry?: false;
+    } = {},
   ): Promise<Res> {
     if (options.auth && !options.skipFreshness) {
       await this.ensureFreshSession();
     }
 
-    const request: { method: HttpMethod; url: string; headers: HttpHeaders; body?: Req; query?: QueryParams } = {
+    const request: TransportRequest<Req> = {
       method,
       url,
       headers: options.auth ? this.authHeaders() : this.jsonHeaders(),
     };
     if (options.body !== undefined) request.body = options.body;
     if (options.query) request.query = options.query;
+    if (options.signal) request.signal = options.signal;
+    if (options.retry === false) request.retry = false;
 
     const response = await this.transport.request<Res, Req>(request);
     return response.data;
