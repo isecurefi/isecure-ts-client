@@ -147,8 +147,6 @@ function invoke(
       return platform.pluginArtifact.get(input as never);
     case "plugin_catalogue.list":
       return platform.pluginCatalogue.list(input);
-    case "plugin_registry_index.get":
-      return platform.pluginRegistryIndex.get(input);
     case "balances.explain":
       return client.balances.explain(input as never);
     case "balances.get":

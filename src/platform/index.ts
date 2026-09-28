@@ -9,6 +9,4 @@ export type {
   PluginCatalogueListResult,
   PluginCatalogueQualificationState,
   PluginCatalogueText,
-  PluginRegistryIndexGetInput,
-  PluginRegistryIndexLink,
 } from "../generated/iso20022-contracts.js";

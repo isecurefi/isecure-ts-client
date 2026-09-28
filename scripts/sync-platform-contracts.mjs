@@ -61,7 +61,6 @@ const operationIds = [
   "payment_orders.validate",
   "plugin_artifact.get",
   "plugin_catalogue.list",
-  "plugin_registry_index.get",
   "simulation_artifacts.list",
   "simulation_branches.create",
   "simulation_capabilities.list",
