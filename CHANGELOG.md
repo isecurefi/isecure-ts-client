@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v3.1.0...isecure-ts-client-v4.0.0) (2026-09-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **platform:** pluginRegistryIndex.get, PluginRegistryIndexGetInput and PluginRegistryIndexLink no longer exist; the whole listing is never linked.
+
+### Features
+
+* **platform:** list plugins from the Platform API only; drop the registry index link ([ec3e8dc](https://github.com/isecurefi/isecure-ts-client/commit/ec3e8dc0ac626dda0df453c3e1f59afa52b83a26))
+
 ## [3.1.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v3.0.0...isecure-ts-client-v3.1.0) (2026-09-28)
 
 
