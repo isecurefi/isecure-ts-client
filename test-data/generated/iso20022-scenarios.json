@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "9bf4087e90719b2503df7fc35ebd34544c631262",
-    "model": "Bankfiles@0.111.0",
-    "sourceDigest": "sha256:272bd94bd3290761b8945c17bf1471958c7a87ded97c9d3cf5023d0d5c5e4b49",
+    "revision": "dd275eb3ae9e95faf8d999b7e41a582408a14fc7",
+    "model": "Bankfiles@0.125.0",
+    "sourceDigest": "sha256:a57df80134ced241f3cee2e4e291ac3936f5214bd5121f6f893a72985bad7ffc",
     "fixedClock": "2040-01-02T03:04:05.000Z",
     "safety": {
       "syntheticOnly": true,
@@ -14631,6 +14631,498 @@
                       "operation_id": "payment_orders.validate"
                     }
                   ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "plugin_artifact.get",
+      "version": 1,
+      "contractDigest": "sha256:7bc01321852f9edc50595894f15c3f764af9f34e5c34854bc9750f29da327599",
+      "eventClosureDigest": "sha256:f11eb37f3f540934b0d6446ce24fde4359e3d5eb4349d9d86c7072084cc1b6bf",
+      "inputContract": "isecure.bankfiles.platform_api.PluginArtifactGetInput",
+      "resultContract": "isecure.bankfiles.platform_api.PluginArtifactLink",
+      "issueContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/plugin-artifact/{provider_id}",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "plugin_artifact.get",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "plugin_artifact.get.success",
+          "operationId": "plugin_artifact.get",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.platform_api.PluginArtifactGetInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PluginArtifactLink",
+          "input": {
+            "provider_id": "plugin_artifact.get-input-provid",
+            "package_id": "plugin_artifact.get-input-packag",
+            "package_version": "plugin_artifact.get-input-packag",
+            "artifact": "package"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "89eaaa0c-106a-49a6-90d5-684bfca683b7",
+                "operation_id": "plugin_artifact.get",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "628f6261-14b9-4616-b8d5-2bd9e002b2e7",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "artifact": "package",
+              "signed_content_digest": "plugin_artifact.get-result-signe",
+              "download_url": "plugin_artifact.get-result-downl",
+              "expires_at": "2040-01-02T03:04:05.000Z"
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_artifact.get.invalid_request",
+          "operationId": "plugin_artifact.get",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.platform_api.PluginArtifactGetInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_artifact.get.unauthorized",
+          "operationId": "plugin_artifact.get",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.platform_api.PluginArtifactGetInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {
+            "provider_id": "plugin_artifact.get-input-provid",
+            "package_id": "plugin_artifact.get-input-packag",
+            "package_version": "plugin_artifact.get-input-packag",
+            "artifact": "package"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_artifact.get.not_found",
+          "operationId": "plugin_artifact.get",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.platform_api.PluginArtifactGetInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {
+            "provider_id": "plugin_artifact.get-input-provid",
+            "package_id": "plugin_artifact.get-input-packag",
+            "package_version": "plugin_artifact.get-input-packag",
+            "artifact": "package"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_artifact.get.retryable",
+          "operationId": "plugin_artifact.get",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.platform_api.PluginArtifactGetInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {
+            "provider_id": "plugin_artifact.get-input-provid",
+            "package_id": "plugin_artifact.get-input-packag",
+            "package_version": "plugin_artifact.get-input-packag",
+            "artifact": "package"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "plugin_catalogue.list",
+      "version": 1,
+      "contractDigest": "sha256:b1a797a95139a40d90952e221e0674ecffb10a3c9c14baae61f764e4575ce9e3",
+      "eventClosureDigest": "sha256:f3d6e77153ab9ec8d93c29b05bbb0e35fc52fa9f57b79cad2713ee411e4c0dbe",
+      "inputContract": "isecure.bankfiles.platform_api.PluginCatalogueListInput",
+      "resultContract": "isecure.bankfiles.platform_api.PluginCatalogueListResult",
+      "issueContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/plugin-catalogue",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "plugin_catalogue.list",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "plugin_catalogue.list.success",
+          "operationId": "plugin_catalogue.list",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.platform_api.PluginCatalogueListInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PluginCatalogueListResult",
+          "input": {},
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "900de3d2-9cfa-4d4d-a893-76293e960ac5",
+                "operation_id": "plugin_catalogue.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "c048e975-a310-4df6-90c6-554fdf88e56a",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "entries": [
+                {
+                  "provider_id": "plugin_catalogue.list-result-ent",
+                  "package_id": "plugin_catalogue.list-result-ent",
+                  "package_version": "plugin_catalogue.list-result-ent",
+                  "package_digest": "plugin_catalogue.list-result-ent",
+                  "connector_manifest_digest": "plugin_catalogue.list-result-ent",
+                  "discovery": [
+                    {
+                      "locale": "plugin_catalogue.list-result-ent",
+                      "title": "plugin_catalogue.list-result-ent",
+                      "summary": "plugin_catalogue.list-result-ent",
+                      "search_terms": [
+                        "plugin_catalogue.list-result-ent"
+                      ]
+                    }
+                  ],
+                  "availability": "available",
+                  "qualification_state": "qualified",
+                  "limitation_codes": [
+                    "plugin_catalogue.list-result-ent"
+                  ],
+                  "released_at": "2040-01-02T03:04:05.000Z"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_catalogue.list.invalid_request",
+          "operationId": "plugin_catalogue.list",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.platform_api.PluginCatalogueListInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_catalogue.list.unauthorized",
+          "operationId": "plugin_catalogue.list",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.platform_api.PluginCatalogueListInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {},
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_catalogue.list.retryable",
+          "operationId": "plugin_catalogue.list",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.platform_api.PluginCatalogueListInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {},
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "plugin_registry_index.get",
+      "version": 1,
+      "contractDigest": "sha256:d6b9b8302a881e4731cc81036277f09d51e0c21c018352d7e828566444317216",
+      "eventClosureDigest": "sha256:7f90ce040a0c15e86e0bb3535a259b97a1a6121ade672f057ad7ba76037cf639",
+      "inputContract": "isecure.bankfiles.platform_api.PluginRegistryIndexGetInput",
+      "resultContract": "isecure.bankfiles.platform_api.PluginRegistryIndexLink",
+      "issueContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/plugin-registry-index",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "plugin_registry_index.get",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "plugin_registry_index.get.success",
+          "operationId": "plugin_registry_index.get",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.platform_api.PluginRegistryIndexGetInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PluginRegistryIndexLink",
+          "input": {},
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "3af0b68d-6d80-4bc2-b6a2-dcf9a658d450",
+                "operation_id": "plugin_registry_index.get",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "0f73096f-c39d-4a03-af5e-b0149a2724db",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "download_url": "plugin_registry_index.get-result",
+              "expires_at": "2040-01-02T03:04:05.000Z"
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_registry_index.get.invalid_request",
+          "operationId": "plugin_registry_index.get",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.platform_api.PluginRegistryIndexGetInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_registry_index.get.unauthorized",
+          "operationId": "plugin_registry_index.get",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.platform_api.PluginRegistryIndexGetInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {},
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_registry_index.get.not_found",
+          "operationId": "plugin_registry_index.get",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.platform_api.PluginRegistryIndexGetInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {},
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "plugin_registry_index.get.retryable",
+          "operationId": "plugin_registry_index.get",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.platform_api.PluginRegistryIndexGetInput",
+          "outcomeContract": "isecure.bankfiles.platform_api.PlatformApiIssues",
+          "input": {},
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
                 }
               ]
             }
