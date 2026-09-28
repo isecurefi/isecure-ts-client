@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@dd275eb3ae9e95faf8d999b7e41a582408a14fc7
+// source: isecurefi/bankfiles-platform@bfbbc75bd321a6ca6f3b8eb9b889f85263304d19
 // model: Bankfiles@0.125.0
-// source-digest: sha256:a57df80134ced241f3cee2e4e291ac3936f5214bd5121f6f893a72985bad7ffc
+// source-digest: sha256:b12303fa31cf7f4bbb99908e505bfd0543a05f707f8801320ff71a9f7811c0ee
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = "approve" | "reject";
@@ -1254,6 +1254,7 @@ export interface PluginCatalogueEntry {
     readonly qualification_state: PluginCatalogueQualificationState;
     readonly limitation_codes: readonly string[];
     readonly released_at: string;
+    readonly release_entry: string;
 }
 
 export interface PluginCatalogueListInput {
@@ -1270,16 +1271,6 @@ export interface PluginCatalogueText {
     readonly title: string;
     readonly summary: string;
     readonly search_terms: readonly string[];
-}
-
-export interface PluginRegistryIndexGetInput {
-
-}
-
-export interface PluginRegistryIndexLink {
-    readonly context: OperationContext;
-    readonly download_url: string;
-    readonly expires_at: string;
 }
 
 export interface ControlSimulationClockInput {
@@ -3696,7 +3687,7 @@ export const iso20022Operations = {
     "method": "GET",
     "path": "/v1/plugin-catalogue",
     "version": 1,
-    "contractDigest": "sha256:b1a797a95139a40d90952e221e0674ecffb10a3c9c14baae61f764e4575ce9e3",
+    "contractDigest": "sha256:3cccc7d4b92311a71a0b95cc09ce2d7d196edb4b4e4efd08b935692825179138",
     "permission": "read",
     "audiences": [
       "rest",
@@ -3725,31 +3716,6 @@ export const iso20022Operations = {
         "objectFields": []
       }
     ]
-  },
-  "plugin_registry_index.get": {
-    "method": "GET",
-    "path": "/v1/plugin-registry-index",
-    "version": 1,
-    "contractDigest": "sha256:d6b9b8302a881e4731cc81036277f09d51e0c21c018352d7e828566444317216",
-    "permission": "read",
-    "audiences": [
-      "rest",
-      "typescript"
-    ],
-    "input": "isecure.bankfiles.platform_api.PluginRegistryIndexGetInput",
-    "result": "isecure.bankfiles.platform_api.PluginRegistryIndexLink",
-    "issues": "isecure.bankfiles.platform_api.PlatformApiIssues",
-    "idempotency": "none",
-    "expectedVersion": "none",
-    "idempotencyKeySchema": null,
-    "expectedResourceVersionSchema": null,
-    "requestBody": false,
-    "successResponse": {
-      "kind": "json",
-      "status": 200,
-      "mediaType": "application/json"
-    },
-    "parameters": []
   },
   "simulation_artifacts.list": {
     "method": "GET",
