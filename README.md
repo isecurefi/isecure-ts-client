@@ -573,9 +573,10 @@ const { entries } = await platform.pluginCatalogue.list({});
 ```
 
 `pluginCatalogue.list` returns the plugin catalogue filtered to the signed-in caller's tenant and
-roles. `pluginArtifact.get` and `pluginRegistryIndex.get` return five-minute links to a listed
-release's signed package or resource bundle and to the exact signed registry index. A link is a
-bearer capability: fetch it promptly, never log it, and verify the bytes against their signatures.
+roles; the Platform API is the only listing authority, and each entry carries its complete canonical
+release entry (`release_entry`). `pluginArtifact.get` returns a five-minute link to a listed
+release's signed package or resource bundle; the whole listing is never linked. A link is a bearer
+capability: fetch it promptly, never log it, and verify the bytes against their signatures.
 
 ## Supported Operations
 
