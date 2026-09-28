@@ -1,0 +1,14 @@
+export { createPlatformClient, platformOperationIds, type PlatformClient, type PlatformTransport } from "./client.js";
+export type {
+  PluginArtifactGetInput,
+  PluginArtifactKind,
+  PluginArtifactLink,
+  PluginCatalogueAvailability,
+  PluginCatalogueEntry,
+  PluginCatalogueListInput,
+  PluginCatalogueListResult,
+  PluginCatalogueQualificationState,
+  PluginCatalogueText,
+  PluginRegistryIndexGetInput,
+  PluginRegistryIndexLink,
+} from "../generated/iso20022-contracts.js";

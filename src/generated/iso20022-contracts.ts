@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@9bf4087e90719b2503df7fc35ebd34544c631262
-// model: Bankfiles@0.111.0
-// source-digest: sha256:272bd94bd3290761b8945c17bf1471958c7a87ded97c9d3cf5023d0d5c5e4b49
+// source: isecurefi/bankfiles-platform@dd275eb3ae9e95faf8d999b7e41a582408a14fc7
+// model: Bankfiles@0.125.0
+// source-digest: sha256:a57df80134ced241f3cee2e4e291ac3936f5214bd5121f6f893a72985bad7ffc
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = "approve" | "reject";
@@ -83,6 +83,12 @@ export type PaymentRemittanceKind = "none" | "unstructured" | "structured_credit
 export type PaymentTransferOutcomeState = "not_observed" | "pending" | "accepted" | "rejected" | "settled" | "returned" | "reversed" | "indeterminate" | "contradictory";
 
 export type PaymentValidationOutcome = "not_evaluated" | "valid" | "invalid" | "indeterminate";
+
+export type PluginArtifactKind = "package" | "resource_bundle";
+
+export type PluginCatalogueAvailability = "available" | "withdrawn" | "revoked";
+
+export type PluginCatalogueQualificationState = "qualified" | "unavailable";
 
 export type SimulationArtifactAccessMode = "file_exchange";
 
@@ -1216,6 +1222,64 @@ export interface StructuredDocumentRemittance {
 
 export interface UnstructuredPaymentRemittance {
     readonly text_lines: readonly string[];
+}
+
+export interface PlatformApiIssues {
+    readonly issues: readonly OperationIssue[];
+}
+
+export interface PluginArtifactGetInput {
+    readonly provider_id: string;
+    readonly package_id: string;
+    readonly package_version: string;
+    readonly artifact: PluginArtifactKind;
+}
+
+export interface PluginArtifactLink {
+    readonly context: OperationContext;
+    readonly artifact: PluginArtifactKind;
+    readonly signed_content_digest: string;
+    readonly download_url: string;
+    readonly expires_at: string;
+}
+
+export interface PluginCatalogueEntry {
+    readonly provider_id: string;
+    readonly package_id: string;
+    readonly package_version: string;
+    readonly package_digest: string;
+    readonly connector_manifest_digest: string;
+    readonly discovery: readonly PluginCatalogueText[];
+    readonly availability: PluginCatalogueAvailability;
+    readonly qualification_state: PluginCatalogueQualificationState;
+    readonly limitation_codes: readonly string[];
+    readonly released_at: string;
+}
+
+export interface PluginCatalogueListInput {
+    readonly search_text?: string;
+}
+
+export interface PluginCatalogueListResult {
+    readonly context: OperationContext;
+    readonly entries: readonly PluginCatalogueEntry[];
+}
+
+export interface PluginCatalogueText {
+    readonly locale: string;
+    readonly title: string;
+    readonly summary: string;
+    readonly search_terms: readonly string[];
+}
+
+export interface PluginRegistryIndexGetInput {
+
+}
+
+export interface PluginRegistryIndexLink {
+    readonly context: OperationContext;
+    readonly download_url: string;
+    readonly expires_at: string;
 }
 
 export interface ControlSimulationClockInput {
@@ -3563,6 +3627,123 @@ export const iso20022Operations = {
     "idempotencyKeySchema": null,
     "expectedResourceVersionSchema": null,
     "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "plugin_artifact.get": {
+    "method": "GET",
+    "path": "/v1/plugin-artifact/{provider_id}",
+    "version": 1,
+    "contractDigest": "sha256:7bc01321852f9edc50595894f15c3f764af9f34e5c34854bc9750f29da327599",
+    "permission": "read",
+    "audiences": [
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.platform_api.PluginArtifactGetInput",
+    "result": "isecure.bankfiles.platform_api.PluginArtifactLink",
+    "issues": "isecure.bankfiles.platform_api.PlatformApiIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "provider_id",
+        "location": "path",
+        "inputField": "provider_id",
+        "required": true,
+        "style": "simple",
+        "objectFields": []
+      },
+      {
+        "name": "package_id",
+        "location": "query",
+        "inputField": "package_id",
+        "required": true,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "package_version",
+        "location": "query",
+        "inputField": "package_version",
+        "required": true,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "artifact",
+        "location": "query",
+        "inputField": "artifact",
+        "required": true,
+        "style": "form",
+        "objectFields": []
+      }
+    ]
+  },
+  "plugin_catalogue.list": {
+    "method": "GET",
+    "path": "/v1/plugin-catalogue",
+    "version": 1,
+    "contractDigest": "sha256:b1a797a95139a40d90952e221e0674ecffb10a3c9c14baae61f764e4575ce9e3",
+    "permission": "read",
+    "audiences": [
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.platform_api.PluginCatalogueListInput",
+    "result": "isecure.bankfiles.platform_api.PluginCatalogueListResult",
+    "issues": "isecure.bankfiles.platform_api.PlatformApiIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "search_text",
+        "location": "query",
+        "inputField": "search_text",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      }
+    ]
+  },
+  "plugin_registry_index.get": {
+    "method": "GET",
+    "path": "/v1/plugin-registry-index",
+    "version": 1,
+    "contractDigest": "sha256:d6b9b8302a881e4731cc81036277f09d51e0c21c018352d7e828566444317216",
+    "permission": "read",
+    "audiences": [
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.platform_api.PluginRegistryIndexGetInput",
+    "result": "isecure.bankfiles.platform_api.PluginRegistryIndexLink",
+    "issues": "isecure.bankfiles.platform_api.PlatformApiIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
     "successResponse": {
       "kind": "json",
       "status": 200,
