@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.1.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v3.0.0...isecure-ts-client-v3.1.0) (2026-09-28)
+
+
+### Features
+
+* **platform:** add the Platform API client ([d08b34d](https://github.com/isecurefi/isecure-ts-client/commit/d08b34d5f5921eb573822c43d6a11c9501ba2ce1))
+* **platform:** add the Platform API client ([ecd9f17](https://github.com/isecurefi/isecure-ts-client/commit/ecd9f173f87561153cc12f8aeb9600a2a20fbbf6))
+
 ## [3.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v2.8.0...isecure-ts-client-v3.0.0) (2026-09-26)
 
 
