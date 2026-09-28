@@ -40,6 +40,11 @@
       "types": "./dist/iso20022/index.d.ts",
       "browser": "./dist/iso20022/index.js",
       "import": "./dist/iso20022/index.js"
+    },
+    "./platform": {
+      "types": "./dist/platform/index.d.ts",
+      "browser": "./dist/platform/index.js",
+      "import": "./dist/platform/index.js"
     }
   },
   "files": [

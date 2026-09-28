@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { iso20022Operations, type Iso20022OperationId } from "../generated/iso20022-contracts.js";
+import { createPlatformClient, type PlatformClient } from "../platform/client.js";
 import { createIso20022Client, type Iso20022Client } from "./client.js";
 import {
   Iso20022HttpError,
@@ -85,8 +86,11 @@ describe("generated ISO client mock black box", () => {
         });
         await transport.exchangeProcessingSession();
         const client = createIso20022Client(transport);
+        const platform = createPlatformClient(transport);
 
-        const outcome = await invoke(client, operation.operationId, fixture.input).catch((error: unknown) => error);
+        const outcome = await invoke(client, platform, operation.operationId, fixture.input).catch(
+          (error: unknown) => error,
+        );
 
         const request = operationFetch.mock.calls[0];
         if (request === undefined) {
@@ -134,10 +138,17 @@ async function readMock(): Promise<MockOperation[]> {
 
 function invoke(
   client: Iso20022Client,
+  platform: PlatformClient,
   operationId: Iso20022OperationId,
   input: Record<string, unknown>,
 ): Promise<unknown> {
   switch (operationId) {
+    case "plugin_artifact.get":
+      return platform.pluginArtifact.get(input as never);
+    case "plugin_catalogue.list":
+      return platform.pluginCatalogue.list(input);
+    case "plugin_registry_index.get":
+      return platform.pluginRegistryIndex.get(input);
     case "balances.explain":
       return client.balances.explain(input as never);
     case "balances.get":

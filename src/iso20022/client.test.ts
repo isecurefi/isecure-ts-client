@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { iso20022Operations, type Iso20022OperationId } from "../generated/iso20022-contracts.js";
+import { platformOperationIds } from "../platform/client.js";
 import { createIso20022Client } from "./client.js";
 import type {
   Iso20022Transport,
@@ -215,7 +216,10 @@ describe("experimental ISO 20022 client", () => {
     ]);
 
     expect(transport.calls).toHaveLength(71);
-    expect(transport.calls.map((call) => call.operationId)).toEqual(Object.keys(iso20022Operations));
+    const platform: readonly string[] = platformOperationIds;
+    expect(transport.calls.map((call) => call.operationId)).toEqual(
+      Object.keys(iso20022Operations).filter((operationId) => !platform.includes(operationId)),
+    );
     for (const call of transport.calls) {
       const operation = iso20022Operations[call.operationId as keyof typeof iso20022Operations];
       expect(call.metadata).toMatchObject({ contractVersion: operation.version });
