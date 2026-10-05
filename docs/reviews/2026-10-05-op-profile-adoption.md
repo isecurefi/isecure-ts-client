@@ -1,7 +1,7 @@
 # OP Processing profile contract adoption — 5 October 2026
 
 The experimental ISO 20022 client now consumes 73 operations from platform
-`aa51ebf5dfccaecdc75f4a41894f460c7b3ce9d4`. The generated contract lock records the exact client,
+`38ab39e08c84b24cbbf49a3cab8d53a0d2d3b465`. The generated contract lock records the exact client,
 OpenAPI and scenario bytes. The permanent File Exchange client is unchanged.
 
 Functional review: both OP ordinary Finland V9 profile IDs pass catalog discovery followed by exact

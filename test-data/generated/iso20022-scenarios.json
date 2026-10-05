@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "aa51ebf5dfccaecdc75f4a41894f460c7b3ce9d4",
+    "revision": "38ab39e08c84b24cbbf49a3cab8d53a0d2d3b465",
     "model": "Bankfiles@0.126.0",
     "sourceDigest": "sha256:9cacdc24a1e0e2af968877b0616e55bc03ca91101759e1939d151721a2de7520",
     "fixedClock": "2040-01-02T03:04:05.000Z",
