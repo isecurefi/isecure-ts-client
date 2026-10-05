@@ -93,6 +93,67 @@ function xmlResponse(bytes: Uint8Array, authority: PaymentExportContentAuthority
 }
 
 describe("ISO 20022 HTTP transport", () => {
+  it.each([
+    ["op-c2b-v9-finland-sepa-unstructured", "sepa_credit_transfer_unstructured"],
+    ["op-c2b-v9-finland-sepa-creditor-reference", "sepa_credit_transfer_creditor_reference"],
+  ])("discovers and configures the exact experimental OP profile %s", async (profileId, paymentType) => {
+    // Synthetic HTTP responses qualify SDK routing and metadata only. Platform profile tests own
+    // financial behavior; this fixture is neither bank acceptance nor a production availability claim.
+    const profile = {
+      bank_profile_id: profileId,
+      bank_id: "op",
+      bank_name: "OP",
+      country_code: "FI",
+      payment_type: paymentType,
+      message_definition: "pain.001.001.09",
+      profile_version: "1",
+      qualification_status: "experimental",
+      availability_status: "available",
+    };
+    const configuration = {
+      bank_profile_id: profileId,
+      debtor_account_identifier: "FI3950000100000123",
+      debtor_account_scheme: "iban" as const,
+      debtor_account_currency: "EUR",
+      initiating_party_name: "Synthetic OP initiating party",
+      initiating_party_customer_id: "SYNOP00001",
+      debtor_name: "Synthetic OP debtor",
+      debtor_bank_agreement_id: "SYNOP00001",
+      debtor_country_code: "FI",
+      debtor_agent_bic: "OKOYFIHH",
+    };
+    const operationFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      expect(headers.get("Authorization")).toBe(`Processing ${PROCESSING_TOKEN}`);
+      expect(headers.get("x-api-key")).toBe(API_KEY);
+      expect(headers.get("Authorization")).not.toContain(ID_TOKEN);
+      const url = input instanceof Request ? input.url : input.toString();
+      if (new URL(url).pathname.endsWith("/payment-export-profile-catalog")) {
+        expect(init?.method).toBe("GET");
+        return jsonResponse({ profiles: [profile], catalog_digest: `sha256:${"1".repeat(64)}`, issues: [] });
+      }
+      expect(new URL(url).pathname).toBe("/processing/v1/payment-export-profiles:configure");
+      expect(init?.method).toBe("POST");
+      if (typeof init?.body !== "string") throw new Error("synthetic configuration body missing");
+      expect(JSON.parse(init.body)).toEqual(configuration);
+      expect(new Headers(init?.headers).get("Idempotency-Key")).toBe("synthetic-op-profile-configuration");
+      return jsonResponse({ issues: [] });
+    });
+    const { adapter } = await readyTransport(operationFetch);
+    const client = createIso20022Client(adapter);
+    const catalog = await client.paymentExportProfiles.list();
+    const selected = catalog.profiles.find((entry) => entry.bank_profile_id === profileId);
+    expect(selected).toEqual(profile);
+    expect(selected?.qualification_status).toBe("experimental");
+    expect(selected?.availability_status).toBe("available");
+    if (selected === undefined) throw new Error("synthetic OP catalog entry missing");
+    await client.paymentExportProfiles.configure(
+      { ...configuration, bank_profile_id: selected.bank_profile_id },
+      { idempotencyKey: "synthetic-op-profile-configuration" },
+    );
+    expect(operationFetch).toHaveBeenCalledTimes(2);
+  });
+
   it("exchanges an existing WSChannel identity for a separate Processing session", async () => {
     const { adapter, fetch } = transport();
 

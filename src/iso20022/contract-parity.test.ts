@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { iso20022Operations } from "../generated/iso20022-contracts.js";
 
-const PLATFORM_REVISION = "bfbbc75bd321a6ca6f3b8eb9b889f85263304d19";
+const PLATFORM_REVISION = "aa51ebf5dfccaecdc75f4a41894f460c7b3ce9d4";
 const SIMULATION_OPERATION_IDS = [
   "simulation_artifacts.list",
   "simulation_branches.create",
