@@ -13,6 +13,18 @@ class RecordingTransport implements PlatformTransport {
 }
 
 describe("Platform API client", () => {
+  it("selects an independent catalogue format without changing the operation version", async () => {
+    const transport = new RecordingTransport();
+    await createPlatformClient(transport).pluginCatalogue.list({ catalogue_format_version: 2 });
+    expect(transport.calls).toEqual([
+      {
+        operationId: "plugin_catalogue.list",
+        input: { catalogue_format_version: 2 },
+        metadata: { contractVersion: 1 },
+      },
+    ]);
+  });
+
   it("lists the catalogue and links artifacts through generated routes", async () => {
     const transport = new RecordingTransport();
     const client = createPlatformClient(transport);

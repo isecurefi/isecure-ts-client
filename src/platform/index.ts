@@ -5,6 +5,8 @@ export type {
   PluginArtifactLink,
   PluginCatalogueAvailability,
   PluginCatalogueEntry,
+  PluginCatalogueEntryIssue,
+  PluginCatalogueEntryIssueReason,
   PluginCatalogueListInput,
   PluginCatalogueListResult,
   PluginCatalogueQualificationState,
