@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { iso20022Operations } from "../generated/iso20022-contracts.js";
 import { Iso20022HttpTransport } from "../iso20022/transport.js";
 import { createPlatformClient, platformOperationIds, type PlatformTransport } from "./client.js";
@@ -13,6 +13,50 @@ class RecordingTransport implements PlatformTransport {
 }
 
 describe("Platform API client", () => {
+  it.each([undefined, 1, 2])(
+    "transports catalogue format %s without app or plugin revision parameters",
+    async (format) => {
+      const response = {
+        entries: [],
+        ...(format === undefined ? {} : { catalogue_format_version: format, entry_issues: [] }),
+      };
+      const fetch = vi.fn((input: RequestInfo | URL) => {
+        const url = new URL(input instanceof Request ? input.url : input.toString());
+        return Promise.resolve(
+          Response.json(
+            url.pathname.endsWith("/session")
+              ? {
+                  audience: "isecure-processing-gpgtest-v1",
+                  expiresAtEpochSeconds: Math.floor(Date.now() / 1000) + 600,
+                  processingSession: "A".repeat(43),
+                  schemaVersion: 1,
+                  tokenType: "Processing",
+                }
+              : response,
+          ),
+        );
+      });
+      const transport = new Iso20022HttpTransport({
+        baseUrl: "https://processing.example.test/",
+        bootstrapAuthentication: () => ({ apiKey: "synthetic-key", idToken: "synthetic-token" }),
+        processingAudience: "isecure-processing-gpgtest-v1",
+        fetch,
+      });
+      await transport.exchangeProcessingSession();
+      const result = await createPlatformClient(transport).pluginCatalogue.list(
+        format === undefined ? {} : { catalogue_format_version: format },
+      );
+      expect(result).toEqual(response);
+      const catalogueUrl = fetch.mock.calls
+        .map(([input]) => new URL(input instanceof Request ? input.url : input.toString()))
+        .find((url) => url.pathname.endsWith("/plugin-catalogue"));
+      if (catalogueUrl === undefined) throw new Error("Catalogue request was not sent");
+      const url = catalogueUrl;
+      expect(url.searchParams.get("catalogue_format_version")).toBe(format === undefined ? null : String(format));
+      expect([...url.searchParams.keys()]).toEqual(format === undefined ? [] : ["catalogue_format_version"]);
+    },
+  );
+
   it("selects an independent catalogue format without changing the operation version", async () => {
     const transport = new RecordingTransport();
     await createPlatformClient(transport).pluginCatalogue.list({ catalogue_format_version: 2 });
