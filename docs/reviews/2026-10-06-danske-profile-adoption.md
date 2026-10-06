@@ -1,7 +1,7 @@
 # Danske Finland Processing contract adoption — 6 October 2026
 
 The experimental client imports 73 operations from platform
-`3fac7bd78a4702eb169c18596cb803f13d8e4b18`. The owner-generated lock retains the exact
+`641675ef5ff2686c9d21c5a9161b9e41dcca41a6`. The owner-generated lock retains the exact
 contract and scenario digests. The permanent File Exchange surface is unchanged.
 
 Functional review: both ordinary Danske Finland V9 profiles pass catalog discovery and
@@ -28,3 +28,13 @@ Validation: source-contract synchronization/check, formatting, ESLint, both Type
 checks, 229 tests across 30 suites, browser bundle, package build and npm pack dry-run passed.
 Coverage is 92.85% statements, 88.29% branches, 96.79% functions and 93.65% lines. No package was
 published. Local-main integration is coordinated with the platform's complete acceptance gate.
+
+The final contract correction advances `PaymentExportResource` to version 2 and retains the
+same optional submission-date field. The owner synchronizer imports platform `641675ef`;
+the parity test now names that exact revision. Functional review confirms the public transport
+and profile cases still pass. Evidence/privacy/security review confirms the lock binds the
+corrected committed contract, all cases remain synthetic, and no hosted/bank acceptance is inferred.
+Simplicity/drift review confirms this is contract metadata adoption through the existing owner,
+with no new client behavior or financial rules. The complete package gate again passes all 229
+tests, formatting, lint, both type checks, browser bundle, build and pack dry-run. Earlier `3fac7bd7`
+package evidence remains historical; this successor was not published.
