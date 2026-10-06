@@ -4,7 +4,7 @@ Status: local candidate, not published or qualified against a hosted VoP service
 TASKS.md PAYMENTEXPORT-002 owns completion; its complete journey depends on VOP-004 and final
 release admission. This file is review evidence, not another task ledger.
 
-Source: bankfiles-platform `5e865abdfb5d2b15983b4196fcf8a1344562afd3`, model 0.132.0.
+Source: bankfiles-platform `9748dd868b91dca96f2f7584ecedb747c0f94e21`, model 0.132.0.
 Retained payment-generation implementation `f4f2428c0f859d61f131b433abb082f937138065` was integrated
 onto SDK main `9b88571`, preserving the versioned plugin-catalogue contracts and permanent File
 Exchange surface. Generated ISO contracts and fixtures were refreshed by their owning sync command
@@ -50,3 +50,12 @@ repinned this SDK to `5e865abdfb5d2b15983b4196fcf8a1344562afd3`. The complete pa
 again: 242 tests across 30 files, formatting, lint, types, builds and package dry-run. The changed
 snapshot contains provenance updates only for this selected operation set; no handwritten wrapper
 or generated type was bypassed. Platform aggregate and hosted qualification remain pending.
+
+The current candidate is repinned by the sync owner to platform
+`9748dd868b91dca96f2f7584ecedb747c0f94e21`, which closes catalogue record, API-pack and Shared
+Authority version obligations. Functional review finds the same 84 selected operations and unchanged
+SDK type/operation semantics; this selected snapshot changes only provenance. Security review finds
+no permission, disclosure or retry change. Simplicity review retains generated ownership and the
+existing wrappers without compatibility shims. The complete package gate passes on this new pin: formatting, lint, TypeScript, 242 tests
+across 30 files, browser/package builds and package dry-run. The platform aggregate is running;
+these local package checks do not qualify hosted VoP or bank integrations.

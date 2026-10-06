@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@5e865abdfb5d2b15983b4196fcf8a1344562afd3
+// source: isecurefi/bankfiles-platform@9748dd868b91dca96f2f7584ecedb747c0f94e21
 // model: Bankfiles@0.132.0
-// source-digest: sha256:0d9130603590184a6433e63b80b933f862732e35cfa7e7e21ea15714ed975efa
+// source-digest: sha256:a3c1f9b1e7b4ad3e8ac8fee7479a1db99fd772839d62179c51aee5c00562741c
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = 'approve' | 'reject';
