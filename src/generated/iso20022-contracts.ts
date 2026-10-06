@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@e45e3ed5dc660a77da54c8e3ba32b9458ae30b54
-// model: Bankfiles@0.131.0
-// source-digest: sha256:5e6a4a4d050c8c114eee62e3cfb98d8b773c2c726a19c841b604fd18d529b3ee
+// source: isecurefi/bankfiles-platform@fae549cfeb79c2717f2c495ba61555fbd17608a6
+// model: Bankfiles@0.132.0
+// source-digest: sha256:a873234e6c8b09789424f8cdbe8773f618671601b5dddb07a1f61d4de2225873
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = 'approve' | 'reject';
@@ -27,6 +27,11 @@ export type ProfileResolutionOutcome =
 export type TaskState =
     'queued' | 'running' | 'succeeded' | 'failed' | 'indeterminate' | 'cancelled';
 
+export type PayeeVerificationObservationKind =
+    'match_result' | 'pending' | 'technical_failure' | 'rejected' | 'unmapped' | 'unmatched';
+
+export type PayeeVerificationSourceGrain = 'message' | 'payment_group' | 'transaction';
+
 export type PaymentExecutionObservationOutcome = 'submitted' | 'refused' | 'indeterminate';
 
 export type AccountCapabilityAvailability =
@@ -46,6 +51,22 @@ export type OperationIssueCategory =
     | 'internal';
 
 export type OperationIssueSeverity = 'error' | 'warning' | 'information';
+
+export type PayeeVerificationAvailability =
+    'available' | 'unavailable' | 'not_applicable' | 'unresolved';
+
+export type PayeeVerificationDecision = 'reviewed' | 'declined' | 'opt_out';
+
+export type PayeeVerificationEvidenceRole = 'input' | 'submitted_request' | 'bank_response';
+
+export type PayeeVerificationItemState =
+    'pending' | 'terminal' | 'failed' | 'indeterminate' | 'cancelled';
+
+export type PayeeVerificationMatchOutcome = 'match' | 'close_match' | 'no_match' | 'not_possible';
+
+export type PayeeVerificationPurpose = 'payment_preparation';
+
+export type PayeeVerificationUsability = 'usable' | 'unusable' | 'indeterminate';
 
 export type PaymentAccountScheme = 'iban' | 'domestic';
 
@@ -179,6 +200,8 @@ export type PaymentValidationOutcome = 'not_evaluated' | 'valid' | 'invalid' | '
 export type PluginArtifactKind = 'package' | 'resource_bundle';
 
 export type PluginCatalogueAvailability = 'available' | 'withdrawn' | 'revoked';
+
+export type PluginCatalogueEntryIssueReason = 'invalid_entry' | 'duplicate_release';
 
 export type PluginCatalogueQualificationState = 'qualified' | 'unavailable';
 
@@ -586,6 +609,293 @@ export interface TaskReference {
     readonly poll_after_seconds?: number;
     readonly expires_at?: string;
     readonly cancellation_boundary: CancellationBoundary;
+}
+
+export interface ImportPayeeVerificationInput {
+    readonly legal_entity_id: string;
+    readonly bank_connection_id: string;
+    readonly payment_export_profile_id: string;
+    readonly profile_revision: string;
+    readonly submission_date: string;
+    readonly pain001_base64: string;
+}
+
+export interface PayeeVerification {
+    readonly payee_verification_id: string;
+    readonly resource_version: string;
+    readonly legal_entity_id: string;
+    readonly target: PayeeVerificationTargetContext;
+    readonly capability_id: string;
+    readonly capability_revision: string;
+    readonly purpose: PayeeVerificationPurpose;
+    readonly policy_binding: PayeeVerificationPolicyBinding;
+    readonly task: TaskReference;
+    readonly coverage: PayeeVerificationCoverage;
+    readonly requested_at: string;
+    readonly work_deadline: string;
+    readonly completed_at?: string;
+}
+
+export interface PayeeVerificationCapability {
+    readonly capability_id: string;
+    readonly capability_revision: string;
+    readonly legal_entity_id: string;
+    readonly bank_connection_id: string;
+    readonly connection_agreement_id: string;
+    readonly bank_service_id: string;
+    readonly bank_service_version: string;
+    readonly payment_profile_id: string;
+    readonly payment_profile_version: string;
+    readonly availability: PayeeVerificationAvailability;
+    readonly reason_codes: readonly string[];
+    readonly purpose: PayeeVerificationPurpose;
+    readonly request_message_definition: string;
+    readonly response_message_definition: string;
+    readonly limits: PayeeVerificationLimits;
+    readonly opt_out_permitted: boolean;
+    readonly policy_binding: PayeeVerificationPolicyBinding;
+}
+
+export interface PayeeVerificationCapabilityInput {
+    readonly legal_entity_id: string;
+    readonly bank_connection_id: string;
+    readonly target: PayeeVerificationTargetContext;
+}
+
+export interface PayeeVerificationCapabilityResult {
+    readonly context: OperationContext;
+    readonly capability: PayeeVerificationCapability;
+}
+
+export interface PayeeVerificationCoverage {
+    readonly expected_items: number;
+    readonly terminal_items: number;
+    readonly pending_items: number;
+    readonly failed_items: number;
+    readonly indeterminate_items: number;
+    readonly cancelled_items: number;
+}
+
+export interface PayeeVerificationEvidenceInput {
+    readonly payee_verification_id: string;
+    readonly artifact_id: string;
+    readonly evidence_role: PayeeVerificationEvidenceRole;
+}
+
+export interface PayeeVerificationEvidenceResult {
+    readonly context: OperationContext;
+    readonly artifact_reference: ResourceReference;
+    readonly evidence_role: PayeeVerificationEvidenceRole;
+    readonly media_type: string;
+    readonly content_base64: string;
+}
+
+export interface PayeeVerificationExplanationResult {
+    readonly context: OperationContext;
+    readonly subject_reference: ResourceReference;
+    readonly facts: readonly ExplanationFact[];
+    readonly usability: PayeeVerificationUsabilityEvaluation;
+}
+
+export interface PayeeVerificationGetInput {
+    readonly payee_verification_id: string;
+    readonly target?: PayeeVerificationTargetContext;
+}
+
+export interface PayeeVerificationImportedItem {
+    readonly input_admission_id: string;
+    readonly artifact_reference: ResourceReference;
+    readonly payment_group_ordinal: number;
+    readonly transaction_ordinal: number;
+}
+
+export interface PayeeVerificationImportedTarget {
+    readonly input_admission_id: string;
+}
+
+export interface PayeeVerificationInputAdmission {
+    readonly input_admission_id: string;
+    readonly resource_version: string;
+    readonly artifact_reference: ResourceReference;
+    readonly legal_entity_id: string;
+    readonly bank_connection_id: string;
+    readonly payment_export_profile_id: string;
+    readonly profile_revision: string;
+    readonly submission_date: string;
+    readonly item_count: number;
+    readonly admitted_at: string;
+}
+
+export interface PayeeVerificationInputAdmissionResult {
+    readonly context: OperationContext;
+    readonly admission: PayeeVerificationInputAdmission;
+}
+
+export interface PayeeVerificationIssues {
+    readonly issues: readonly OperationIssue[];
+}
+
+export interface PayeeVerificationItem {
+    readonly item_id: string;
+    readonly item_ordinal: number;
+    readonly target: PayeeVerificationItemTarget;
+    readonly state: PayeeVerificationItemState;
+    readonly match_outcome?: PayeeVerificationMatchOutcome;
+    readonly reason_codes: readonly string[];
+}
+
+export interface PayeeVerificationItemsInput {
+    readonly payee_verification_id: string;
+    readonly projection_revision: string;
+    readonly page: PageRequest;
+}
+
+export interface PayeeVerificationItemsResult {
+    readonly context: OperationContext;
+    readonly projection_revision: string;
+    readonly items: readonly PayeeVerificationItem[];
+    readonly page: PageResult;
+}
+
+export interface PayeeVerificationLimits {
+    readonly maximum_input_bytes: string;
+    readonly maximum_items: number;
+    readonly maximum_concurrent_attempts: number;
+    readonly minimum_poll_interval_seconds: number;
+    readonly work_timeout_seconds: number;
+    readonly maximum_attempts: number;
+    readonly fan_out_permitted: boolean;
+}
+
+export interface PayeeVerificationListInput {
+    readonly legal_entity_id?: string;
+    readonly state?: TaskState;
+    readonly page: PageRequest;
+}
+
+export interface PayeeVerificationListResult {
+    readonly context: OperationContext;
+    readonly payee_verifications: readonly PayeeVerification[];
+    readonly page: PageResult;
+}
+
+export interface PayeeVerificationObservation {
+    readonly observation_id: string;
+    readonly item_id?: string;
+    readonly attempt_id: string;
+    readonly evidence_reference: ResourceReference;
+    readonly source_field: string;
+    readonly source_ordinal: number;
+    readonly raw_code: string;
+    readonly observation_kind: PayeeVerificationObservationKind;
+    readonly source_grain: PayeeVerificationSourceGrain;
+    readonly match_outcome?: PayeeVerificationMatchOutcome;
+    readonly mapping_rule_id?: string;
+    readonly mapping_version?: string;
+    readonly received_at: string;
+    readonly bank_reported_at?: string;
+    readonly bank_valid_until?: string;
+    readonly suggested_name_evidence_reference?: ResourceReference;
+}
+
+export interface PayeeVerificationObservationsInput {
+    readonly payee_verification_id: string;
+    readonly observation_set_id: string;
+    readonly item_id?: string;
+    readonly page: PageRequest;
+}
+
+export interface PayeeVerificationObservationsResult {
+    readonly context: OperationContext;
+    readonly observation_set_reference: ResourceReference;
+    readonly observations: readonly PayeeVerificationObservation[];
+    readonly page: PageResult;
+}
+
+export interface PayeeVerificationOrderItem {
+    readonly payment_order_id: string;
+    readonly revision_id: string;
+    readonly payment_transfer_id: string;
+    readonly transfer_ordinal: number;
+}
+
+export interface PayeeVerificationOrderTarget {
+    readonly payment_order_id: string;
+    readonly revision_id: string;
+    readonly exact_revision_digest: string;
+}
+
+export interface PayeeVerificationPolicyBinding {
+    readonly policy_id: string;
+    readonly policy_version: string;
+    readonly policy_revision_id: string;
+}
+
+export interface PayeeVerificationResult {
+    readonly context: OperationContext;
+    readonly payee_verification: PayeeVerification;
+    readonly usability: PayeeVerificationUsabilityEvaluation;
+}
+
+export interface PayeeVerificationReview {
+    readonly review_id: string;
+    readonly payee_verification_id: string;
+    readonly actor_reference: ResourceReference;
+    readonly authority_reference: ResourceReference;
+    readonly decision: PayeeVerificationDecision;
+    readonly reason_code: string;
+    readonly usability: PayeeVerificationUsabilityEvaluation;
+    readonly reviewed_at: string;
+}
+
+export interface PayeeVerificationReviewResult {
+    readonly context: OperationContext;
+    readonly review: PayeeVerificationReview;
+}
+
+export interface PayeeVerificationStartResult {
+    readonly context: OperationContext;
+    readonly task: TaskReference;
+    readonly payee_verification: PayeeVerification;
+}
+
+export interface PayeeVerificationTargetContext {
+    readonly target: PayeeVerificationTarget;
+    readonly payment_export_profile_id: string;
+    readonly profile_revision: string;
+    readonly submission_date: string;
+}
+
+export interface PayeeVerificationUsabilityEvaluation {
+    readonly usability: PayeeVerificationUsability;
+    readonly reason_codes: readonly string[];
+    readonly target: PayeeVerificationTargetContext;
+    readonly projection_revision: string;
+    readonly observation_set_reference: ResourceReference;
+    readonly policy_binding: PayeeVerificationPolicyBinding;
+    readonly evaluated_at: string;
+    readonly bank_valid_until?: string;
+    readonly policy_fresh_until?: string;
+}
+
+export interface RequestPayeeVerificationInput {
+    readonly target: PayeeVerificationTargetContext;
+    readonly expected_resource_version: string;
+    readonly capability_id: string;
+    readonly capability_revision: string;
+    readonly purpose: PayeeVerificationPurpose;
+    readonly disclosure_authorization_reference: ResourceReference;
+    readonly consent_reference?: ResourceReference;
+}
+
+export interface ReviewPayeeVerificationInput {
+    readonly payee_verification_id: string;
+    readonly expected_resource_version: string;
+    readonly target: PayeeVerificationTargetContext;
+    readonly observation_set_id: string;
+    readonly policy_binding: PayeeVerificationPolicyBinding;
+    readonly decision: PayeeVerificationDecision;
+    readonly reason_code: string;
 }
 
 export interface AppendPaymentOrderTransfersInput {
@@ -1402,13 +1712,23 @@ export interface PluginCatalogueEntry {
     readonly release_entry: string;
 }
 
+export interface PluginCatalogueEntryIssue {
+    readonly provider_id: string;
+    readonly package_id: string;
+    readonly package_version: string;
+    readonly reason: PluginCatalogueEntryIssueReason;
+}
+
 export interface PluginCatalogueListInput {
     readonly search_text?: string;
+    readonly catalogue_format_version?: number;
 }
 
 export interface PluginCatalogueListResult {
     readonly context: OperationContext;
     readonly entries: readonly PluginCatalogueEntry[];
+    readonly catalogue_format_version?: number;
+    readonly entry_issues?: readonly PluginCatalogueEntryIssue[];
 }
 
 export interface PluginCatalogueText {
@@ -1972,6 +2292,14 @@ export type RequiredAction =
     | (ConfigurationAction & { readonly action_type: "configuration" })
     | (RetryLaterAction & { readonly action_type: "retry_later" });
 
+export type PayeeVerificationItemTarget =
+    (PayeeVerificationOrderItem & { readonly target_kind: "payment_order_revision" })
+    | (PayeeVerificationImportedItem & { readonly target_kind: "imported_payment_artifact" });
+
+export type PayeeVerificationTarget =
+    (PayeeVerificationOrderTarget & { readonly target_kind: "payment_order_revision" })
+    | (PayeeVerificationImportedTarget & { readonly target_kind: "imported_payment_artifact" });
+
 export type PaymentCapabilityLimit =
     (PaymentMoneyLimit & { readonly limit_type: "money" })
     | (PaymentCountLimit & { readonly limit_type: "count" });
@@ -2351,6 +2679,373 @@ export const iso20022Operations = {
         "objectFields": []
       }
     ]
+  },
+  "payee_verifications.capability": {
+    "method": "POST",
+    "path": "/v1/payee-verifications:capability",
+    "version": 2,
+    "contractDigest": "sha256:087957ec799b432372d30b2c2fc8d1aa8db0b0e89bde64bf236e856e624ee526",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payee_api.PayeeVerificationCapabilityInput",
+    "result": "isecure.bankfiles.payee_api.PayeeVerificationCapabilityResult",
+    "issues": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payee_verifications.evidence": {
+    "method": "POST",
+    "path": "/v1/payee-verifications:evidence",
+    "version": 2,
+    "contractDigest": "sha256:15accb12b7ed8a5d46d3524e88c04f30af765bc9d47e31687f477114897925d3",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payee_api.PayeeVerificationEvidenceInput",
+    "result": "isecure.bankfiles.payee_api.PayeeVerificationEvidenceResult",
+    "issues": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payee_verifications.explain": {
+    "method": "GET",
+    "path": "/v1/payee-verifications/{payee_verification_id}/explanation",
+    "version": 2,
+    "contractDigest": "sha256:cdf512330448ddf960b9b0f621e22ea0fa298d9085fe07215eec29b1be46e820",
+    "permission": "explain",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+    "result": "isecure.bankfiles.payee_api.PayeeVerificationExplanationResult",
+    "issues": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "payee_verification_id",
+        "location": "path",
+        "inputField": "payee_verification_id",
+        "required": true,
+        "style": "simple",
+        "objectFields": []
+      },
+      {
+        "name": "target",
+        "location": "query",
+        "inputField": "target",
+        "required": false,
+        "style": "deepObject",
+        "objectFields": [
+          "target",
+          "payment_export_profile_id",
+          "profile_revision",
+          "submission_date"
+        ]
+      }
+    ]
+  },
+  "payee_verifications.get": {
+    "method": "GET",
+    "path": "/v1/payee-verifications/{payee_verification_id}",
+    "version": 2,
+    "contractDigest": "sha256:6f1e7cab339e37a57c11937dd39b5602c324fd29b047f928313c8139eb39a2db",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+    "result": "isecure.bankfiles.payee_api.PayeeVerificationResult",
+    "issues": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "payee_verification_id",
+        "location": "path",
+        "inputField": "payee_verification_id",
+        "required": true,
+        "style": "simple",
+        "objectFields": []
+      },
+      {
+        "name": "target",
+        "location": "query",
+        "inputField": "target",
+        "required": false,
+        "style": "deepObject",
+        "objectFields": [
+          "target",
+          "payment_export_profile_id",
+          "profile_revision",
+          "submission_date"
+        ]
+      }
+    ]
+  },
+  "payee_verifications.import_input": {
+    "method": "POST",
+    "path": "/v1/payee-verifications:import-input",
+    "version": 2,
+    "contractDigest": "sha256:385be4e292ae798c99646202ab4e0519b6fb0a8e640490c427336d8aeab7b87f",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payee_api.ImportPayeeVerificationInput",
+    "result": "isecure.bankfiles.payee_api.PayeeVerificationInputAdmissionResult",
+    "issues": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payee_verifications.items": {
+    "method": "POST",
+    "path": "/v1/payee-verifications:items",
+    "version": 2,
+    "contractDigest": "sha256:be71fb594d91df57d912117bcd317635da1157336e280b79027987f8226c60c9",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payee_api.PayeeVerificationItemsInput",
+    "result": "isecure.bankfiles.payee_api.PayeeVerificationItemsResult",
+    "issues": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payee_verifications.list": {
+    "method": "GET",
+    "path": "/v1/payee-verifications",
+    "version": 2,
+    "contractDigest": "sha256:390b4f05be9898101b015a4cc0c5cf16efeb1471927af407a03c97045fefdcb6",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payee_api.PayeeVerificationListInput",
+    "result": "isecure.bankfiles.payee_api.PayeeVerificationListResult",
+    "issues": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "legal_entity_id",
+        "location": "query",
+        "inputField": "legal_entity_id",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "state",
+        "location": "query",
+        "inputField": "state",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page",
+        "location": "query",
+        "inputField": "page",
+        "required": true,
+        "style": "deepObject",
+        "objectFields": [
+          "page_size",
+          "cursor"
+        ]
+      }
+    ]
+  },
+  "payee_verifications.observations": {
+    "method": "POST",
+    "path": "/v1/payee-verifications:observations",
+    "version": 2,
+    "contractDigest": "sha256:df51c3f9d12ba586ba95d6138798ebd2d9eaf9dac800f75a28d9e57bb4da3964",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payee_api.PayeeVerificationObservationsInput",
+    "result": "isecure.bankfiles.payee_api.PayeeVerificationObservationsResult",
+    "issues": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payee_verifications.request": {
+    "method": "POST",
+    "path": "/v1/payee-verifications:request",
+    "version": 2,
+    "contractDigest": "sha256:8990d2f4f76b75bdaaa150540f66e71cf28767d88f80c0cbf931843940a1649c",
+    "permission": "execute",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+    "result": "isecure.bankfiles.payee_api.PayeeVerificationStartResult",
+    "issues": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 202,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "payee_verifications.review": {
+    "method": "POST",
+    "path": "/v1/payee-verifications:review",
+    "version": 2,
+    "contractDigest": "sha256:011bcb85a056093defc914eab35c76ed95d807c7b7db47010c6b8eab492e5dbc",
+    "permission": "approve",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+    "result": "isecure.bankfiles.payee_api.PayeeVerificationReviewResult",
+    "issues": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
   },
   "payment_approval_requests.decide": {
     "method": "POST",
@@ -3890,6 +4585,14 @@ export const iso20022Operations = {
         "name": "search_text",
         "location": "query",
         "inputField": "search_text",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "catalogue_format_version",
+        "location": "query",
+        "inputField": "catalogue_format_version",
         "required": false,
         "style": "form",
         "objectFields": []

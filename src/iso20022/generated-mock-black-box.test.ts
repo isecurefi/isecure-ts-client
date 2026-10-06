@@ -143,6 +143,26 @@ function invoke(
   input: Record<string, unknown>,
 ): Promise<unknown> {
   switch (operationId) {
+    case "payee_verifications.capability":
+      return client.payeeVerifications.capability(input as never);
+    case "payee_verifications.evidence":
+      return client.payeeVerifications.evidence(input as never);
+    case "payee_verifications.explain":
+      return client.payeeVerifications.explain(input as never);
+    case "payee_verifications.get":
+      return client.payeeVerifications.get(input as never);
+    case "payee_verifications.import_input":
+      return client.payeeVerifications.importInput(input as never, commandOptions(operationId));
+    case "payee_verifications.items":
+      return client.payeeVerifications.items(input as never);
+    case "payee_verifications.list":
+      return client.payeeVerifications.list(input as never);
+    case "payee_verifications.observations":
+      return client.payeeVerifications.observations(input as never);
+    case "payee_verifications.request":
+      return client.payeeVerifications.request(input as never, revisionOptions(operationId));
+    case "payee_verifications.review":
+      return client.payeeVerifications.review(input as never, revisionOptions(operationId));
     case "plugin_artifact.get":
       return platform.pluginArtifact.get(input as never);
     case "plugin_catalogue.list":

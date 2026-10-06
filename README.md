@@ -538,6 +538,26 @@ SHA-256 and `no-store` before returning bytes. Generation creates no approval, r
 export or bank submission. The existing approved-export download still requires its separate
 artifact authority. Neither path retries or uploads automatically.
 
+The experimental `payeeVerifications` namespace exposes the payment-bound VoP v2 contract:
+`capability`, `importInput`, `request`, `list`, `get`, `explain`, `items`, `observations`, `evidence`
+and `review`. This candidate has local contract tests; hosted VoP availability and bank-connected
+qualification remain pending. A method being present does not establish connection eligibility.
+
+Pass the exact order revision, revision digest, export-profile revision and submission date as the
+verification target. `get` and `explain` return the server's usability evaluation for that target,
+including its evaluation time, observation set and policy binding. Work state, match outcomes,
+usability and the human decision remain separate facts. A succeeded task need not mean every
+payee matched. Evidence and suggested names require authorized access.
+
+`importInput` admits uploaded V9 bytes through Processing before a verification request; it does
+not accept an arbitrary Artifact ID. `request` and `review` require explicit idempotency and expected
+version metadata. Review requires a human-authenticated session and records a decision against the
+exact target, observation set and policy. It does not approve a payment. Reads never request a new
+verification, and the SDK does not poll, resubmit uncertain work or change payment details
+automatically. Generate independently with `generateFile`; generation success makes no claim about
+verification freshness. The complete hosted discover/request/read/review/generate journey remains
+subject to the platform's combined-service acceptance.
+
 For compatibility, `paymentOrders` retains aliases over the same generated operations. In
 particular, its older `execute` name creates an attempt only; it does not sign, upload or contact a
 bank. The clearer equivalent is `paymentSubmissions.createAttempt`.

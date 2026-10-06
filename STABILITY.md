@@ -39,6 +39,11 @@ that method when adopting the new pinned contract. `Iso20022HttpTransport` suppl
 approved-export downloads continue to require `PaymentExportContentAuthority`; generated content
 metadata establishes integrity only and grants no financial authority.
 
+The experimental `payeeVerifications` namespace consumes the payment-bound v2 contracts. Its
+closed order-revision/import-admission targets, typed usability and review results retain the
+platform's versions. Server-side admission, human eligibility, disclosure and bank qualification
+remain independent of SDK method availability.
+
 ## Plugin catalogue formats
 
 The `./platform` catalogue operation preserves its legacy request and response when no format is
@@ -49,7 +54,7 @@ no catalogue format selection grants authority to install or execute a plugin.
 
 ## Runtime support
 
-Node `>= 22` and modern browser bundlers are supported (see the README "Runtime Support" section). Dropping a supported runtime is a breaking change.
+Node `>= 24` and modern browser bundlers are supported (see the README "Runtime Support" section). Dropping a supported runtime is a breaking change.
 
 ## Deprecation
 

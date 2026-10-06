@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "e45e3ed5dc660a77da54c8e3ba32b9458ae30b54",
-    "model": "Bankfiles@0.131.0",
-    "sourceDigest": "sha256:5e6a4a4d050c8c114eee62e3cfb98d8b773c2c726a19c841b604fd18d529b3ee",
+    "revision": "fae549cfeb79c2717f2c495ba61555fbd17608a6",
+    "model": "Bankfiles@0.132.0",
+    "sourceDigest": "sha256:a873234e6c8b09789424f8cdbe8773f618671601b5dddb07a1f61d4de2225873",
     "fixedClock": "2040-01-02T03:04:05.000Z",
     "safety": {
       "syntheticOnly": true,
@@ -1301,6 +1301,3161 @@
                   "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
                   "retryable": false,
                   "field_path": "cursor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payee_verifications.capability",
+      "version": 2,
+      "contractDigest": "sha256:087957ec799b432372d30b2c2fc8d1aa8db0b0e89bde64bf236e856e624ee526",
+      "eventClosureDigest": "sha256:bd819d5bb2792a6535798dc426423fc48512d43cb70ec73ca9fe59d820280bd5",
+      "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationCapabilityInput",
+      "resultContract": "isecure.bankfiles.payee_api.PayeeVerificationCapabilityResult",
+      "issueContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payee-verifications:capability",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payee_verifications.capability",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payee-verifications capability",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payee_verifications-capability",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payee_verifications.capability.success",
+          "operationId": "payee_verifications.capability",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationCapabilityInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationCapabilityResult",
+          "input": {
+            "legal_entity_id": "15a6f63a-f48f-4c2d-8305-5e75466a8b41",
+            "bank_connection_id": "d6b94f03-896e-4130-aca6-1d3be2f33168",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "ca8b365c-9afb-448b-9cb4-2d5118cadd4b",
+                "revision_id": "14fb9bf2-0839-416a-b50a-d3a178330b5f",
+                "exact_revision_digest": "payee_verifications.capability-i"
+              },
+              "payment_export_profile_id": "fb81996b-5124-4913-9463-706dbdbf32cc",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            }
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "d1dc557c-4c67-4e88-b0e7-7cda028b6bd2",
+                "operation_id": "payee_verifications.capability",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "d4e84f6f-dca0-4278-90df-1a18621ea7e2",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "capability": {
+                "capability_id": "2a7d932c-eefc-4f82-ac21-31164140587b",
+                "capability_revision": "1",
+                "legal_entity_id": "0c720b84-ec2d-49fa-9a7d-52d37213f0a2",
+                "bank_connection_id": "6de8736f-4edf-4743-827d-8a86997bf6dc",
+                "connection_agreement_id": "cce576dd-1c83-4731-bea8-ed5155fdfe1e",
+                "bank_service_id": "payee_verifications.capability-r",
+                "bank_service_version": "payee_verifications.capability-r",
+                "payment_profile_id": "payee_verifications.capability-r",
+                "payment_profile_version": "payee_verifications.capability-r",
+                "availability": "available",
+                "reason_codes": [
+                  "payee_verifications.capability-r"
+                ],
+                "purpose": "payment_preparation",
+                "request_message_definition": "payee_verifications.capability-r",
+                "response_message_definition": "payee_verifications.capability-r",
+                "limits": {
+                  "maximum_input_bytes": "1",
+                  "maximum_items": 1,
+                  "maximum_concurrent_attempts": 1,
+                  "minimum_poll_interval_seconds": 1,
+                  "work_timeout_seconds": 1,
+                  "maximum_attempts": 1,
+                  "fan_out_permitted": false
+                },
+                "opt_out_permitted": false,
+                "policy_binding": {
+                  "policy_id": "payee_verifications.capability-r",
+                  "policy_version": "payee_verifications.capability-r",
+                  "policy_revision_id": "0da2d9f0-b558-41a6-8a7e-37020eb8572e"
+                }
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.capability.invalid_request",
+          "operationId": "payee_verifications.capability",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationCapabilityInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.capability.unauthorized",
+          "operationId": "payee_verifications.capability",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationCapabilityInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "legal_entity_id": "15a6f63a-f48f-4c2d-8305-5e75466a8b41",
+            "bank_connection_id": "d6b94f03-896e-4130-aca6-1d3be2f33168",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "ca8b365c-9afb-448b-9cb4-2d5118cadd4b",
+                "revision_id": "14fb9bf2-0839-416a-b50a-d3a178330b5f",
+                "exact_revision_digest": "payee_verifications.capability-i"
+              },
+              "payment_export_profile_id": "fb81996b-5124-4913-9463-706dbdbf32cc",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.capability.retryable",
+          "operationId": "payee_verifications.capability",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationCapabilityInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "legal_entity_id": "15a6f63a-f48f-4c2d-8305-5e75466a8b41",
+            "bank_connection_id": "d6b94f03-896e-4130-aca6-1d3be2f33168",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "ca8b365c-9afb-448b-9cb4-2d5118cadd4b",
+                "revision_id": "14fb9bf2-0839-416a-b50a-d3a178330b5f",
+                "exact_revision_digest": "payee_verifications.capability-i"
+              },
+              "payment_export_profile_id": "fb81996b-5124-4913-9463-706dbdbf32cc",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payee_verifications.evidence",
+      "version": 2,
+      "contractDigest": "sha256:15accb12b7ed8a5d46d3524e88c04f30af765bc9d47e31687f477114897925d3",
+      "eventClosureDigest": "sha256:85068489a00253c8d409f1fe1cd432a1e4c8f19759907340975e8c3110941cad",
+      "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationEvidenceInput",
+      "resultContract": "isecure.bankfiles.payee_api.PayeeVerificationEvidenceResult",
+      "issueContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payee-verifications:evidence",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payee_verifications.evidence",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payee-verifications evidence",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payee_verifications-evidence",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payee_verifications.evidence.success",
+          "operationId": "payee_verifications.evidence",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationEvidenceInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationEvidenceResult",
+          "input": {
+            "payee_verification_id": "da1aa084-44dd-48b8-8070-fb622453ebf3",
+            "artifact_id": "e0e219d6-a9ed-4e9f-96a9-dacb07489596",
+            "evidence_role": "input"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "08a047f3-0ba1-47bd-bfb4-37f1c97b6c5b",
+                "operation_id": "payee_verifications.evidence",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "8dc70fd9-9805-4577-a9a2-ea9f3aebe2c6",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "artifact_reference": {
+                "resource_type": "payee_verifications.evidence-res",
+                "resource_id": "3112a1fc-a57c-4fe7-bbf3-7c1ad783bfb2"
+              },
+              "evidence_role": "input",
+              "media_type": "payee_verifications.evidence-res",
+              "content_base64": "payee_verifications.evidence-res"
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.evidence.invalid_request",
+          "operationId": "payee_verifications.evidence",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationEvidenceInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.evidence.unauthorized",
+          "operationId": "payee_verifications.evidence",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationEvidenceInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "da1aa084-44dd-48b8-8070-fb622453ebf3",
+            "artifact_id": "e0e219d6-a9ed-4e9f-96a9-dacb07489596",
+            "evidence_role": "input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.evidence.retryable",
+          "operationId": "payee_verifications.evidence",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationEvidenceInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "da1aa084-44dd-48b8-8070-fb622453ebf3",
+            "artifact_id": "e0e219d6-a9ed-4e9f-96a9-dacb07489596",
+            "evidence_role": "input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payee_verifications.explain",
+      "version": 2,
+      "contractDigest": "sha256:cdf512330448ddf960b9b0f621e22ea0fa298d9085fe07215eec29b1be46e820",
+      "eventClosureDigest": "sha256:8926ca7a477883c0b22d0bee5e654fef8ae752a11eb7fc09f081d50a44da3c54",
+      "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+      "resultContract": "isecure.bankfiles.payee_api.PayeeVerificationExplanationResult",
+      "issueContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/payee-verifications/{payee_verification_id}/explanation",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payee_verifications.explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payee-verifications explain",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payee_verifications-explain",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payee_verifications.explain.success",
+          "operationId": "payee_verifications.explain",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationExplanationResult",
+          "input": {
+            "payee_verification_id": "3844085d-eead-4066-bdcf-e3ae1a0142bc"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "e32ea9ef-b369-4a88-a5ae-4a1627595952",
+                "operation_id": "payee_verifications.explain",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "71b1888e-6ff9-4398-8024-90a4df0a7c3a",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "subject_reference": {
+                "resource_type": "payee_verification",
+                "resource_id": "df7a134c-6755-45ca-bea0-2cd2497f8dc1"
+              },
+              "facts": [
+                {
+                  "fact_code": "payee_verifications.explain-resu",
+                  "safe_summary": "payee_verifications.explain-resu",
+                  "evidence_references": [
+                    {
+                      "resource_type": "payee_verifications.explain-resu",
+                      "resource_id": "17f25d77-964b-42dc-bce8-11d10652ba12"
+                    }
+                  ]
+                }
+              ],
+              "usability": {
+                "usability": "usable",
+                "reason_codes": [
+                  "payee_verifications.explain-resu"
+                ],
+                "target": {
+                  "target": {
+                    "target_kind": "payment_order_revision",
+                    "payment_order_id": "f5d2d4fa-b7b6-4b3c-94ff-f85983b708c3",
+                    "revision_id": "4c5669ba-7c27-4438-9651-7310a97d900b",
+                    "exact_revision_digest": "payee_verifications.explain-resu"
+                  },
+                  "payment_export_profile_id": "35205585-a127-468d-a1a9-10163189be2c",
+                  "profile_revision": "1",
+                  "submission_date": "2040-01-02"
+                },
+                "projection_revision": "1",
+                "observation_set_reference": {
+                  "resource_type": "payee_verifications.explain-resu",
+                  "resource_id": "a5efea68-a2d6-4043-ad48-83869646f23a"
+                },
+                "policy_binding": {
+                  "policy_id": "payee_verifications.explain-resu",
+                  "policy_version": "payee_verifications.explain-resu",
+                  "policy_revision_id": "176f47bb-443a-4029-bce2-e7b7edc129c6"
+                },
+                "evaluated_at": "2040-01-02T03:04:05.000Z"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.explain.invalid_request",
+          "operationId": "payee_verifications.explain",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.explain.unauthorized",
+          "operationId": "payee_verifications.explain",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "3844085d-eead-4066-bdcf-e3ae1a0142bc"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.explain.not_found",
+          "operationId": "payee_verifications.explain",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "3844085d-eead-4066-bdcf-e3ae1a0142bc"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.explain.retryable",
+          "operationId": "payee_verifications.explain",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "3844085d-eead-4066-bdcf-e3ae1a0142bc"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payee_verifications.get",
+      "version": 2,
+      "contractDigest": "sha256:6f1e7cab339e37a57c11937dd39b5602c324fd29b047f928313c8139eb39a2db",
+      "eventClosureDigest": "sha256:5bf13d4f4209a8d85ceedb6032bbf78a9c1e125f5dc3e0aef1a649a440ffb1ea",
+      "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+      "resultContract": "isecure.bankfiles.payee_api.PayeeVerificationResult",
+      "issueContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/payee-verifications/{payee_verification_id}",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payee_verifications.get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payee-verifications get",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payee_verifications-get",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payee_verifications.get.success",
+          "operationId": "payee_verifications.get",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationResult",
+          "input": {
+            "payee_verification_id": "4b134b17-68c1-421b-9be1-20961911da0f"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "187a63cd-f9ef-493a-a3ae-1f7903a604c4",
+                "operation_id": "payee_verifications.get",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "3e83fc72-6934-4844-9544-acc49e4d2d41",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "payee_verification": {
+                "payee_verification_id": "df7a134c-6755-45ca-bea0-2cd2497f8dc1",
+                "resource_version": "1",
+                "legal_entity_id": "86a2d623-6c5e-4371-81ee-5617fe20b57a",
+                "target": {
+                  "target": {
+                    "target_kind": "payment_order_revision",
+                    "payment_order_id": "0cbdbc35-994b-4b99-80cf-10759679a409",
+                    "revision_id": "0a7a47a5-efc1-4547-b0c3-2f30e839edf2",
+                    "exact_revision_digest": "payee_verifications.get-result-p"
+                  },
+                  "payment_export_profile_id": "ce5747a3-72f5-47b6-ac6f-14f25b37908e",
+                  "profile_revision": "1",
+                  "submission_date": "2040-01-02"
+                },
+                "capability_id": "37cea07b-553a-4eab-92be-08c6386f84e2",
+                "capability_revision": "1",
+                "purpose": "payment_preparation",
+                "policy_binding": {
+                  "policy_id": "payee_verifications.get-result-p",
+                  "policy_version": "payee_verifications.get-result-p",
+                  "policy_revision_id": "0880e0de-3457-45ce-b2a3-8167a51a88cb"
+                },
+                "task": {
+                  "task_id": "44bf0252-b49e-4349-a363-3d38a38088b5",
+                  "attempt": {
+                    "attempt_type": "payee_verifications.get-result-p",
+                    "attempt_id": "2c3695e4-1dad-4271-b1f6-5d681f5b0b22",
+                    "attempt_ordinal": 1
+                  },
+                  "state": "queued",
+                  "cancellation_boundary": "preventable"
+                },
+                "coverage": {
+                  "expected_items": 1,
+                  "terminal_items": 1,
+                  "pending_items": 1,
+                  "failed_items": 1,
+                  "indeterminate_items": 1,
+                  "cancelled_items": 1
+                },
+                "requested_at": "2040-01-02T03:04:05.000Z",
+                "work_deadline": "2040-01-02T03:04:05.000Z"
+              },
+              "usability": {
+                "usability": "usable",
+                "reason_codes": [
+                  "payee_verifications.get-result-u"
+                ],
+                "target": {
+                  "target": {
+                    "target_kind": "payment_order_revision",
+                    "payment_order_id": "1bfcafc2-c27a-4f86-af9a-8dd252fcfe17",
+                    "revision_id": "3338692a-8622-4bb8-9396-4a6133d04439",
+                    "exact_revision_digest": "payee_verifications.get-result-u"
+                  },
+                  "payment_export_profile_id": "8fb2d9c4-c2a4-4528-974f-55c490655a5c",
+                  "profile_revision": "1",
+                  "submission_date": "2040-01-02"
+                },
+                "projection_revision": "1",
+                "observation_set_reference": {
+                  "resource_type": "payee_verifications.get-result-u",
+                  "resource_id": "6bf7f6bb-bf44-4a4b-ad3e-8293b2f3dc4c"
+                },
+                "policy_binding": {
+                  "policy_id": "payee_verifications.get-result-u",
+                  "policy_version": "payee_verifications.get-result-u",
+                  "policy_revision_id": "23405b8c-50f7-4fb5-b16b-4f9355bd8e75"
+                },
+                "evaluated_at": "2040-01-02T03:04:05.000Z"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.get.invalid_request",
+          "operationId": "payee_verifications.get",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.get.unauthorized",
+          "operationId": "payee_verifications.get",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "4b134b17-68c1-421b-9be1-20961911da0f"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.get.not_found",
+          "operationId": "payee_verifications.get",
+          "scenario": "not_found",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "4b134b17-68c1-421b-9be1-20961911da0f"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 404,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_FOUND",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The requested synthetic resource was not found.",
+                  "retryable": false,
+                  "field_path": "resource_id"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.get.retryable",
+          "operationId": "payee_verifications.get",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationGetInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "4b134b17-68c1-421b-9be1-20961911da0f"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payee_verifications.import_input",
+      "version": 2,
+      "contractDigest": "sha256:385be4e292ae798c99646202ab4e0519b6fb0a8e640490c427336d8aeab7b87f",
+      "eventClosureDigest": "sha256:397043fb5e757bb7d5612e3975ceabf484284d3626defcc386dc9d65ce075800",
+      "inputContract": "isecure.bankfiles.payee_api.ImportPayeeVerificationInput",
+      "resultContract": "isecure.bankfiles.payee_api.PayeeVerificationInputAdmissionResult",
+      "issueContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payee-verifications:import-input",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            409,
+            410,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payee_verifications.import_input",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payee-verifications import-input",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payee_verifications-import_input",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payee_verifications.import_input.success",
+          "operationId": "payee_verifications.import_input",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payee_api.ImportPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationInputAdmissionResult",
+          "input": {
+            "legal_entity_id": "66615baa-1634-485c-a9cf-7d3a5058285a",
+            "bank_connection_id": "ab311610-8ca1-45f4-8336-b0b9b3366c0f",
+            "payment_export_profile_id": "a2c79a40-38cf-4e94-a833-dca8bfbe7d36",
+            "profile_revision": "1",
+            "submission_date": "2040-01-02",
+            "pain001_base64": "payee_verifications.import_input"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "db602f5f-5121-4c40-b6d1-c769676aba35",
+                "operation_id": "payee_verifications.import_input",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "378e9dd9-c562-4ec0-9ba1-64727258801d",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "applied",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "admission": {
+                "input_admission_id": "992d1631-47dd-4065-88b7-baa61458a367",
+                "resource_version": "1",
+                "artifact_reference": {
+                  "resource_type": "payee_verifications.import_input",
+                  "resource_id": "13bf41d2-b3e0-4036-af25-fc75f06ae195"
+                },
+                "legal_entity_id": "d0f1e1ac-8962-4c13-b8c7-ac556663beba",
+                "bank_connection_id": "9c8fa8b9-4dc5-4491-b8f5-e134cf931a57",
+                "payment_export_profile_id": "6e83eb11-addd-4c59-9771-d361689017ee",
+                "profile_revision": "1",
+                "submission_date": "2040-01-02",
+                "item_count": 1,
+                "admitted_at": "2040-01-02T03:04:05.000Z"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.import_input.invalid_request",
+          "operationId": "payee_verifications.import_input",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payee_api.ImportPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.import_input.unauthorized",
+          "operationId": "payee_verifications.import_input",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payee_api.ImportPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "legal_entity_id": "66615baa-1634-485c-a9cf-7d3a5058285a",
+            "bank_connection_id": "ab311610-8ca1-45f4-8336-b0b9b3366c0f",
+            "payment_export_profile_id": "a2c79a40-38cf-4e94-a833-dca8bfbe7d36",
+            "profile_revision": "1",
+            "submission_date": "2040-01-02",
+            "pain001_base64": "payee_verifications.import_input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.import_input.retryable",
+          "operationId": "payee_verifications.import_input",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payee_api.ImportPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "legal_entity_id": "66615baa-1634-485c-a9cf-7d3a5058285a",
+            "bank_connection_id": "ab311610-8ca1-45f4-8336-b0b9b3366c0f",
+            "payment_export_profile_id": "a2c79a40-38cf-4e94-a833-dca8bfbe7d36",
+            "profile_revision": "1",
+            "submission_date": "2040-01-02",
+            "pain001_base64": "payee_verifications.import_input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.import_input.idempotency_replay",
+          "operationId": "payee_verifications.import_input",
+          "scenario": "idempotency_replay",
+          "inputContract": "isecure.bankfiles.payee_api.ImportPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationInputAdmissionResult",
+          "input": {
+            "legal_entity_id": "66615baa-1634-485c-a9cf-7d3a5058285a",
+            "bank_connection_id": "ab311610-8ca1-45f4-8336-b0b9b3366c0f",
+            "payment_export_profile_id": "a2c79a40-38cf-4e94-a833-dca8bfbe7d36",
+            "profile_revision": "1",
+            "submission_date": "2040-01-02",
+            "pain001_base64": "payee_verifications.import_input"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "db602f5f-5121-4c40-b6d1-c769676aba35",
+                "operation_id": "payee_verifications.import_input",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "378e9dd9-c562-4ec0-9ba1-64727258801d",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "replayed",
+                  "original_request_id": "788caf82-86fc-47d0-8ed0-ceec2e713c5a",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "admission": {
+                "input_admission_id": "992d1631-47dd-4065-88b7-baa61458a367",
+                "resource_version": "1",
+                "artifact_reference": {
+                  "resource_type": "payee_verifications.import_input",
+                  "resource_id": "13bf41d2-b3e0-4036-af25-fc75f06ae195"
+                },
+                "legal_entity_id": "d0f1e1ac-8962-4c13-b8c7-ac556663beba",
+                "bank_connection_id": "9c8fa8b9-4dc5-4491-b8f5-e134cf931a57",
+                "payment_export_profile_id": "6e83eb11-addd-4c59-9771-d361689017ee",
+                "profile_revision": "1",
+                "submission_date": "2040-01-02",
+                "item_count": 1,
+                "admitted_at": "2040-01-02T03:04:05.000Z"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.import_input.idempotency_in_progress",
+          "operationId": "payee_verifications.import_input",
+          "scenario": "idempotency_in_progress",
+          "inputContract": "isecure.bankfiles.payee_api.ImportPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "legal_entity_id": "66615baa-1634-485c-a9cf-7d3a5058285a",
+            "bank_connection_id": "ab311610-8ca1-45f4-8336-b0b9b3366c0f",
+            "payment_export_profile_id": "a2c79a40-38cf-4e94-a833-dca8bfbe7d36",
+            "profile_revision": "1",
+            "submission_date": "2040-01-02",
+            "pain001_base64": "payee_verifications.import_input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_IN_PROGRESS",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The original synthetic command is still in progress.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.import_input.idempotency_mismatch",
+          "operationId": "payee_verifications.import_input",
+          "scenario": "idempotency_mismatch",
+          "inputContract": "isecure.bankfiles.payee_api.ImportPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "legal_entity_id": "66615baa-1634-485c-a9cf-7d3a5058285a",
+            "bank_connection_id": "ab311610-8ca1-45f4-8336-b0b9b3366c0f",
+            "payment_export_profile_id": "a2c79a40-38cf-4e94-a833-dca8bfbe7d36",
+            "profile_revision": "1",
+            "submission_date": "2040-01-02",
+            "pain001_base64": "payee_verifications.import_input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_MISMATCH",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The idempotency key was previously used with different normalized input.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.import_input.idempotency_expired",
+          "operationId": "payee_verifications.import_input",
+          "scenario": "idempotency_expired",
+          "inputContract": "isecure.bankfiles.payee_api.ImportPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "legal_entity_id": "66615baa-1634-485c-a9cf-7d3a5058285a",
+            "bank_connection_id": "ab311610-8ca1-45f4-8336-b0b9b3366c0f",
+            "payment_export_profile_id": "a2c79a40-38cf-4e94-a833-dca8bfbe7d36",
+            "profile_revision": "1",
+            "submission_date": "2040-01-02",
+            "pain001_base64": "payee_verifications.import_input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 410,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_EXPIRED",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The synthetic idempotency retention window has expired.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payee_verifications.items",
+      "version": 2,
+      "contractDigest": "sha256:be71fb594d91df57d912117bcd317635da1157336e280b79027987f8226c60c9",
+      "eventClosureDigest": "sha256:a03e90203c4e1128a9a53c4083b64bab8289ee5fac1677f5d2b2173d1324b288",
+      "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsInput",
+      "resultContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsResult",
+      "issueContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payee-verifications:items",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payee_verifications.items",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payee-verifications items",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payee_verifications-items",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payee_verifications.items.success",
+          "operationId": "payee_verifications.items",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsResult",
+          "input": {
+            "payee_verification_id": "fde1a2a7-6d14-4898-b503-8fb54d93ca47",
+            "projection_revision": "1",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "7fa63ab1-8d32-4459-88dd-97a21f1128db",
+                "operation_id": "payee_verifications.items",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "77ba3a1e-6db5-486f-8731-bd39f47e7568",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "projection_revision": "1",
+              "items": [
+                {
+                  "item_id": "72869572-dfc2-41ce-8949-3f38636313e7",
+                  "item_ordinal": 1,
+                  "target": {
+                    "target_kind": "payment_order_revision",
+                    "payment_order_id": "7334504c-b19c-4e82-9526-2156f80d8f68",
+                    "revision_id": "301b445d-9281-48ca-9f5e-f565c29e2f65",
+                    "payment_transfer_id": "eb7d6670-e798-41f4-8c58-983d88daf52a",
+                    "transfer_ordinal": 1
+                  },
+                  "state": "pending",
+                  "reason_codes": [
+                    "payee_verifications.items-result"
+                  ]
+                }
+              ],
+              "page": {
+                "snapshot_reference": "34eae935-0c96-45f1-80a7-127725eb1ae1"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.items.empty",
+          "operationId": "payee_verifications.items",
+          "scenario": "empty",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsResult",
+          "input": {
+            "payee_verification_id": "fde1a2a7-6d14-4898-b503-8fb54d93ca47",
+            "projection_revision": "1",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "7fa63ab1-8d32-4459-88dd-97a21f1128db",
+                "operation_id": "payee_verifications.items",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "77ba3a1e-6db5-486f-8731-bd39f47e7568",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "projection_revision": "1",
+              "items": [],
+              "page": {
+                "snapshot_reference": "34eae935-0c96-45f1-80a7-127725eb1ae1"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.items.pagination",
+          "operationId": "payee_verifications.items",
+          "scenario": "pagination",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsResult",
+          "input": {
+            "payee_verification_id": "fde1a2a7-6d14-4898-b503-8fb54d93ca47",
+            "projection_revision": "1",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "7fa63ab1-8d32-4459-88dd-97a21f1128db",
+                "operation_id": "payee_verifications.items",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "77ba3a1e-6db5-486f-8731-bd39f47e7568",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "projection_revision": "1",
+              "items": [
+                {
+                  "item_id": "72869572-dfc2-41ce-8949-3f38636313e7",
+                  "item_ordinal": 1,
+                  "target": {
+                    "target_kind": "payment_order_revision",
+                    "payment_order_id": "7334504c-b19c-4e82-9526-2156f80d8f68",
+                    "revision_id": "301b445d-9281-48ca-9f5e-f565c29e2f65",
+                    "payment_transfer_id": "eb7d6670-e798-41f4-8c58-983d88daf52a",
+                    "transfer_ordinal": 1
+                  },
+                  "state": "pending",
+                  "reason_codes": [
+                    "payee_verifications.items-result"
+                  ]
+                }
+              ],
+              "page": {
+                "snapshot_reference": "34eae935-0c96-45f1-80a7-127725eb1ae1",
+                "next_cursor": "mock.cursor.payee_verifications.items.page-2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.items.invalid_request",
+          "operationId": "payee_verifications.items",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.items.unauthorized",
+          "operationId": "payee_verifications.items",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "fde1a2a7-6d14-4898-b503-8fb54d93ca47",
+            "projection_revision": "1",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.items.retryable",
+          "operationId": "payee_verifications.items",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "fde1a2a7-6d14-4898-b503-8fb54d93ca47",
+            "projection_revision": "1",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.items.stale_cursor",
+          "operationId": "payee_verifications.items",
+          "scenario": "stale_cursor",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationItemsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "fde1a2a7-6d14-4898-b503-8fb54d93ca47",
+            "projection_revision": "1",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_CURSOR",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
+                  "retryable": false,
+                  "field_path": "cursor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payee_verifications.list",
+      "version": 2,
+      "contractDigest": "sha256:390b4f05be9898101b015a4cc0c5cf16efeb1471927af407a03c97045fefdcb6",
+      "eventClosureDigest": "sha256:0064cbf0b8903c4556414dfa0bc0094ee8f1672ff62107427795777f35d66cd4",
+      "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationListInput",
+      "resultContract": "isecure.bankfiles.payee_api.PayeeVerificationListResult",
+      "issueContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/payee-verifications",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payee_verifications.list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payee-verifications list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payee_verifications-list",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payee_verifications.list.success",
+          "operationId": "payee_verifications.list",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationListInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationListResult",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "ee031d28-4d46-4c52-8cc2-9d219c03dcd6",
+                "operation_id": "payee_verifications.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "191bf0d1-a51b-4fdd-a755-066e150e7758",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "payee_verifications": [
+                {
+                  "payee_verification_id": "df7a134c-6755-45ca-bea0-2cd2497f8dc1",
+                  "resource_version": "1",
+                  "legal_entity_id": "07642829-7c3a-4250-8079-6e4829afab43",
+                  "target": {
+                    "target": {
+                      "target_kind": "payment_order_revision",
+                      "payment_order_id": "3813325e-d456-4fa4-a23e-6577aa8e52c0",
+                      "revision_id": "8506200f-acc5-4b33-987a-57c7e15a70c1",
+                      "exact_revision_digest": "payee_verifications.list-result-"
+                    },
+                    "payment_export_profile_id": "30e7241a-5ac0-40db-91b1-2f08300bec04",
+                    "profile_revision": "1",
+                    "submission_date": "2040-01-02"
+                  },
+                  "capability_id": "7c84051c-b867-4aca-8c31-fc702deae2e0",
+                  "capability_revision": "1",
+                  "purpose": "payment_preparation",
+                  "policy_binding": {
+                    "policy_id": "payee_verifications.list-result-",
+                    "policy_version": "payee_verifications.list-result-",
+                    "policy_revision_id": "2fe8f697-8522-4498-b2b9-3c0e8c6d0ca3"
+                  },
+                  "task": {
+                    "task_id": "af3b81bc-fe2f-4bfa-940f-60d62424fb59",
+                    "attempt": {
+                      "attempt_type": "payee_verifications.list-result-",
+                      "attempt_id": "72200079-f1e8-4702-9d4a-c17c939c6303",
+                      "attempt_ordinal": 1
+                    },
+                    "state": "queued",
+                    "cancellation_boundary": "preventable"
+                  },
+                  "coverage": {
+                    "expected_items": 1,
+                    "terminal_items": 1,
+                    "pending_items": 1,
+                    "failed_items": 1,
+                    "indeterminate_items": 1,
+                    "cancelled_items": 1
+                  },
+                  "requested_at": "2040-01-02T03:04:05.000Z",
+                  "work_deadline": "2040-01-02T03:04:05.000Z"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "38b38d04-7345-421e-83f2-ed222fa35d41"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.list.empty",
+          "operationId": "payee_verifications.list",
+          "scenario": "empty",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationListInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationListResult",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "ee031d28-4d46-4c52-8cc2-9d219c03dcd6",
+                "operation_id": "payee_verifications.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "191bf0d1-a51b-4fdd-a755-066e150e7758",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "payee_verifications": [],
+              "page": {
+                "snapshot_reference": "38b38d04-7345-421e-83f2-ed222fa35d41"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.list.pagination",
+          "operationId": "payee_verifications.list",
+          "scenario": "pagination",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationListInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationListResult",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "ee031d28-4d46-4c52-8cc2-9d219c03dcd6",
+                "operation_id": "payee_verifications.list",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "191bf0d1-a51b-4fdd-a755-066e150e7758",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "payee_verifications": [
+                {
+                  "payee_verification_id": "df7a134c-6755-45ca-bea0-2cd2497f8dc1",
+                  "resource_version": "1",
+                  "legal_entity_id": "07642829-7c3a-4250-8079-6e4829afab43",
+                  "target": {
+                    "target": {
+                      "target_kind": "payment_order_revision",
+                      "payment_order_id": "3813325e-d456-4fa4-a23e-6577aa8e52c0",
+                      "revision_id": "8506200f-acc5-4b33-987a-57c7e15a70c1",
+                      "exact_revision_digest": "payee_verifications.list-result-"
+                    },
+                    "payment_export_profile_id": "30e7241a-5ac0-40db-91b1-2f08300bec04",
+                    "profile_revision": "1",
+                    "submission_date": "2040-01-02"
+                  },
+                  "capability_id": "7c84051c-b867-4aca-8c31-fc702deae2e0",
+                  "capability_revision": "1",
+                  "purpose": "payment_preparation",
+                  "policy_binding": {
+                    "policy_id": "payee_verifications.list-result-",
+                    "policy_version": "payee_verifications.list-result-",
+                    "policy_revision_id": "2fe8f697-8522-4498-b2b9-3c0e8c6d0ca3"
+                  },
+                  "task": {
+                    "task_id": "af3b81bc-fe2f-4bfa-940f-60d62424fb59",
+                    "attempt": {
+                      "attempt_type": "payee_verifications.list-result-",
+                      "attempt_id": "72200079-f1e8-4702-9d4a-c17c939c6303",
+                      "attempt_ordinal": 1
+                    },
+                    "state": "queued",
+                    "cancellation_boundary": "preventable"
+                  },
+                  "coverage": {
+                    "expected_items": 1,
+                    "terminal_items": 1,
+                    "pending_items": 1,
+                    "failed_items": 1,
+                    "indeterminate_items": 1,
+                    "cancelled_items": 1
+                  },
+                  "requested_at": "2040-01-02T03:04:05.000Z",
+                  "work_deadline": "2040-01-02T03:04:05.000Z"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "38b38d04-7345-421e-83f2-ed222fa35d41",
+                "next_cursor": "mock.cursor.payee_verifications.list.page-2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.list.invalid_request",
+          "operationId": "payee_verifications.list",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationListInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.list.unauthorized",
+          "operationId": "payee_verifications.list",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationListInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.list.retryable",
+          "operationId": "payee_verifications.list",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationListInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.list.stale_cursor",
+          "operationId": "payee_verifications.list",
+          "scenario": "stale_cursor",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationListInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_CURSOR",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
+                  "retryable": false,
+                  "field_path": "cursor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payee_verifications.observations",
+      "version": 2,
+      "contractDigest": "sha256:df51c3f9d12ba586ba95d6138798ebd2d9eaf9dac800f75a28d9e57bb4da3964",
+      "eventClosureDigest": "sha256:058790491ff7e62438c462436007180ef9bafd98c9274634b743d0e9bf3b7d02",
+      "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsInput",
+      "resultContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsResult",
+      "issueContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payee-verifications:observations",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payee_verifications.observations",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payee-verifications observations",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payee_verifications-observations",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payee_verifications.observations.success",
+          "operationId": "payee_verifications.observations",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsResult",
+          "input": {
+            "payee_verification_id": "bbbcd6e6-4c5c-42d9-a7cb-7e2a7a279e04",
+            "observation_set_id": "bef3c417-4f5b-4113-a812-b7abe2474947",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "07576c5e-9b3b-479e-b189-c576bc8ef6e7",
+                "operation_id": "payee_verifications.observations",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "932bb24e-c4a2-4f2f-8d07-28e91253748f",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "observation_set_reference": {
+                "resource_type": "payee_verifications.observations",
+                "resource_id": "4c7118f5-221e-405e-a9c1-5eebf4ab17df"
+              },
+              "observations": [
+                {
+                  "observation_id": "58256998-df24-47b3-bc17-a68049881b79",
+                  "attempt_id": "bc7c052d-87a1-4d2a-af47-3846e64f655f",
+                  "evidence_reference": {
+                    "resource_type": "payee_verifications.observations",
+                    "resource_id": "27cbf1eb-b0c4-4ef1-8568-00af67ba4b93"
+                  },
+                  "source_field": "payee_verifications.observations",
+                  "source_ordinal": 1,
+                  "raw_code": "payee_verifications.observations",
+                  "observation_kind": "match_result",
+                  "source_grain": "message",
+                  "received_at": "2040-01-02T03:04:05.000Z"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "d873b36f-9ef4-49eb-9301-2e2b6b15836a"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.observations.empty",
+          "operationId": "payee_verifications.observations",
+          "scenario": "empty",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsResult",
+          "input": {
+            "payee_verification_id": "bbbcd6e6-4c5c-42d9-a7cb-7e2a7a279e04",
+            "observation_set_id": "bef3c417-4f5b-4113-a812-b7abe2474947",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "07576c5e-9b3b-479e-b189-c576bc8ef6e7",
+                "operation_id": "payee_verifications.observations",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "932bb24e-c4a2-4f2f-8d07-28e91253748f",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "observation_set_reference": {
+                "resource_type": "payee_verifications.observations",
+                "resource_id": "4c7118f5-221e-405e-a9c1-5eebf4ab17df"
+              },
+              "observations": [],
+              "page": {
+                "snapshot_reference": "d873b36f-9ef4-49eb-9301-2e2b6b15836a"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.observations.pagination",
+          "operationId": "payee_verifications.observations",
+          "scenario": "pagination",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsResult",
+          "input": {
+            "payee_verification_id": "bbbcd6e6-4c5c-42d9-a7cb-7e2a7a279e04",
+            "observation_set_id": "bef3c417-4f5b-4113-a812-b7abe2474947",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "07576c5e-9b3b-479e-b189-c576bc8ef6e7",
+                "operation_id": "payee_verifications.observations",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "932bb24e-c4a2-4f2f-8d07-28e91253748f",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "observation_set_reference": {
+                "resource_type": "payee_verifications.observations",
+                "resource_id": "4c7118f5-221e-405e-a9c1-5eebf4ab17df"
+              },
+              "observations": [
+                {
+                  "observation_id": "58256998-df24-47b3-bc17-a68049881b79",
+                  "attempt_id": "bc7c052d-87a1-4d2a-af47-3846e64f655f",
+                  "evidence_reference": {
+                    "resource_type": "payee_verifications.observations",
+                    "resource_id": "27cbf1eb-b0c4-4ef1-8568-00af67ba4b93"
+                  },
+                  "source_field": "payee_verifications.observations",
+                  "source_ordinal": 1,
+                  "raw_code": "payee_verifications.observations",
+                  "observation_kind": "match_result",
+                  "source_grain": "message",
+                  "received_at": "2040-01-02T03:04:05.000Z"
+                }
+              ],
+              "page": {
+                "snapshot_reference": "d873b36f-9ef4-49eb-9301-2e2b6b15836a",
+                "next_cursor": "mock.cursor.payee_verifications.observations.page-2"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.observations.invalid_request",
+          "operationId": "payee_verifications.observations",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.observations.unauthorized",
+          "operationId": "payee_verifications.observations",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "bbbcd6e6-4c5c-42d9-a7cb-7e2a7a279e04",
+            "observation_set_id": "bef3c417-4f5b-4113-a812-b7abe2474947",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.observations.retryable",
+          "operationId": "payee_verifications.observations",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "bbbcd6e6-4c5c-42d9-a7cb-7e2a7a279e04",
+            "observation_set_id": "bef3c417-4f5b-4113-a812-b7abe2474947",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.observations.stale_cursor",
+          "operationId": "payee_verifications.observations",
+          "scenario": "stale_cursor",
+          "inputContract": "isecure.bankfiles.payee_api.PayeeVerificationObservationsInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "bbbcd6e6-4c5c-42d9-a7cb-7e2a7a279e04",
+            "observation_set_id": "bef3c417-4f5b-4113-a812-b7abe2474947",
+            "page": {}
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_CURSOR",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
+                  "retryable": false,
+                  "field_path": "cursor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payee_verifications.request",
+      "version": 2,
+      "contractDigest": "sha256:8990d2f4f76b75bdaaa150540f66e71cf28767d88f80c0cbf931843940a1649c",
+      "eventClosureDigest": "sha256:f6a08e25b87b14a780755aba6022310a06dd04db36efd1adf38ca090000208a7",
+      "inputContract": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+      "resultContract": "isecure.bankfiles.payee_api.PayeeVerificationStartResult",
+      "issueContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payee-verifications:request",
+          "responseStatuses": [
+            202,
+            400,
+            401,
+            403,
+            404,
+            409,
+            410,
+            412,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payee_verifications.request",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payee-verifications request",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payee_verifications-request",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payee_verifications.request.success",
+          "operationId": "payee_verifications.request",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationStartResult",
+          "input": {
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "95493ffd-bf9c-44ee-994f-d1e082a09fdb",
+                "revision_id": "d21974bc-1f1c-404d-8219-8c2b61e08135",
+                "exact_revision_digest": "payee_verifications.request-inpu"
+              },
+              "payment_export_profile_id": "b7c3ff54-6d0f-4475-8882-01745673014d",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "expected_resource_version": "1",
+            "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
+            "capability_revision": "1",
+            "purpose": "payment_preparation",
+            "disclosure_authorization_reference": {
+              "resource_type": "payee_verifications.request-inpu",
+              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
+            }
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 202,
+            "body": {
+              "context": {
+                "request_id": "d28899d2-7c42-470a-b6e9-0209810dd824",
+                "operation_id": "payee_verifications.request",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "8986aac6-41ad-4729-b80b-8ccba6999763",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "applied",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "task": {
+                "task_id": "dc8f62cd-0d22-458a-b7e3-b4338ed0a88e",
+                "attempt": {
+                  "attempt_type": "payee_verifications.request-resu",
+                  "attempt_id": "4a5227bf-d9e5-473f-97b3-083f3d8efab4",
+                  "attempt_ordinal": 1
+                },
+                "state": "queued",
+                "cancellation_boundary": "preventable"
+              },
+              "payee_verification": {
+                "payee_verification_id": "df7a134c-6755-45ca-bea0-2cd2497f8dc1",
+                "resource_version": "1",
+                "legal_entity_id": "3e7a087d-8dd0-4bf0-8ef3-e24074bef504",
+                "target": {
+                  "target": {
+                    "target_kind": "payment_order_revision",
+                    "payment_order_id": "d8dada3b-24ea-40d3-a1f2-765bec548e07",
+                    "revision_id": "9da2fb1a-3384-4ea1-b80f-e839c5dffd46",
+                    "exact_revision_digest": "payee_verifications.request-resu"
+                  },
+                  "payment_export_profile_id": "26b233b1-8d68-4960-b3c2-4c9612800452",
+                  "profile_revision": "1",
+                  "submission_date": "2040-01-02"
+                },
+                "capability_id": "e0dabf19-356e-48fa-90ad-09e47eb2e4e3",
+                "capability_revision": "1",
+                "purpose": "payment_preparation",
+                "policy_binding": {
+                  "policy_id": "payee_verifications.request-resu",
+                  "policy_version": "payee_verifications.request-resu",
+                  "policy_revision_id": "fe58c086-09ac-4714-8749-dd8b0d365691"
+                },
+                "task": {
+                  "task_id": "2decb4fc-d010-4b02-8e7c-c9c1b98b55a4",
+                  "attempt": {
+                    "attempt_type": "payee_verifications.request-resu",
+                    "attempt_id": "c91f4418-ff74-409d-b085-6ba94196a86f",
+                    "attempt_ordinal": 1
+                  },
+                  "state": "queued",
+                  "cancellation_boundary": "preventable"
+                },
+                "coverage": {
+                  "expected_items": 1,
+                  "terminal_items": 1,
+                  "pending_items": 1,
+                  "failed_items": 1,
+                  "indeterminate_items": 1,
+                  "cancelled_items": 1
+                },
+                "requested_at": "2040-01-02T03:04:05.000Z",
+                "work_deadline": "2040-01-02T03:04:05.000Z"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.request.invalid_request",
+          "operationId": "payee_verifications.request",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.request.unauthorized",
+          "operationId": "payee_verifications.request",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "95493ffd-bf9c-44ee-994f-d1e082a09fdb",
+                "revision_id": "d21974bc-1f1c-404d-8219-8c2b61e08135",
+                "exact_revision_digest": "payee_verifications.request-inpu"
+              },
+              "payment_export_profile_id": "b7c3ff54-6d0f-4475-8882-01745673014d",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "expected_resource_version": "1",
+            "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
+            "capability_revision": "1",
+            "purpose": "payment_preparation",
+            "disclosure_authorization_reference": {
+              "resource_type": "payee_verifications.request-inpu",
+              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.request.retryable",
+          "operationId": "payee_verifications.request",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "95493ffd-bf9c-44ee-994f-d1e082a09fdb",
+                "revision_id": "d21974bc-1f1c-404d-8219-8c2b61e08135",
+                "exact_revision_digest": "payee_verifications.request-inpu"
+              },
+              "payment_export_profile_id": "b7c3ff54-6d0f-4475-8882-01745673014d",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "expected_resource_version": "1",
+            "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
+            "capability_revision": "1",
+            "purpose": "payment_preparation",
+            "disclosure_authorization_reference": {
+              "resource_type": "payee_verifications.request-inpu",
+              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.request.idempotency_replay",
+          "operationId": "payee_verifications.request",
+          "scenario": "idempotency_replay",
+          "inputContract": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationStartResult",
+          "input": {
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "95493ffd-bf9c-44ee-994f-d1e082a09fdb",
+                "revision_id": "d21974bc-1f1c-404d-8219-8c2b61e08135",
+                "exact_revision_digest": "payee_verifications.request-inpu"
+              },
+              "payment_export_profile_id": "b7c3ff54-6d0f-4475-8882-01745673014d",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "expected_resource_version": "1",
+            "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
+            "capability_revision": "1",
+            "purpose": "payment_preparation",
+            "disclosure_authorization_reference": {
+              "resource_type": "payee_verifications.request-inpu",
+              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
+            }
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 202,
+            "body": {
+              "context": {
+                "request_id": "d28899d2-7c42-470a-b6e9-0209810dd824",
+                "operation_id": "payee_verifications.request",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "8986aac6-41ad-4729-b80b-8ccba6999763",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "replayed",
+                  "original_request_id": "4049a322-5bdd-4f91-be02-6aff9f4e300f",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "task": {
+                "task_id": "dc8f62cd-0d22-458a-b7e3-b4338ed0a88e",
+                "attempt": {
+                  "attempt_type": "payee_verifications.request-resu",
+                  "attempt_id": "4a5227bf-d9e5-473f-97b3-083f3d8efab4",
+                  "attempt_ordinal": 1
+                },
+                "state": "queued",
+                "cancellation_boundary": "preventable"
+              },
+              "payee_verification": {
+                "payee_verification_id": "df7a134c-6755-45ca-bea0-2cd2497f8dc1",
+                "resource_version": "1",
+                "legal_entity_id": "3e7a087d-8dd0-4bf0-8ef3-e24074bef504",
+                "target": {
+                  "target": {
+                    "target_kind": "payment_order_revision",
+                    "payment_order_id": "d8dada3b-24ea-40d3-a1f2-765bec548e07",
+                    "revision_id": "9da2fb1a-3384-4ea1-b80f-e839c5dffd46",
+                    "exact_revision_digest": "payee_verifications.request-resu"
+                  },
+                  "payment_export_profile_id": "26b233b1-8d68-4960-b3c2-4c9612800452",
+                  "profile_revision": "1",
+                  "submission_date": "2040-01-02"
+                },
+                "capability_id": "e0dabf19-356e-48fa-90ad-09e47eb2e4e3",
+                "capability_revision": "1",
+                "purpose": "payment_preparation",
+                "policy_binding": {
+                  "policy_id": "payee_verifications.request-resu",
+                  "policy_version": "payee_verifications.request-resu",
+                  "policy_revision_id": "fe58c086-09ac-4714-8749-dd8b0d365691"
+                },
+                "task": {
+                  "task_id": "2decb4fc-d010-4b02-8e7c-c9c1b98b55a4",
+                  "attempt": {
+                    "attempt_type": "payee_verifications.request-resu",
+                    "attempt_id": "c91f4418-ff74-409d-b085-6ba94196a86f",
+                    "attempt_ordinal": 1
+                  },
+                  "state": "queued",
+                  "cancellation_boundary": "preventable"
+                },
+                "coverage": {
+                  "expected_items": 1,
+                  "terminal_items": 1,
+                  "pending_items": 1,
+                  "failed_items": 1,
+                  "indeterminate_items": 1,
+                  "cancelled_items": 1
+                },
+                "requested_at": "2040-01-02T03:04:05.000Z",
+                "work_deadline": "2040-01-02T03:04:05.000Z"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.request.idempotency_in_progress",
+          "operationId": "payee_verifications.request",
+          "scenario": "idempotency_in_progress",
+          "inputContract": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "95493ffd-bf9c-44ee-994f-d1e082a09fdb",
+                "revision_id": "d21974bc-1f1c-404d-8219-8c2b61e08135",
+                "exact_revision_digest": "payee_verifications.request-inpu"
+              },
+              "payment_export_profile_id": "b7c3ff54-6d0f-4475-8882-01745673014d",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "expected_resource_version": "1",
+            "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
+            "capability_revision": "1",
+            "purpose": "payment_preparation",
+            "disclosure_authorization_reference": {
+              "resource_type": "payee_verifications.request-inpu",
+              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_IN_PROGRESS",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The original synthetic command is still in progress.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.request.idempotency_mismatch",
+          "operationId": "payee_verifications.request",
+          "scenario": "idempotency_mismatch",
+          "inputContract": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "95493ffd-bf9c-44ee-994f-d1e082a09fdb",
+                "revision_id": "d21974bc-1f1c-404d-8219-8c2b61e08135",
+                "exact_revision_digest": "payee_verifications.request-inpu"
+              },
+              "payment_export_profile_id": "b7c3ff54-6d0f-4475-8882-01745673014d",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "expected_resource_version": "1",
+            "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
+            "capability_revision": "1",
+            "purpose": "payment_preparation",
+            "disclosure_authorization_reference": {
+              "resource_type": "payee_verifications.request-inpu",
+              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_MISMATCH",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The idempotency key was previously used with different normalized input.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.request.idempotency_expired",
+          "operationId": "payee_verifications.request",
+          "scenario": "idempotency_expired",
+          "inputContract": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "95493ffd-bf9c-44ee-994f-d1e082a09fdb",
+                "revision_id": "d21974bc-1f1c-404d-8219-8c2b61e08135",
+                "exact_revision_digest": "payee_verifications.request-inpu"
+              },
+              "payment_export_profile_id": "b7c3ff54-6d0f-4475-8882-01745673014d",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "expected_resource_version": "1",
+            "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
+            "capability_revision": "1",
+            "purpose": "payment_preparation",
+            "disclosure_authorization_reference": {
+              "resource_type": "payee_verifications.request-inpu",
+              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 410,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_EXPIRED",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The synthetic idempotency retention window has expired.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.request.stale_version",
+          "operationId": "payee_verifications.request",
+          "scenario": "stale_version",
+          "inputContract": "isecure.bankfiles.payee_api.RequestPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "95493ffd-bf9c-44ee-994f-d1e082a09fdb",
+                "revision_id": "d21974bc-1f1c-404d-8219-8c2b61e08135",
+                "exact_revision_digest": "payee_verifications.request-inpu"
+              },
+              "payment_export_profile_id": "b7c3ff54-6d0f-4475-8882-01745673014d",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "expected_resource_version": "1",
+            "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
+            "capability_revision": "1",
+            "purpose": "payment_preparation",
+            "disclosure_authorization_reference": {
+              "resource_type": "payee_verifications.request-inpu",
+              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 412,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_RESOURCE_VERSION",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The expected synthetic resource version does not match.",
+                  "retryable": false,
+                  "field_path": "expected_resource_version"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payee_verifications.review",
+      "version": 2,
+      "contractDigest": "sha256:011bcb85a056093defc914eab35c76ed95d807c7b7db47010c6b8eab492e5dbc",
+      "eventClosureDigest": "sha256:eeb0ec87515ae290075fc9f8fdb326c01086bec8e31f4596726e2ce4367eea33",
+      "inputContract": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+      "resultContract": "isecure.bankfiles.payee_api.PayeeVerificationReviewResult",
+      "issueContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/payee-verifications:review",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            409,
+            410,
+            412,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payee_verifications.review",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payee-verifications review",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payee_verifications-review",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payee_verifications.review.success",
+          "operationId": "payee_verifications.review",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationReviewResult",
+          "input": {
+            "payee_verification_id": "dc9b3fa4-c693-488e-b283-23cb4c1bfedd",
+            "expected_resource_version": "1",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "614a161a-b2f7-4831-a93a-24b074d1fbfc",
+                "revision_id": "2f139b97-e6b7-41e3-ba6a-75b86dcebeeb",
+                "exact_revision_digest": "payee_verifications.review-input"
+              },
+              "payment_export_profile_id": "6317708b-668d-40bc-8be8-77f1a7ae1884",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "observation_set_id": "4249668d-a974-417d-a9bc-608312d60b91",
+            "policy_binding": {
+              "policy_id": "payee_verifications.review-input",
+              "policy_version": "payee_verifications.review-input",
+              "policy_revision_id": "ce9e2e85-0cc4-4495-b23c-7778910ee816"
+            },
+            "decision": "reviewed",
+            "reason_code": "payee_verifications.review-input"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "7f657117-468e-4588-912a-0e55df7c017b",
+                "operation_id": "payee_verifications.review",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "b87ea135-8bf6-4598-893e-39924115268b",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "applied",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "review": {
+                "review_id": "ef56d233-9169-4a74-885a-62a9fc194809",
+                "payee_verification_id": "df7a134c-6755-45ca-bea0-2cd2497f8dc1",
+                "actor_reference": {
+                  "resource_type": "payee_verifications.review-resul",
+                  "resource_id": "f8001822-9509-468c-baf8-319338166f5e"
+                },
+                "authority_reference": {
+                  "resource_type": "payee_verifications.review-resul",
+                  "resource_id": "83a82689-4cf1-4a7b-b6eb-cbe7f371f30a"
+                },
+                "decision": "reviewed",
+                "reason_code": "payee_verifications.review-resul",
+                "usability": {
+                  "usability": "usable",
+                  "reason_codes": [
+                    "payee_verifications.review-resul"
+                  ],
+                  "target": {
+                    "target": {
+                      "target_kind": "payment_order_revision",
+                      "payment_order_id": "ed8cffe3-a899-4dce-a350-f89be2c8c339",
+                      "revision_id": "7e825d2e-d455-4c3d-a5d0-5d5c748adc23",
+                      "exact_revision_digest": "payee_verifications.review-resul"
+                    },
+                    "payment_export_profile_id": "0e8f486d-c182-4837-ae4e-0568109a8f6d",
+                    "profile_revision": "1",
+                    "submission_date": "2040-01-02"
+                  },
+                  "projection_revision": "1",
+                  "observation_set_reference": {
+                    "resource_type": "payee_verifications.review-resul",
+                    "resource_id": "64bba910-d825-42e4-82e1-32384ca8b9da"
+                  },
+                  "policy_binding": {
+                    "policy_id": "payee_verifications.review-resul",
+                    "policy_version": "payee_verifications.review-resul",
+                    "policy_revision_id": "9de18851-f750-4b76-a046-6caf3ee32b95"
+                  },
+                  "evaluated_at": "2040-01-02T03:04:05.000Z"
+                },
+                "reviewed_at": "2040-01-02T03:04:05.000Z"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.review.invalid_request",
+          "operationId": "payee_verifications.review",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.review.unauthorized",
+          "operationId": "payee_verifications.review",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "dc9b3fa4-c693-488e-b283-23cb4c1bfedd",
+            "expected_resource_version": "1",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "614a161a-b2f7-4831-a93a-24b074d1fbfc",
+                "revision_id": "2f139b97-e6b7-41e3-ba6a-75b86dcebeeb",
+                "exact_revision_digest": "payee_verifications.review-input"
+              },
+              "payment_export_profile_id": "6317708b-668d-40bc-8be8-77f1a7ae1884",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "observation_set_id": "4249668d-a974-417d-a9bc-608312d60b91",
+            "policy_binding": {
+              "policy_id": "payee_verifications.review-input",
+              "policy_version": "payee_verifications.review-input",
+              "policy_revision_id": "ce9e2e85-0cc4-4495-b23c-7778910ee816"
+            },
+            "decision": "reviewed",
+            "reason_code": "payee_verifications.review-input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.review.retryable",
+          "operationId": "payee_verifications.review",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "dc9b3fa4-c693-488e-b283-23cb4c1bfedd",
+            "expected_resource_version": "1",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "614a161a-b2f7-4831-a93a-24b074d1fbfc",
+                "revision_id": "2f139b97-e6b7-41e3-ba6a-75b86dcebeeb",
+                "exact_revision_digest": "payee_verifications.review-input"
+              },
+              "payment_export_profile_id": "6317708b-668d-40bc-8be8-77f1a7ae1884",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "observation_set_id": "4249668d-a974-417d-a9bc-608312d60b91",
+            "policy_binding": {
+              "policy_id": "payee_verifications.review-input",
+              "policy_version": "payee_verifications.review-input",
+              "policy_revision_id": "ce9e2e85-0cc4-4495-b23c-7778910ee816"
+            },
+            "decision": "reviewed",
+            "reason_code": "payee_verifications.review-input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.review.idempotency_replay",
+          "operationId": "payee_verifications.review",
+          "scenario": "idempotency_replay",
+          "inputContract": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationReviewResult",
+          "input": {
+            "payee_verification_id": "dc9b3fa4-c693-488e-b283-23cb4c1bfedd",
+            "expected_resource_version": "1",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "614a161a-b2f7-4831-a93a-24b074d1fbfc",
+                "revision_id": "2f139b97-e6b7-41e3-ba6a-75b86dcebeeb",
+                "exact_revision_digest": "payee_verifications.review-input"
+              },
+              "payment_export_profile_id": "6317708b-668d-40bc-8be8-77f1a7ae1884",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "observation_set_id": "4249668d-a974-417d-a9bc-608312d60b91",
+            "policy_binding": {
+              "policy_id": "payee_verifications.review-input",
+              "policy_version": "payee_verifications.review-input",
+              "policy_revision_id": "ce9e2e85-0cc4-4495-b23c-7778910ee816"
+            },
+            "decision": "reviewed",
+            "reason_code": "payee_verifications.review-input"
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "7f657117-468e-4588-912a-0e55df7c017b",
+                "operation_id": "payee_verifications.review",
+                "contract_version": "2",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "b87ea135-8bf6-4598-893e-39924115268b",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "replayed",
+                  "original_request_id": "44782368-0d40-442d-ab83-0694419cd4fd",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "review": {
+                "review_id": "ef56d233-9169-4a74-885a-62a9fc194809",
+                "payee_verification_id": "df7a134c-6755-45ca-bea0-2cd2497f8dc1",
+                "actor_reference": {
+                  "resource_type": "payee_verifications.review-resul",
+                  "resource_id": "f8001822-9509-468c-baf8-319338166f5e"
+                },
+                "authority_reference": {
+                  "resource_type": "payee_verifications.review-resul",
+                  "resource_id": "83a82689-4cf1-4a7b-b6eb-cbe7f371f30a"
+                },
+                "decision": "reviewed",
+                "reason_code": "payee_verifications.review-resul",
+                "usability": {
+                  "usability": "usable",
+                  "reason_codes": [
+                    "payee_verifications.review-resul"
+                  ],
+                  "target": {
+                    "target": {
+                      "target_kind": "payment_order_revision",
+                      "payment_order_id": "ed8cffe3-a899-4dce-a350-f89be2c8c339",
+                      "revision_id": "7e825d2e-d455-4c3d-a5d0-5d5c748adc23",
+                      "exact_revision_digest": "payee_verifications.review-resul"
+                    },
+                    "payment_export_profile_id": "0e8f486d-c182-4837-ae4e-0568109a8f6d",
+                    "profile_revision": "1",
+                    "submission_date": "2040-01-02"
+                  },
+                  "projection_revision": "1",
+                  "observation_set_reference": {
+                    "resource_type": "payee_verifications.review-resul",
+                    "resource_id": "64bba910-d825-42e4-82e1-32384ca8b9da"
+                  },
+                  "policy_binding": {
+                    "policy_id": "payee_verifications.review-resul",
+                    "policy_version": "payee_verifications.review-resul",
+                    "policy_revision_id": "9de18851-f750-4b76-a046-6caf3ee32b95"
+                  },
+                  "evaluated_at": "2040-01-02T03:04:05.000Z"
+                },
+                "reviewed_at": "2040-01-02T03:04:05.000Z"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.review.idempotency_in_progress",
+          "operationId": "payee_verifications.review",
+          "scenario": "idempotency_in_progress",
+          "inputContract": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "dc9b3fa4-c693-488e-b283-23cb4c1bfedd",
+            "expected_resource_version": "1",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "614a161a-b2f7-4831-a93a-24b074d1fbfc",
+                "revision_id": "2f139b97-e6b7-41e3-ba6a-75b86dcebeeb",
+                "exact_revision_digest": "payee_verifications.review-input"
+              },
+              "payment_export_profile_id": "6317708b-668d-40bc-8be8-77f1a7ae1884",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "observation_set_id": "4249668d-a974-417d-a9bc-608312d60b91",
+            "policy_binding": {
+              "policy_id": "payee_verifications.review-input",
+              "policy_version": "payee_verifications.review-input",
+              "policy_revision_id": "ce9e2e85-0cc4-4495-b23c-7778910ee816"
+            },
+            "decision": "reviewed",
+            "reason_code": "payee_verifications.review-input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_IN_PROGRESS",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The original synthetic command is still in progress.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.review.idempotency_mismatch",
+          "operationId": "payee_verifications.review",
+          "scenario": "idempotency_mismatch",
+          "inputContract": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "dc9b3fa4-c693-488e-b283-23cb4c1bfedd",
+            "expected_resource_version": "1",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "614a161a-b2f7-4831-a93a-24b074d1fbfc",
+                "revision_id": "2f139b97-e6b7-41e3-ba6a-75b86dcebeeb",
+                "exact_revision_digest": "payee_verifications.review-input"
+              },
+              "payment_export_profile_id": "6317708b-668d-40bc-8be8-77f1a7ae1884",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "observation_set_id": "4249668d-a974-417d-a9bc-608312d60b91",
+            "policy_binding": {
+              "policy_id": "payee_verifications.review-input",
+              "policy_version": "payee_verifications.review-input",
+              "policy_revision_id": "ce9e2e85-0cc4-4495-b23c-7778910ee816"
+            },
+            "decision": "reviewed",
+            "reason_code": "payee_verifications.review-input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_MISMATCH",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The idempotency key was previously used with different normalized input.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.review.idempotency_expired",
+          "operationId": "payee_verifications.review",
+          "scenario": "idempotency_expired",
+          "inputContract": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "dc9b3fa4-c693-488e-b283-23cb4c1bfedd",
+            "expected_resource_version": "1",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "614a161a-b2f7-4831-a93a-24b074d1fbfc",
+                "revision_id": "2f139b97-e6b7-41e3-ba6a-75b86dcebeeb",
+                "exact_revision_digest": "payee_verifications.review-input"
+              },
+              "payment_export_profile_id": "6317708b-668d-40bc-8be8-77f1a7ae1884",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "observation_set_id": "4249668d-a974-417d-a9bc-608312d60b91",
+            "policy_binding": {
+              "policy_id": "payee_verifications.review-input",
+              "policy_version": "payee_verifications.review-input",
+              "policy_revision_id": "ce9e2e85-0cc4-4495-b23c-7778910ee816"
+            },
+            "decision": "reviewed",
+            "reason_code": "payee_verifications.review-input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 410,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_EXPIRED",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The synthetic idempotency retention window has expired.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payee_verifications.review.stale_version",
+          "operationId": "payee_verifications.review",
+          "scenario": "stale_version",
+          "inputContract": "isecure.bankfiles.payee_api.ReviewPayeeVerificationInput",
+          "outcomeContract": "isecure.bankfiles.payee_api.PayeeVerificationIssues",
+          "input": {
+            "payee_verification_id": "dc9b3fa4-c693-488e-b283-23cb4c1bfedd",
+            "expected_resource_version": "1",
+            "target": {
+              "target": {
+                "target_kind": "payment_order_revision",
+                "payment_order_id": "614a161a-b2f7-4831-a93a-24b074d1fbfc",
+                "revision_id": "2f139b97-e6b7-41e3-ba6a-75b86dcebeeb",
+                "exact_revision_digest": "payee_verifications.review-input"
+              },
+              "payment_export_profile_id": "6317708b-668d-40bc-8be8-77f1a7ae1884",
+              "profile_revision": "1",
+              "submission_date": "2040-01-02"
+            },
+            "observation_set_id": "4249668d-a974-417d-a9bc-608312d60b91",
+            "policy_binding": {
+              "policy_id": "payee_verifications.review-input",
+              "policy_version": "payee_verifications.review-input",
+              "policy_revision_id": "ce9e2e85-0cc4-4495-b23c-7778910ee816"
+            },
+            "decision": "reviewed",
+            "reason_code": "payee_verifications.review-input"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 412,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_STALE_RESOURCE_VERSION",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The expected synthetic resource version does not match.",
+                  "retryable": false,
+                  "field_path": "expected_resource_version"
                 }
               ]
             }
