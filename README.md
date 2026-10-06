@@ -698,4 +698,8 @@ Payment rows and invoice issuance are outside this operation.
 For local catalogue compatibility qualification, build the candidate and run
 `node scripts/qualify-plugin-catalogue-compatibility.mjs /absolute/path/to/installed/isecure-ts-client`.
 The retained package must be released 4.0.0. This exercises real SDK transports with synthetic server
-responses; it does not certify a live deployment or native plugin execution.
+responses across 18 combinations: empty listings, two release versions with additive metadata, and
+mixed malformed transport members. It checks exact response preservation, format-2 diagnostics and
+the explicit legacy refusal/fallback. This is transport qualification; caller/native admission owns
+malformed-entry isolation, signatures, compatibility and authorization. It does not certify a live
+deployment or native plugin execution.
