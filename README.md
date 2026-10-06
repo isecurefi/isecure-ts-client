@@ -684,3 +684,8 @@ Do not sum daily values or user counts to calculate tenant totals. `MissingDays`
 daily `Issues`, and an absent `UniqueAccounts` preserve missing coverage. The basis
 covers accounts observed in supported CAMT files, not all contracted or idle accounts.
 Payment rows and invoice issuance are outside this operation.
+
+For local catalogue compatibility qualification, build the candidate and run
+`node scripts/qualify-plugin-catalogue-compatibility.mjs /absolute/path/to/installed/isecure-ts-client`.
+The retained package must be released 4.0.0. This exercises real SDK transports with synthetic server
+responses; it does not certify a live deployment or native plugin execution.
