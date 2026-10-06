@@ -1,130 +1,264 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@bfbbc75bd321a6ca6f3b8eb9b889f85263304d19
+// source: isecurefi/bankfiles-platform@42a3f6da92893ca568afce4c5825a99638a05fbe
 // model: Bankfiles@0.125.0
-// source-digest: sha256:b12303fa31cf7f4bbb99908e505bfd0543a05f707f8801320ff71a9f7811c0ee
+// source-digest: sha256:178d517f06841171a61b439133c55af3dd289d53e0244ea8f83260dba32aa8df
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
-export type ApprovalDecisionKind = "approve" | "reject";
+export type ApprovalDecisionKind = 'approve' | 'reject';
 
-export type BalanceBoundary = "opening" | "closing" | "intraday" | "available" | "expected" | "forward_available" | "other";
+export type BalanceBoundary =
+    'opening' | 'closing' | 'intraday' | 'available' | 'expected' | 'forward_available' | 'other';
 
-export type CashReportKind = "camt_052" | "camt_053" | "camt_054";
+export type CashReportKind = 'camt_052' | 'camt_053' | 'camt_054';
 
-export type DebitCredit = "debit" | "credit";
+export type DebitCredit = 'debit' | 'credit';
 
-export type IntegrityOutcome = "succeeded" | "failed" | "indeterminate" | "quarantined";
+export type IntegrityOutcome = 'succeeded' | 'failed' | 'indeterminate' | 'quarantined';
 
-export type TemporalPrecision = "date" | "minute" | "second" | "millisecond" | "microsecond" | "nanosecond";
+export type TemporalPrecision =
+    'date' | 'minute' | 'second' | 'millisecond' | 'microsecond' | 'nanosecond';
 
-export type ProcessingRunKind = "detect" | "transform" | "parse" | "validate" | "map" | "render" | "project" | "reconcile";
+export type ProcessingRunKind =
+    'detect' | 'transform' | 'parse' | 'validate' | 'map' | 'render' | 'project' | 'reconcile';
 
-export type ProfileResolutionOutcome = "selected" | "no_match" | "ambiguous" | "rejected" | "human_resolved";
+export type ProfileResolutionOutcome =
+    'selected' | 'no_match' | 'ambiguous' | 'rejected' | 'human_resolved';
 
-export type TaskState = "queued" | "running" | "succeeded" | "failed" | "indeterminate" | "cancelled";
+export type TaskState =
+    'queued' | 'running' | 'succeeded' | 'failed' | 'indeterminate' | 'cancelled';
 
-export type PaymentExecutionObservationOutcome = "submitted" | "refused" | "indeterminate";
+export type PaymentExecutionObservationOutcome = 'submitted' | 'refused' | 'indeterminate';
 
-export type AccountCapabilityAvailability = "available" | "pending" | "unavailable" | "expired" | "uncertain";
+export type AccountCapabilityAvailability =
+    'available' | 'pending' | 'unavailable' | 'expired' | 'uncertain';
 
-export type CancellationBoundary = "preventable" | "race_possible" | "irreversible";
+export type CancellationBoundary = 'preventable' | 'race_possible' | 'irreversible';
 
-export type IdempotencyOutcome = "applied" | "replayed" | "in_progress" | "mismatch" | "expired";
+export type IdempotencyOutcome = 'applied' | 'replayed' | 'in_progress' | 'mismatch' | 'expired';
 
-export type OperationIssueCategory = "validation" | "authorization" | "policy" | "conflict" | "unsupported" | "external" | "internal";
+export type OperationIssueCategory =
+    | 'validation'
+    | 'authorization'
+    | 'policy'
+    | 'conflict'
+    | 'unsupported'
+    | 'external'
+    | 'internal';
 
-export type OperationIssueSeverity = "error" | "warning" | "information";
+export type OperationIssueSeverity = 'error' | 'warning' | 'information';
 
-export type PaymentAccountScheme = "iban" | "domestic";
+export type PaymentAccountScheme = 'iban' | 'domestic';
 
-export type PaymentApprovalBundleState = "not_required" | "pending" | "partially_approved" | "approved" | "rejected" | "expired" | "superseded";
+export type PaymentApprovalBundleState =
+    | 'not_required'
+    | 'pending'
+    | 'partially_approved'
+    | 'approved'
+    | 'rejected'
+    | 'expired'
+    | 'superseded';
 
-export type PaymentApprovalRequestState = "pending" | "partially_approved" | "approved" | "rejected" | "expired" | "cancelled" | "superseded";
+export type PaymentApprovalRequestState =
+    | 'pending'
+    | 'partially_approved'
+    | 'approved'
+    | 'rejected'
+    | 'expired'
+    | 'cancelled'
+    | 'superseded';
 
-export type PaymentApprovalSubjectKind = "order_revision" | "transfer_revision" | "export_preparation";
+export type PaymentApprovalSubjectKind =
+    'order_revision' | 'transfer_revision' | 'export_preparation';
 
-export type PaymentAuthorizationState = "not_required" | "pending" | "partially_satisfied" | "satisfied" | "rejected" | "expired" | "cancelled" | "indeterminate";
+export type PaymentAuthorizationState =
+    | 'not_required'
+    | 'pending'
+    | 'partially_satisfied'
+    | 'satisfied'
+    | 'rejected'
+    | 'expired'
+    | 'cancelled'
+    | 'indeterminate';
 
-export type PaymentBankOutcomeState = "not_observed" | "pending" | "accepted" | "partially_accepted" | "rejected" | "settled" | "partially_settled" | "returned" | "reversed" | "indeterminate" | "contradictory";
+export type PaymentBankOutcomeState =
+    | 'not_observed'
+    | 'pending'
+    | 'accepted'
+    | 'partially_accepted'
+    | 'rejected'
+    | 'settled'
+    | 'partially_settled'
+    | 'returned'
+    | 'reversed'
+    | 'indeterminate'
+    | 'contradictory';
 
-export type PaymentBatchBookingMode = "separate" | "combined" | "provider_choice";
+export type PaymentBatchBookingMode = 'separate' | 'combined' | 'provider_choice';
 
-export type PaymentBusinessType = "credit_transfer";
+export type PaymentBusinessType = 'credit_transfer';
 
-export type PaymentCapabilityResolutionOutcome = "resolved" | "unsupported" | "not_ready" | "ambiguous" | "expired" | "uncertain";
+export type PaymentCapabilityResolutionOutcome =
+    'resolved' | 'unsupported' | 'not_ready' | 'ambiguous' | 'expired' | 'uncertain';
 
-export type PaymentChargeBearer = "shared" | "debtor" | "creditor" | "service_level";
+export type PaymentChargeBearer = 'shared' | 'debtor' | 'creditor' | 'service_level';
 
-export type PaymentDestinationScope = "domestic" | "cross_border" | "any_qualified";
+export type PaymentDestinationScope = 'domestic' | 'cross_border' | 'any_qualified';
 
-export type PaymentExecutionFulfillmentState = "awaiting_claim" | "claimed" | "submitted" | "refused" | "indeterminate" | "expired";
+export type PaymentExecutionFulfillmentState =
+    'awaiting_claim' | 'claimed' | 'submitted' | 'refused' | 'indeterminate' | 'expired';
 
-export type PaymentExecutionSummaryState = "not_started" | "planned" | "in_progress" | "completed" | "failed" | "indeterminate" | "cancelled";
+export type PaymentExecutionSummaryState =
+    | 'not_started'
+    | 'planned'
+    | 'in_progress'
+    | 'completed'
+    | 'failed'
+    | 'indeterminate'
+    | 'cancelled';
 
-export type PaymentExportProfileAvailabilityStatus = "available" | "unavailable";
+export type PaymentExportProfileAvailabilityStatus = 'available' | 'unavailable';
 
-export type PaymentExportProfileLifecycleState = "active" | "revoked";
+export type PaymentExportProfileLifecycleState = 'active' | 'revoked';
 
-export type PaymentExportProfileQualificationStatus = "none" | "experimental" | "qualified_with_limitations" | "qualified";
+export type PaymentExportProfileQualificationStatus =
+    'none' | 'experimental' | 'qualified_with_limitations' | 'qualified';
 
-export type PaymentExportState = "pending_approval" | "approved" | "rejected" | "invalidated" | "released";
+export type PaymentExportState =
+    'pending_approval' | 'approved' | 'rejected' | 'invalidated' | 'released';
 
-export type PaymentGroupingFeasibility = "feasible" | "infeasible" | "indeterminate";
+export type PaymentGroupingFeasibility = 'feasible' | 'infeasible' | 'indeterminate';
 
-export type PaymentOptionKind = "batch_booking" | "category_purpose" | "service_level" | "local_instrument" | "charge_bearer" | "purpose" | "priority" | "advice" | "regulatory_reporting";
+export type PaymentOptionKind =
+    | 'batch_booking'
+    | 'category_purpose'
+    | 'service_level'
+    | 'local_instrument'
+    | 'charge_bearer'
+    | 'purpose'
+    | 'priority'
+    | 'advice'
+    | 'regulatory_reporting';
 
-export type PaymentOrderWorkflowState = "draft" | "finalized" | "review_pending" | "ready_for_execution" | "execution_pending" | "closed" | "cancelled";
+export type PaymentOrderWorkflowState =
+    | 'draft'
+    | 'finalized'
+    | 'review_pending'
+    | 'ready_for_execution'
+    | 'execution_pending'
+    | 'closed'
+    | 'cancelled';
 
-export type PaymentPriority = "normal" | "high" | "express";
+export type PaymentPriority = 'normal' | 'high' | 'express';
 
-export type PaymentRecoveryKind = "select_capability" | "revise_order" | "complete_approval" | "complete_strong_authentication" | "wait_for_outcome" | "investigate_indeterminate" | "request_recall";
+export type PaymentRecoveryKind =
+    | 'select_capability'
+    | 'revise_order'
+    | 'complete_approval'
+    | 'complete_strong_authentication'
+    | 'wait_for_outcome'
+    | 'investigate_indeterminate'
+    | 'request_recall';
 
-export type PaymentRemittanceKind = "none" | "unstructured" | "structured_creditor_reference" | "structured_document";
+export type PaymentRemittanceKind =
+    'none' | 'unstructured' | 'structured_creditor_reference' | 'structured_document';
 
-export type PaymentTransferOutcomeState = "not_observed" | "pending" | "accepted" | "rejected" | "settled" | "returned" | "reversed" | "indeterminate" | "contradictory";
+export type PaymentTransferOutcomeState =
+    | 'not_observed'
+    | 'pending'
+    | 'accepted'
+    | 'rejected'
+    | 'settled'
+    | 'returned'
+    | 'reversed'
+    | 'indeterminate'
+    | 'contradictory';
 
-export type PaymentValidationOutcome = "not_evaluated" | "valid" | "invalid" | "indeterminate";
+export type PaymentValidationOutcome = 'not_evaluated' | 'valid' | 'invalid' | 'indeterminate';
 
-export type PluginArtifactKind = "package" | "resource_bundle";
+export type PluginArtifactKind = 'package' | 'resource_bundle';
 
-export type PluginCatalogueAvailability = "available" | "withdrawn" | "revoked";
+export type PluginCatalogueAvailability = 'available' | 'withdrawn' | 'revoked';
 
-export type PluginCatalogueQualificationState = "qualified" | "unavailable";
+export type PluginCatalogueEntryIssueReason = 'invalid_entry' | 'duplicate_release';
 
-export type SimulationArtifactAccessMode = "file_exchange";
+export type PluginCatalogueQualificationState = 'qualified' | 'unavailable';
 
-export type SimulationArtifactRole = "input" | "status_report" | "debit_credit_notification" | "statement" | "validation_report";
+export type SimulationArtifactAccessMode = 'file_exchange';
 
-export type SimulationBehaviorScope = "synthetic_only";
+export type SimulationArtifactRole =
+    'input' | 'status_report' | 'debit_credit_notification' | 'statement' | 'validation_report';
 
-export type SimulationClockControlKind = "pause" | "use_real_time_pacing" | "set_acceleration" | "step_duration" | "step_event" | "advance_to_instant";
+export type SimulationBehaviorScope = 'synthetic_only';
 
-export type SimulationClockMode = "paused" | "real_time" | "accelerated";
+export type SimulationClockControlKind =
+    | 'pause'
+    | 'use_real_time_pacing'
+    | 'set_acceleration'
+    | 'step_duration'
+    | 'step_event'
+    | 'advance_to_instant';
 
-export type SimulationDataAdmissionMode = "synthetic";
+export type SimulationClockMode = 'paused' | 'real_time' | 'accelerated';
 
-export type SimulationEventKind = "run_accepted" | "payment_accepted" | "payment_rejected" | "payment_booked" | "payment_returned" | "payment_reversed" | "artifact_produced" | "clock_advanced" | "run_completed" | "run_indeterminate";
+export type SimulationDataAdmissionMode = 'synthetic';
 
-export type SimulationFaultKind = "duplicate_evidence" | "out_of_order_evidence" | "missing_response" | "malformed_response" | "timeout_after_acceptance" | "contradictory_status";
+export type SimulationEventKind =
+    | 'run_accepted'
+    | 'payment_accepted'
+    | 'payment_rejected'
+    | 'payment_booked'
+    | 'payment_returned'
+    | 'payment_reversed'
+    | 'artifact_produced'
+    | 'clock_advanced'
+    | 'run_completed'
+    | 'run_indeterminate';
 
-export type SimulationFileDirection = "customer_to_bank" | "bank_to_customer";
+export type SimulationFaultKind =
+    | 'duplicate_evidence'
+    | 'out_of_order_evidence'
+    | 'missing_response'
+    | 'malformed_response'
+    | 'timeout_after_acceptance'
+    | 'contradictory_status';
 
-export type SimulationRunState = "accepted" | "running" | "paused" | "succeeded" | "failed" | "indeterminate" | "cancelled";
+export type SimulationFileDirection = 'customer_to_bank' | 'bank_to_customer';
 
-export type SimulationRuntimeAvailability = "contract_only" | "hosted";
+export type SimulationRunState =
+    'accepted' | 'running' | 'paused' | 'succeeded' | 'failed' | 'indeterminate' | 'cancelled';
 
-export type SimulationRuntimeTimeZone = "utc" | "europe_helsinki" | "europe_tallinn" | "europe_stockholm" | "europe_oslo" | "europe_copenhagen" | "europe_berlin";
+export type SimulationRuntimeAvailability = 'contract_only' | 'hosted';
 
-export type SimulationRuntimeWeekendRule = "saturday_and_sunday";
+export type SimulationRuntimeTimeZone =
+    | 'utc'
+    | 'europe_helsinki'
+    | 'europe_tallinn'
+    | 'europe_stockholm'
+    | 'europe_oslo'
+    | 'europe_copenhagen'
+    | 'europe_berlin';
 
-export type SimulationScenarioOutcome = "accept" | "reject" | "partially_reject" | "delay" | "return" | "reverse" | "cancel" | "indeterminate";
+export type SimulationRuntimeWeekendRule = 'saturday_and_sunday';
 
-export type SimulationScenarioState = "draft" | "active" | "superseded";
+export type SimulationScenarioOutcome =
+    | 'accept'
+    | 'reject'
+    | 'partially_reject'
+    | 'delay'
+    | 'return'
+    | 'reverse'
+    | 'cancel'
+    | 'indeterminate';
 
-export type SimulationTopologySubjectKind = "bank" | "legal_entity" | "account" | "currency" | "counterparty";
+export type SimulationScenarioState = 'draft' | 'active' | 'superseded';
 
-export type SimulationWorkspaceResetScope = "runtime_state" | "runtime_state_and_balances" | "runtime_state_balances_and_active_scenarios";
+export type SimulationTopologySubjectKind =
+    'bank' | 'legal_entity' | 'account' | 'currency' | 'counterparty';
 
-export type SimulationWorkspaceState = "draft" | "active" | "suspended" | "closed";
+export type SimulationWorkspaceResetScope =
+    'runtime_state' | 'runtime_state_and_balances' | 'runtime_state_balances_and_active_scenarios';
+
+export type SimulationWorkspaceState = 'draft' | 'active' | 'suspended' | 'closed';
 
 export interface BalanceGetResult {
     readonly context: OperationContext;
@@ -1257,13 +1391,23 @@ export interface PluginCatalogueEntry {
     readonly release_entry: string;
 }
 
+export interface PluginCatalogueEntryIssue {
+    readonly provider_id: string;
+    readonly package_id: string;
+    readonly package_version: string;
+    readonly reason: PluginCatalogueEntryIssueReason;
+}
+
 export interface PluginCatalogueListInput {
     readonly search_text?: string;
+    readonly catalogue_format_version?: number;
 }
 
 export interface PluginCatalogueListResult {
     readonly context: OperationContext;
     readonly entries: readonly PluginCatalogueEntry[];
+    readonly catalogue_format_version?: number;
+    readonly entry_issues?: readonly PluginCatalogueEntryIssue[];
 }
 
 export interface PluginCatalogueText {
@@ -3711,6 +3855,14 @@ export const iso20022Operations = {
         "name": "search_text",
         "location": "query",
         "inputField": "search_text",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "catalogue_format_version",
+        "location": "query",
+        "inputField": "catalogue_format_version",
         "required": false,
         "style": "form",
         "objectFields": []

@@ -5,7 +5,7 @@
 ## What the public API is
 
 The supported surface is everything exported from the package root (`isecure-ts-client`) and the
-`./wsapi-types` subpath. The separate `./iso20022` subpath is public but explicitly experimental: it
+`./wsapi-types` and `./platform` subpaths. The separate `./iso20022` subpath is public but explicitly experimental: it
 is versioned with the package, while its generated observation, payment, and data contracts can
 change when the digest-pinned platform contract changes. Anything not exported from those entry
 points—including files under `src/lib/` imported by deep path and other files under
@@ -32,6 +32,14 @@ not replace or change the permanent WS Channel error hierarchy.
 The Bank Simulation control namespaces also belong only to the experimental `./iso20022` surface.
 Their generated contracts, revisions, and names can evolve with the digest-pinned Processing
 contract; they do not change the permanent WS Channel/File Exchange API.
+
+## Plugin catalogue formats
+
+The `./platform` catalogue operation preserves its legacy request and response when no format is
+selected. New discovery format majors are explicit opt-ins. Additive optional metadata does not
+require a plugin rebuild or an application release. A breaking envelope or required-field meaning
+needs a new format major. Compatibility, signatures and current account grants are separate checks;
+no catalogue format selection grants authority to install or execute a plugin.
 
 ## Runtime support
 

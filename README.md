@@ -572,6 +572,14 @@ const platform = createPlatformClient(
 const { entries } = await platform.pluginCatalogue.list({});
 ```
 
+Catalogue format selection is independent of app and plugin versions. Existing callers can keep
+`list({})`, which returns the legacy response. `list({ catalogue_format_version: 2 })` opts into
+`catalogue_format_version` and per-release `entry_issues` alongside the usable `entries`. Issues
+contain public release identities and closed reasons; they grant no permission and do not revoke
+installed packages. Hosts assess compatibility for each release, and still verify signed packages
+and resources before use. A caller supporting an older server may retry the legacy request only
+when the server explicitly rejects the new input contract, never after an authorization failure.
+
 `pluginCatalogue.list` returns the plugin catalogue filtered to the signed-in caller's tenant and
 roles; the Platform API is the only listing authority, and each entry carries its complete canonical
 release entry (`release_entry`). `pluginArtifact.get` returns a five-minute link to a listed
