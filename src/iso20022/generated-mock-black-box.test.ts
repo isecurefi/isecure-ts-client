@@ -43,7 +43,7 @@ describe("generated ISO client mock black box", () => {
     for (const operation of mock) {
       for (const fixture of operation.fixtures) {
         if (
-          operation.operationId === "payment_exports.download_content" &&
+          iso20022Operations[operation.operationId].successResponse.kind === "binary" &&
           fixture.outcome.status >= 200 &&
           fixture.outcome.status < 300
         ) {
@@ -213,6 +213,8 @@ function invoke(
       return client.paymentBatches.explain(input as never);
     case "payment_orders.finalize_draft":
       return client.paymentBatches.finalize(input as never, revisionOptions(operationId));
+    case "payment_orders.generate_file":
+      return client.paymentBatches.generateFile(input as never);
     case "payment_orders.get":
       return client.paymentBatches.get(input as never);
     case "payment_orders.list":

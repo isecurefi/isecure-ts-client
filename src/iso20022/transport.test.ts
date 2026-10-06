@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, type Mock } from "vitest";
 import { createIso20022Client } from "./client.js";
 import {
   Iso20022HttpError,
@@ -36,7 +36,7 @@ function sessionResponse(overrides: Record<string, unknown> = {}): Response {
 function transport(
   operationFetch: typeof globalThis.fetch = vi.fn(async () => jsonResponse({ ok: true })),
   options: Partial<Iso20022HttpTransportOptions> = {},
-): { adapter: Iso20022HttpTransport; fetch: ReturnType<typeof vi.fn> } {
+): { adapter: Iso20022HttpTransport; fetch: Mock<typeof globalThis.fetch> } {
   const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = input instanceof Request ? input.url : input.toString();
     if (new URL(url).pathname.endsWith("/session")) return sessionResponse();
@@ -93,6 +93,92 @@ function xmlResponse(bytes: Uint8Array, authority: PaymentExportContentAuthority
 }
 
 describe("ISO 20022 HTTP transport", () => {
+  it("generates bounded verified XML through the read operation without export or approval authority", async () => {
+    const bytes = new TextEncoder().encode("<Document>synthetic generated payment</Document>");
+    const authority = await contentAuthority(bytes);
+    const { adapter, fetch } = await readyTransport(async () =>
+      xmlResponse(bytes, authority, { "cache-control": "private, no-store" }),
+    );
+    const input = {
+      payment_order_id: RESOURCE_ID,
+      order_revision_id: ARTIFACT_ID,
+      payment_export_profile_id: RESOURCE_ID,
+      profile_revision: "2",
+    };
+    const result = await createIso20022Client(adapter).paymentBatches.generateFile(input);
+    expect(result).toEqual({ ...authority, bytes });
+    const [url, request] = fetch.mock.calls[1] ?? [];
+    expect(url).toEqual(new URL("https://api.example.test/processing/v1/payment-orders:generate-file"));
+    expect(request?.method).toBe("POST");
+    if (typeof request?.body !== "string") throw new Error("Expected a JSON request body");
+    expect(JSON.parse(request.body)).toEqual(input);
+    const headers = new Headers(request?.headers);
+    expect(headers.get("ISECure-Contract-Version")).toBe("1");
+    expect(headers.get("Authorization")).toBe(`Processing ${PROCESSING_TOKEN}`);
+    expect(headers.has("Idempotency-Key")).toBe(false);
+    expect(headers.has("If-Match")).toBe(false);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([
+    { "ISECure-Artifact-Id": "invalid" },
+    { "ISECure-Artifact-Sha256": `sha256:${"0".repeat(64)}` },
+    { "content-length": "100000000" },
+    { "content-length": "1" },
+    { "content-type": "application/json" },
+    { "cache-control": "private" },
+  ])("refuses generated content with invalid integrity or cache metadata: %j", async (overrides) => {
+    const bytes = new TextEncoder().encode("<Document/>");
+    const authority = await contentAuthority(bytes);
+    const { adapter } = await readyTransport(async () =>
+      xmlResponse(bytes, authority, { "cache-control": "private, no-store", ...overrides }),
+    );
+    await expect(adapter.generatePaymentFile({}, { contractVersion: 1 })).rejects.toMatchObject({
+      code: "integrity_check_failed",
+    });
+  });
+
+  it("requires the current session and preserves approved-download authority checks", async () => {
+    const first = transport();
+    await expect(first.adapter.generatePaymentFile({}, { contractVersion: 1 })).rejects.toMatchObject({
+      code: "invalid_session",
+    });
+    expect(first.fetch).not.toHaveBeenCalled();
+    const { adapter, fetch } = await readyTransport();
+    await expect(adapter.generatePaymentFile({}, { contractVersion: 2 })).rejects.toMatchObject({
+      code: "serialization_failed",
+    });
+    await expect(adapter.downloadPaymentExport({}, { contractVersion: 1 }, undefined as never)).rejects.toMatchObject({
+      code: "invalid_configuration",
+    });
+    await expect(adapter.invoke("payment_orders.generate_file", {}, { contractVersion: 1 })).rejects.toMatchObject({
+      code: "unsupported_operation",
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves generation entitlement denial without retrying or returning bytes", async () => {
+    const { adapter, fetch } = await readyTransport(async () =>
+      jsonResponse(
+        {
+          issues: [
+            {
+              issue_code: "processing_entitlement_denied",
+              category: "authorization",
+              severity: "error",
+              safe_message: "The Processing request could not be completed safely.",
+            },
+          ],
+        },
+        { status: 403 },
+      ),
+    );
+    await expect(adapter.generatePaymentFile({}, { contractVersion: 1 })).rejects.toBeInstanceOf(
+      ProcessingEntitlementDeniedError,
+    );
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
   it.each([
     ["op-c2b-v9-finland-sepa-unstructured", "sepa_credit_transfer_unstructured"],
     ["op-c2b-v9-finland-sepa-creditor-reference", "sepa_credit_transfer_creditor_reference"],
@@ -203,7 +289,7 @@ describe("ISO 20022 HTTP transport", () => {
     expect(metadata).not.toHaveProperty("processingSession");
     expect(metadata).not.toHaveProperty("apiKey");
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(String(fetch.mock.calls[0]?.[0])).toBe("https://api.example.test/processing/session");
+    expect(fetch.mock.calls[0]?.[0]).toEqual(new URL("https://api.example.test/processing/session"));
     expect(fetch.mock.calls[0]?.[1]).toMatchObject({
       method: "POST",
       headers: { Accept: "application/json", Authorization: ID_TOKEN, "x-api-key": API_KEY },

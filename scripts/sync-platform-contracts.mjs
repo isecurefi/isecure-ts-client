@@ -51,6 +51,7 @@ const operationIds = [
   "payment_orders.execute",
   "payment_orders.explain",
   "payment_orders.finalize_draft",
+  "payment_orders.generate_file",
   "payment_orders.get",
   "payment_orders.list",
   "payment_orders.remove_transfers",

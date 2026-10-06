@@ -33,6 +33,12 @@ The Bank Simulation control namespaces also belong only to the experimental `./i
 Their generated contracts, revisions, and names can evolve with the digest-pinned Processing
 contract; they do not change the permanent WS Channel/File Exchange API.
 
+The generation-only addition to `./iso20022` extends the experimental `Iso20022Transport`
+interface with `generatePaymentFile`. Applications implementing a custom transport must implement
+that method when adopting the new pinned contract. `Iso20022HttpTransport` supplies it. Existing
+approved-export downloads continue to require `PaymentExportContentAuthority`; generated content
+metadata establishes integrity only and grants no financial authority.
+
 ## Plugin catalogue formats
 
 The `./platform` catalogue operation preserves its legacy request and response when no format is

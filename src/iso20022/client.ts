@@ -24,6 +24,7 @@ import {
   type CreateSimulationWorkspaceInput,
   type DecidePaymentApprovalRequestInput,
   type DownloadPaymentExportContentInput,
+  type GeneratePaymentOrderFileInput,
   type PaymentApprovalDecisionResult,
   type PaymentExportGetInput,
   type PaymentExportGetResult,
@@ -105,6 +106,7 @@ import {
 } from "../generated/iso20022-contracts.js";
 import type {
   Iso20022Transport,
+  GeneratedPaymentFileContent,
   PaymentExportContentAuthority,
   PaymentExportContentSink,
   VerifiedPaymentExportContent,
@@ -142,6 +144,10 @@ export function createIso20022Client(transport: Iso20022Transport) {
   } as const;
 
   const paymentBatches = {
+    generateFile: (input: GeneratePaymentOrderFileInput): Promise<GeneratedPaymentFileContent> =>
+      transport.generatePaymentFile(input, {
+        contractVersion: iso20022Operations["payment_orders.generate_file"].version,
+      }),
     addPayments: (input: AppendPaymentOrderTransfersInput, options: ProcessingRevisionCommandOptions) =>
       invoke<AppendPaymentOrderTransfersInput, PaymentOrderMutationResult>(
         transport,

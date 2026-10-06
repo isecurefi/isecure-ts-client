@@ -1,3 +1,10 @@
+## Unreleased
+
+- Add experimental `paymentBatches.generateFile` / `paymentOrders.generateFile` for bounded,
+  integrity-checked XML from a finalized order and configured bank profile, without approval or
+  bank submission. Custom ISO 20022 transports must implement `generatePaymentFile`.
+- Adopt the exact platform generation contract at `0b36f0e050162f6827bf5fa251177fd61a73aeaa`.
+
 # Changelog
 
 ## [4.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v3.1.0...isecure-ts-client-v4.0.0) (2026-09-28)

@@ -4,6 +4,7 @@ import { platformOperationIds } from "../platform/client.js";
 import { createIso20022Client } from "./client.js";
 import type {
   Iso20022Transport,
+  GeneratedPaymentFileContent,
   PaymentExportContentAuthority,
   VerifiedPaymentExportContent,
   VerifiedPaymentExportContentMetadata,
@@ -11,6 +12,17 @@ import type {
 
 class RecordingTransport implements Iso20022Transport {
   readonly calls: { operationId: string; input: unknown; metadata: unknown }[] = [];
+
+  generatePaymentFile(input: unknown, metadata: unknown): Promise<GeneratedPaymentFileContent> {
+    this.calls.push({ operationId: "payment_orders.generate_file", input, metadata });
+    return Promise.resolve({
+      artifact_id: "00000000-0000-4000-8000-000000000001",
+      artifact_digest: `sha256:${"0".repeat(64)}`,
+      artifact_byte_length: "1",
+      artifact_media_type: "application/xml",
+      bytes: new Uint8Array([0]),
+    });
+  }
 
   invoke<Input, Result>(operationId: Iso20022OperationId, input: Input, metadata: unknown): Promise<Result> {
     this.calls.push({ operationId, input, metadata });
@@ -135,6 +147,12 @@ describe("experimental ISO 20022 client", () => {
         { payment_order_id: resource.resource_id },
         { idempotencyKey: "synthetic-finalize", expectedResourceVersion: '"1"' },
       ),
+      client.paymentBatches.generateFile({
+        payment_order_id: resource.resource_id,
+        order_revision_id: resource.resource_id,
+        payment_export_profile_id: profileId,
+        profile_revision: "1",
+      }),
       client.paymentBatches.get({ payment_order_id: resource.resource_id }),
       client.paymentBatches.list({ page: {} }),
       client.paymentBatches.removePayments(
@@ -215,7 +233,7 @@ describe("experimental ISO 20022 client", () => {
       client.validations.list({ run_kind: "validate" }),
     ]);
 
-    expect(transport.calls).toHaveLength(71);
+    expect(transport.calls).toHaveLength(72);
     const platform: readonly string[] = platformOperationIds;
     expect(transport.calls.map((call) => call.operationId)).toEqual(
       Object.keys(iso20022Operations).filter((operationId) => !platform.includes(operationId)),
