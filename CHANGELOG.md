@@ -3,7 +3,10 @@
 - Add experimental `paymentBatches.generateFile` / `paymentOrders.generateFile` for bounded,
   integrity-checked XML from a finalized order and configured bank profile, without approval or
   bank submission. Custom ISO 20022 transports must implement `generatePaymentFile`.
-- Adopt the exact platform generation contract at `0b36f0e050162f6827bf5fa251177fd61a73aeaa`.
+- Add experimental payment-bound `payeeVerifications` v2 methods, with explicit request/review
+  concurrency metadata and separately typed work, match, usability and human-review facts.
+- Adopt the combined platform candidate at `e45e3ed5dc660a77da54c8e3ba32b9458ae30b54`;
+  hosted and bank-connected VoP qualification remains pending.
 
 # Changelog
 

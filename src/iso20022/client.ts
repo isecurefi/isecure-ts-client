@@ -1,5 +1,24 @@
 import {
   iso20022Operations,
+  type ImportPayeeVerificationInput,
+  type PayeeVerificationCapabilityInput,
+  type PayeeVerificationCapabilityResult,
+  type PayeeVerificationEvidenceInput,
+  type PayeeVerificationEvidenceResult,
+  type PayeeVerificationExplanationResult,
+  type PayeeVerificationGetInput,
+  type PayeeVerificationInputAdmissionResult,
+  type PayeeVerificationItemsInput,
+  type PayeeVerificationItemsResult,
+  type PayeeVerificationListInput,
+  type PayeeVerificationListResult,
+  type PayeeVerificationObservationsInput,
+  type PayeeVerificationObservationsResult,
+  type PayeeVerificationResult,
+  type PayeeVerificationReviewResult,
+  type PayeeVerificationStartResult,
+  type RequestPayeeVerificationInput,
+  type ReviewPayeeVerificationInput,
   type AppendPaymentOrderTransfersInput,
   type BalanceGetResult,
   type BalanceListInput,
@@ -293,6 +312,63 @@ export function createIso20022Client(transport: Iso20022Transport) {
     );
 
   return {
+    payeeVerifications: {
+      capability: (input: PayeeVerificationCapabilityInput) =>
+        invoke<PayeeVerificationCapabilityInput, PayeeVerificationCapabilityResult>(
+          transport,
+          "payee_verifications.capability",
+          input,
+        ),
+      evidence: (input: PayeeVerificationEvidenceInput) =>
+        invoke<PayeeVerificationEvidenceInput, PayeeVerificationEvidenceResult>(
+          transport,
+          "payee_verifications.evidence",
+          input,
+        ),
+      explain: (input: PayeeVerificationGetInput) =>
+        invoke<PayeeVerificationGetInput, PayeeVerificationExplanationResult>(
+          transport,
+          "payee_verifications.explain",
+          input,
+        ),
+      get: (input: PayeeVerificationGetInput) =>
+        invoke<PayeeVerificationGetInput, PayeeVerificationResult>(transport, "payee_verifications.get", input),
+      importInput: (input: ImportPayeeVerificationInput, options: ProcessingCommandOptions) =>
+        invoke<ImportPayeeVerificationInput, PayeeVerificationInputAdmissionResult>(
+          transport,
+          "payee_verifications.import_input",
+          input,
+          options,
+        ),
+      items: (input: PayeeVerificationItemsInput) =>
+        invoke<PayeeVerificationItemsInput, PayeeVerificationItemsResult>(
+          transport,
+          "payee_verifications.items",
+          input,
+        ),
+      list: (input: PayeeVerificationListInput) =>
+        invoke<PayeeVerificationListInput, PayeeVerificationListResult>(transport, "payee_verifications.list", input),
+      observations: (input: PayeeVerificationObservationsInput) =>
+        invoke<PayeeVerificationObservationsInput, PayeeVerificationObservationsResult>(
+          transport,
+          "payee_verifications.observations",
+          input,
+        ),
+      request: (input: RequestPayeeVerificationInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<RequestPayeeVerificationInput, PayeeVerificationStartResult>(
+          transport,
+          "payee_verifications.request",
+          input,
+          options,
+        ),
+      review: (input: ReviewPayeeVerificationInput, options: ProcessingRevisionCommandOptions) =>
+        invoke<ReviewPayeeVerificationInput, PayeeVerificationReviewResult>(
+          transport,
+          "payee_verifications.review",
+          input,
+          options,
+        ),
+    },
     balances: {
       explain: (input: ObservationExplainInput) =>
         invoke<ObservationExplainInput, ExplanationResult>(transport, "balances.explain", input),

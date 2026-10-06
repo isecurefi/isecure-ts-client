@@ -69,6 +69,19 @@ describe("experimental ISO 20022 client", () => {
       artifact_media_type: "application/xml",
     } as const;
 
+    const verificationTarget = {
+      target: {
+        target_kind: "payment_order_revision",
+        payment_order_id: resource.resource_id,
+        revision_id: paymentExportId,
+        exact_revision_digest: `sha256:${"3".repeat(64)}`,
+      },
+      payment_export_profile_id: profileId,
+      profile_revision: "1",
+      submission_date: "2026-10-07",
+    } as const;
+    const verificationId = { payee_verification_id: resource.resource_id };
+
     await Promise.all([
       client.balances.explain(resource),
       client.balances.get(resource),
@@ -76,6 +89,55 @@ describe("experimental ISO 20022 client", () => {
       client.entries.explain(resource),
       client.entries.get(resource),
       client.entries.list({ status_code: "BOOK" }),
+      client.payeeVerifications.capability({
+        legal_entity_id: resource.resource_id,
+        bank_connection_id: profileId,
+        target: verificationTarget,
+      }),
+      client.payeeVerifications.evidence({
+        ...verificationId,
+        artifact_id: paymentExportId,
+        evidence_role: "bank_response",
+      }),
+      client.payeeVerifications.explain({ ...verificationId, target: verificationTarget }),
+      client.payeeVerifications.get({ ...verificationId, target: verificationTarget }),
+      client.payeeVerifications.importInput(
+        {
+          legal_entity_id: resource.resource_id,
+          bank_connection_id: profileId,
+          payment_export_profile_id: profileId,
+          profile_revision: "1",
+          submission_date: "2026-10-07",
+          pain001_base64: "PHN5bnRoZXRpYy8+",
+        },
+        { idempotencyKey: "synthetic-import" },
+      ),
+      client.payeeVerifications.items({ ...verificationId, projection_revision: "1", page: {} }),
+      client.payeeVerifications.list({ page: {} }),
+      client.payeeVerifications.observations({ ...verificationId, observation_set_id: paymentExportId, page: {} }),
+      client.payeeVerifications.request(
+        {
+          target: verificationTarget,
+          expected_resource_version: "1",
+          capability_id: profileId,
+          capability_revision: "1",
+          purpose: "payment_preparation",
+          disclosure_authorization_reference: { ...simulationReference, resource_type: "disclosure_authorization" },
+        },
+        { idempotencyKey: "synthetic-verification", expectedResourceVersion: '"1"' },
+      ),
+      client.payeeVerifications.review(
+        {
+          ...verificationId,
+          expected_resource_version: "1",
+          target: verificationTarget,
+          observation_set_id: paymentExportId,
+          policy_binding: { policy_id: "synthetic", policy_version: "1", policy_revision_id: profileId },
+          decision: "reviewed",
+          reason_code: "human_reviewed",
+        },
+        { idempotencyKey: "synthetic-review", expectedResourceVersion: '"1"' },
+      ),
       client.paymentApprovalRequests.decide(
         {
           payment_approval_request_id: resource.resource_id,
@@ -233,7 +295,7 @@ describe("experimental ISO 20022 client", () => {
       client.validations.list({ run_kind: "validate" }),
     ]);
 
-    expect(transport.calls).toHaveLength(72);
+    expect(transport.calls).toHaveLength(82);
     const platform: readonly string[] = platformOperationIds;
     expect(transport.calls.map((call) => call.operationId)).toEqual(
       Object.keys(iso20022Operations).filter((operationId) => !platform.includes(operationId)),
