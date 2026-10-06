@@ -541,6 +541,16 @@ example detached-OpenPGP-signs and uploads those exact in-memory bytes through t
 `WSChannel`. This is an explicit, non-retried manual upload—not `paymentOrders.execute`, automatic
 bank orchestration, feedback reconciliation, bank acceptance, or production qualification.
 
+The local experimental contract includes Danske Finland's ordinary V9 SEPA payment profiles.
+Discover the current deployment's availability with `paymentExportProfiles.list()`; the SDK
+contains no bank catalog or bank rules. Danske's account capability requires a
+`{ option_type: "proposed_submission_date", proposed_submission_date: "YYYY-MM-DD" }`
+order option, separate from `requested_execution_date`. Processing seals it in the order revision
+and returns it in export metadata. The SDK forwards the authored date without deriving it from
+its clock. Feedback, statements and notifications retain the same generated observation interfaces;
+financial interpretation, service selection and qualification remain platform responsibilities.
+This local adoption does not assert deployment, bank agreement or production acceptance.
+
 The source pin and artifact hashes are recorded in `platform-contracts.lock.json`. With a compatible
 `bankfiles-platform` checkout next to this repository, maintainers update and verify the generated
 surface using:

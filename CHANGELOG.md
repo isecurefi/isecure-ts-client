@@ -1,11 +1,5 @@
 # Changelog
 
-## 4.1.0
-
-- Add optional plugin catalogue format selection and per-release diagnostics while retaining the legacy request and response.
-- Keep catalogue format versions independent of app and plugin versions.
-- Qualify released SDK 4.0.0 and this candidate against synthetic legacy/versioned servers without rebuilding plugins.
-
 ## [4.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v3.1.0...isecure-ts-client-v4.0.0) (2026-09-28)
 
 

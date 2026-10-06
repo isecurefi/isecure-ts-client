@@ -93,6 +93,106 @@ function xmlResponse(bytes: Uint8Array, authority: PaymentExportContentAuthority
 }
 
 describe("ISO 20022 HTTP transport", () => {
+  it.each([
+    ["op-c2b-v9-finland-sepa-unstructured", "sepa_credit_transfer_unstructured"],
+    ["op-c2b-v9-finland-sepa-creditor-reference", "sepa_credit_transfer_creditor_reference"],
+    ["danske-c2b-v9-finland-sepa-unstructured", "sepa_credit_transfer_unstructured"],
+    ["danske-c2b-v9-finland-sepa-creditor-reference", "sepa_credit_transfer_creditor_reference"],
+  ])("discovers and configures the exact experimental bank profile %s", async (profileId, paymentType) => {
+    const danske = profileId.startsWith("danske-");
+    // Synthetic HTTP responses qualify SDK routing and metadata only. Platform profile tests own
+    // financial behavior; this fixture is neither bank acceptance nor a production availability claim.
+    const profile = {
+      bank_profile_id: profileId,
+      bank_id: danske ? "danske" : "op",
+      bank_name: danske ? "Danske Bank Finland" : "OP",
+      country_code: "FI",
+      payment_type: paymentType,
+      message_definition: "pain.001.001.09",
+      profile_version: "1",
+      qualification_status: "experimental",
+      availability_status: "available",
+    };
+    const configuration = {
+      bank_profile_id: profileId,
+      debtor_account_identifier: danske ? "FI9780009900000117" : "FI3950000100000123",
+      debtor_account_scheme: "iban" as const,
+      debtor_account_currency: "EUR",
+      initiating_party_name: "Synthetic initiating party",
+      initiating_party_customer_id: danske ? "SYNDANSKE00001" : "SYNOP00001",
+      debtor_name: "Synthetic debtor",
+      debtor_bank_agreement_id: danske ? "SYNDANSKE00001" : "SYNOP00001",
+      debtor_country_code: "FI",
+      debtor_agent_bic: danske ? "DABAFIHH" : "OKOYFIHH",
+    };
+    const operationFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      expect(headers.get("Authorization")).toBe(`Processing ${PROCESSING_TOKEN}`);
+      expect(headers.get("x-api-key")).toBe(API_KEY);
+      expect(headers.get("Authorization")).not.toContain(ID_TOKEN);
+      const url = input instanceof Request ? input.url : input.toString();
+      if (new URL(url).pathname.endsWith("/payment-export-profile-catalog")) {
+        expect(init?.method).toBe("GET");
+        return jsonResponse({ profiles: [profile], catalog_digest: `sha256:${"1".repeat(64)}`, issues: [] });
+      }
+      expect(new URL(url).pathname).toBe("/processing/v1/payment-export-profiles:configure");
+      expect(init?.method).toBe("POST");
+      if (typeof init?.body !== "string") throw new Error("synthetic configuration body missing");
+      expect(JSON.parse(init.body)).toEqual(configuration);
+      expect(new Headers(init?.headers).get("Idempotency-Key")).toBe("synthetic-bank-profile-configuration");
+      return jsonResponse({ issues: [] });
+    });
+    const { adapter } = await readyTransport(operationFetch);
+    const client = createIso20022Client(adapter);
+    const catalog = await client.paymentExportProfiles.list();
+    const selected = catalog.profiles.find((entry) => entry.bank_profile_id === profileId);
+    expect(selected).toEqual(profile);
+    expect(selected?.qualification_status).toBe("experimental");
+    expect(selected?.availability_status).toBe("available");
+    if (selected === undefined) throw new Error("synthetic bank catalog entry missing");
+    await client.paymentExportProfiles.configure(
+      { ...configuration, bank_profile_id: selected.bank_profile_id },
+      { idempotencyKey: "synthetic-bank-profile-configuration" },
+    );
+    expect(operationFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("forwards the explicit Danske submission-date option and preserves returned preparation context", async () => {
+    const input = {
+      capability: { account_capability_id: RESOURCE_ID, capability_revision: "1", connected_account_id: RESOURCE_ID },
+      requested_execution_date: "2030-04-03",
+      options: [{ option_type: "proposed_submission_date" as const, proposed_submission_date: "2030-04-02" }],
+      transfers: [
+        {
+          money: { amount: "12.34", currency: "EUR" },
+          creditor: { name: "Synthetic creditor", identifiers: [] },
+          creditor_account: { account_type: "iban" as const, iban: "FI8080009900000229" },
+          remittance: { remittance_type: "unstructured" as const, text_lines: ["Synthetic Danske invoice"] },
+          options: [],
+        },
+      ],
+    };
+    const operationFetch = vi.fn(async (request: RequestInfo | URL, init?: RequestInit) => {
+      const url = request instanceof Request ? request.url : request.toString();
+      if (new URL(url).pathname.endsWith("payment-orders:create-draft")) {
+        expect(init?.method).toBe("POST");
+        expect(new Headers(init?.headers).get("Idempotency-Key")).toBe("synthetic-danske-draft");
+        if (typeof init?.body !== "string") throw new Error("synthetic draft body missing");
+        expect(JSON.parse(init.body)).toEqual(input);
+        return jsonResponse({ issues: [] });
+      }
+      expect(new URL(url).pathname).toBe(`/processing/v1/payment-exports/${RESOURCE_ID}`);
+      expect(init?.method).toBe("GET");
+      return jsonResponse({ payment_export: { proposed_submission_date: "2030-04-02" }, issues: [] });
+    });
+    const { adapter } = await readyTransport(operationFetch);
+    const client = createIso20022Client(adapter);
+    await client.paymentBatches.createDraft(input, { idempotencyKey: "synthetic-danske-draft" });
+    const result = await client.paymentExports.get({ payment_export_id: RESOURCE_ID });
+    expect(result.payment_export.proposed_submission_date).toBe("2030-04-02");
+    expect(operationFetch).toHaveBeenCalledTimes(2);
+  });
+
   it("exchanges an existing WSChannel identity for a separate Processing session", async () => {
     const { adapter, fetch } = transport();
 
