@@ -4,7 +4,7 @@ Status: local candidate, not published or qualified against a hosted VoP service
 TASKS.md PAYMENTEXPORT-002 owns completion; its complete journey depends on VOP-004 and final
 release admission. This file is review evidence, not another task ledger.
 
-Source: bankfiles-platform `fae549cfeb79c2717f2c495ba61555fbd17608a6`, model 0.132.0.
+Source: bankfiles-platform `5e865abdfb5d2b15983b4196fcf8a1344562afd3`, model 0.132.0.
 Retained payment-generation implementation `f4f2428c0f859d61f131b433abb082f937138065` was integrated
 onto SDK main `9b88571`, preserving the versioned plugin-catalogue contracts and permanent File
 Exchange surface. Generated ISO contracts and fixtures were refreshed by their owning sync command
@@ -44,3 +44,9 @@ omitted the catalogue types already consumed by SDK main. The platform candidate
 existing contract and matching runtime source; no SDK catalogue exports were removed to pass.
 The sync owner selects 84 operations from the exact platform revision above. These checks qualify
 local SDK packaging only; VOP-004 hosted behavior and bank-connected acceptance remain pending.
+
+After the platform's legacy-result version correction and runtime-evidence refresh, the sync owner
+repinned this SDK to `5e865abdfb5d2b15983b4196fcf8a1344562afd3`. The complete package gate passed
+again: 242 tests across 30 files, formatting, lint, types, builds and package dry-run. The changed
+snapshot contains provenance updates only for this selected operation set; no handwritten wrapper
+or generated type was bypassed. Platform aggregate and hosted qualification remain pending.
