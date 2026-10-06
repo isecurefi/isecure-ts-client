@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@38ab39e08c84b24cbbf49a3cab8d53a0d2d3b465
-// model: Bankfiles@0.126.0
-// source-digest: sha256:9cacdc24a1e0e2af968877b0616e55bc03ca91101759e1939d151721a2de7520
+// source: isecurefi/bankfiles-platform@3fac7bd78a4702eb169c18596cb803f13d8e4b18
+// model: Bankfiles@0.128.0
+// source-digest: sha256:d2f49ab3404a37ec25bf40d8eca3841ec36431d0a6ecea27440e8a75b757c598
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = 'approve' | 'reject';
@@ -134,6 +134,7 @@ export type PaymentOptionKind =
     | 'service_level'
     | 'local_instrument'
     | 'charge_bearer'
+    | 'proposed_submission_date'
     | 'purpose'
     | 'priority'
     | 'advice'
@@ -999,6 +1000,7 @@ export interface PaymentExportResource {
     readonly approval_request_id: string;
     readonly exact_approval_subject_digest: string;
     readonly state: PaymentExportState;
+    readonly proposed_submission_date?: string;
     readonly prepared_at: string;
     readonly released_at?: string;
 }
@@ -1250,6 +1252,10 @@ export interface PaymentPostalAddress {
 
 export interface PaymentPriorityOption {
     readonly priority: PaymentPriority;
+}
+
+export interface PaymentProposedSubmissionDateOption {
+    readonly proposed_submission_date: string;
 }
 
 export interface PaymentPurposeOption {
@@ -1976,7 +1982,8 @@ export type PaymentOrderOption =
     | (PaymentCategoryPurposeOption & { readonly option_type: "category_purpose" })
     | (PaymentServiceLevelOption & { readonly option_type: "service_level" })
     | (PaymentLocalInstrumentOption & { readonly option_type: "local_instrument" })
-    | (PaymentChargeBearerOption & { readonly option_type: "charge_bearer" });
+    | (PaymentChargeBearerOption & { readonly option_type: "charge_bearer" })
+    | (PaymentProposedSubmissionDateOption & { readonly option_type: "proposed_submission_date" });
 
 export type PaymentRemittance =
     (UnstructuredPaymentRemittance & { readonly remittance_type: "unstructured" })
