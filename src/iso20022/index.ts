@@ -5,6 +5,7 @@ export {
   Iso20022TransportError,
   ProcessingEntitlementDeniedError,
   type Iso20022HttpTransportOptions,
+  type GeneratedPaymentFileContent,
   type Iso20022Transport,
   type Iso20022TransportErrorCode,
   type PaymentExportContentAuthority,

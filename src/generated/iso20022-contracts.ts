@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@2a68f543d13d0f537af54d06b59aaff8cf57c396
-// model: Bankfiles@0.128.0
-// source-digest: sha256:a955c09cc17e820f5e7e95fc9e233886bfa7743ab68b12d195f26f3074d900b6
+// source: isecurefi/bankfiles-platform@e45e3ed5dc660a77da54c8e3ba32b9458ae30b54
+// model: Bankfiles@0.131.0
+// source-digest: sha256:5e6a4a4d050c8c114eee62e3cfb98d8b773c2c726a19c841b604fd18d529b3ee
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = 'approve' | 'reject';
@@ -179,8 +179,6 @@ export type PaymentValidationOutcome = 'not_evaluated' | 'valid' | 'invalid' | '
 export type PluginArtifactKind = 'package' | 'resource_bundle';
 
 export type PluginCatalogueAvailability = 'available' | 'withdrawn' | 'revoked';
-
-export type PluginCatalogueEntryIssueReason = 'invalid_entry' | 'duplicate_release';
 
 export type PluginCatalogueQualificationState = 'qualified' | 'unavailable';
 
@@ -631,6 +629,13 @@ export interface DomesticPaymentAccount {
 
 export interface DownloadPaymentExportContentInput {
     readonly payment_export_id: string;
+}
+
+export interface GeneratePaymentOrderFileInput {
+    readonly payment_order_id: string;
+    readonly order_revision_id: string;
+    readonly payment_export_profile_id: string;
+    readonly profile_revision: string;
 }
 
 export interface IbanPaymentAccount {
@@ -1397,23 +1402,13 @@ export interface PluginCatalogueEntry {
     readonly release_entry: string;
 }
 
-export interface PluginCatalogueEntryIssue {
-    readonly provider_id: string;
-    readonly package_id: string;
-    readonly package_version: string;
-    readonly reason: PluginCatalogueEntryIssueReason;
-}
-
 export interface PluginCatalogueListInput {
     readonly search_text?: string;
-    readonly catalogue_format_version?: number;
 }
 
 export interface PluginCatalogueListResult {
     readonly context: OperationContext;
     readonly entries: readonly PluginCatalogueEntry[];
-    readonly catalogue_format_version?: number;
-    readonly entry_issues?: readonly PluginCatalogueEntryIssue[];
 }
 
 export interface PluginCatalogueText {
@@ -3435,6 +3430,39 @@ export const iso20022Operations = {
     },
     "parameters": []
   },
+  "payment_orders.generate_file": {
+    "method": "POST",
+    "path": "/v1/payment-orders:generate-file",
+    "version": 1,
+    "contractDigest": "sha256:46d88871b7f49928b0b661cc160ba0824cd2087abfc4bff1f71fb4139b9da087",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payments_api.GeneratePaymentOrderFileInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExportContentResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "binary",
+      "status": 200,
+      "mediaType": "application/xml",
+      "maximumBytes": 16777216,
+      "headers": {
+        "artifactId": "ISECure-Artifact-Id",
+        "artifactDigest": "ISECure-Artifact-Sha256",
+        "contentLength": "Content-Length"
+      }
+    },
+    "parameters": []
+  },
   "payment_orders.get": {
     "method": "GET",
     "path": "/v1/payment-orders/{payment_order_id}",
@@ -3862,14 +3890,6 @@ export const iso20022Operations = {
         "name": "search_text",
         "location": "query",
         "inputField": "search_text",
-        "required": false,
-        "style": "form",
-        "objectFields": []
-      },
-      {
-        "name": "catalogue_format_version",
-        "location": "query",
-        "inputField": "catalogue_format_version",
         "required": false,
         "style": "form",
         "objectFields": []

@@ -519,6 +519,25 @@ The plain-English payment surface separates four concepts:
 - `paymentOutcomes` exposes conclusions derived by the server from retained bank evidence; and
 - the unchanged File Exchange client remains the separate channel upload boundary.
 
+For generation without an approval workflow, use `paymentBatches.generateFile` with the exact
+finalized order revision and configured profile revision:
+
+```ts
+const content = await iso20022.paymentBatches.generateFile({
+  payment_order_id: paymentOrderId,
+  order_revision_id: orderRevisionId,
+  payment_export_profile_id: profileId,
+  profile_revision: profileRevision,
+});
+// content.bytes contains integrity-checked XML; save it only in an authorized destination.
+```
+
+This experimental operation requires deployment availability, a Processing session and read
+entitlement. The SDK checks response bounds, XML media type, artifact identity, byte length,
+SHA-256 and `no-store` before returning bytes. Generation creates no approval, release, retained
+export or bank submission. The existing approved-export download still requires its separate
+artifact authority. Neither path retries or uploads automatically.
+
 For compatibility, `paymentOrders` retains aliases over the same generated operations. In
 particular, its older `execute` name creates an attempt only; it does not sign, upload or contact a
 bank. The clearer equivalent is `paymentSubmissions.createAttempt`.
