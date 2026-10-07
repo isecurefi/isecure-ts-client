@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { verificationFixture, verifyVerificationReport } from "./verification.js";
+import { verificationFixture, verifyVerificationReport, requireWrongServiceDenial } from "./verification.js";
 import { blocks, texts } from "../processing-simulator-journey/evidence.js";
 
 const input = verificationFixture(
@@ -79,5 +79,42 @@ describe("live verification evidence", () => {
     ["alternate namespace", (xml: string) => xml.replace("<TxInfAndSts>", '<TxInfAndSts xmlns="other">')],
   ] as const)("rejects %s without returning a successful result", (_name, mutate) => {
     expect(() => verifyVerificationReport(input, encode(mutate(report())))).toThrow();
+  });
+});
+
+describe("VoP wrong-service denial", () => {
+  it("accepts only the exact logical refusal through either client error shape", async () => {
+    await expect(
+      requireWrongServiceDenial(
+        { downloadFile: () => Promise.resolve({ ResponseCode: "01", Content: "" }) },
+        "synthetic",
+      ),
+    ).resolves.toBeUndefined();
+    await expect(
+      requireWrongServiceDenial(
+        {
+          downloadFile: () =>
+            Promise.reject(Object.assign(new Error("refused"), { response: { data: { ResponseCode: "01" } } })),
+        },
+        "synthetic",
+      ),
+    ).resolves.toBeUndefined();
+  });
+  it.each([
+    new Error("network unavailable"),
+    Object.assign(new Error("authentication"), { response: { data: { ResponseCode: "02" } } }),
+    Object.assign(new Error("unexpected shape"), { response: { data: { ResponseCode: "00" } } }),
+  ])("does not disguise a different failure as successful isolation", async (error) => {
+    await expect(requireWrongServiceDenial({ downloadFile: () => Promise.reject(error) }, "synthetic")).rejects.toThrow(
+      "VOP_EVIDENCE_INVALID",
+    );
+  });
+  it("rejects an unexpectedly successful download", async () => {
+    await expect(
+      requireWrongServiceDenial(
+        { downloadFile: () => Promise.resolve({ ResponseCode: "00", Content: "" }) },
+        "synthetic",
+      ),
+    ).rejects.toThrow("VOP_EVIDENCE_INVALID");
   });
 });
