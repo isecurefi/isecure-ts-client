@@ -4,7 +4,7 @@ Status: local candidate, not published or qualified against a hosted VoP service
 TASKS.md PAYMENTEXPORT-002 owns completion; its complete journey depends on VOP-004 and final
 release admission. This file is review evidence, not another task ledger.
 
-Source: bankfiles-platform `bdef1c2015151affcd912e773fb7ebbd6dcc5b5b`, model 0.132.0.
+Source: bankfiles-platform `744b9be4ee103de2cb7702118640978f42251990`, model 0.132.0.
 Retained payment-generation implementation `f4f2428c0f859d61f131b433abb082f937138065` was integrated
 onto SDK main `9b88571`, preserving the versioned plugin-catalogue contracts and permanent File
 Exchange surface. Generated ISO contracts and fixtures were refreshed by their owning sync command
@@ -77,3 +77,27 @@ Simplicity/generated-consistency review confirms owner-generated provenance and 
 assertion use the same committed revision; no wrapper change is required. The full package
 gate passes on this pin: 242 tests across 30 files, formatting, lint, TypeScript, browser/package
 builds and package dry-run. Platform aggregate and hosted acceptance remain separate.
+
+## Qualified foundation source alignment
+
+The platform source `6b6de44fa83900bfd2fb843fac088201624cb8c7` passes all 17 aggregate
+phases on native macOS ARM64. Source pin `744b9be4ee103de2cb7702118640978f42251990`
+adds its acceptance review and unaltered structural receipt only. The SDK owner now selects
+all 84 operations from that committed foundation. Its local package gate remains required for
+this source pin; prior package passes are historical.
+
+Functional review: the selected operation contracts and handwritten wrappers remain unchanged;
+the exact source provenance and parity assertion move together. The complete hosted journey
+remains owned by VOP-004/PAYMENTEXPORT-002.
+
+Evidence/privacy/security review: no bank access, principal exposure, transport effect or
+verification claim is added. Generation and verification remain separate operations.
+
+Simplicity/generated-consistency review: use the existing sync owner and preserve historical
+pins in prior review sections. No package version, API decoder, wrapper or publication changes.
+
+The complete `yarn prepublishOnly` gate passes for this pin: 242 tests across 30 files with
+coverage, formatting, ESLint, TypeScript, browser/package builds and package dry-run. Generated
+client/OpenAPI/mock input digests and selected operation IDs are unchanged from the preceding
+snapshot; only revision provenance and derived generated-file digests change. No package was
+published. Hosted and bank-connected qualification remain outstanding.
