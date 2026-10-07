@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.0.0...isecure-ts-client-v4.1.0) (2026-10-07)
+
+
+### Features
+
+* **platform:** integrate versioned catalogue contracts with current banking profiles ([9b88571](https://github.com/isecurefi/isecure-ts-client/commit/9b88571d664945f1ae8c27120ebdde8812ee2139))
+
 ## [4.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v3.1.0...isecure-ts-client-v4.0.0) (2026-09-28)
 
 
