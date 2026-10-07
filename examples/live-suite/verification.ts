@@ -9,9 +9,9 @@ import { snapshotFileTimes, assertRetainedFileTimes } from "./timestamps.js";
 export const VOP_INPUT = "pain.001.001.09 VOP";
 export const VOP_OUTPUT = "pain.002.001.10 VOP";
 const FINAL = ["RCVC", "RVMC", "RVNM", "RVNA", "RJCT", "SYST"];
-const fail = (): never => {
+function fail(): never {
   throw new Error("VOP_EVIDENCE_INVALID");
-};
+}
 
 /** Qualification-only synthetic fixture: three blocks, six ordered items, repeated identifiers. */
 export function verificationFixture(template: string, runId: string): Uint8Array {
@@ -90,8 +90,8 @@ export function verifyVerificationReport(input: Uint8Array, output: Uint8Array):
 
 async function list(client: SimulatorFilesClient): Promise<readonly FileDescriptor[]> {
   const response = await client.listFiles({ FileType: VOP_OUTPUT, Status: "ALL" });
-  if (response.ResponseCode !== "00" || (response.FileDescriptors !== null && !Array.isArray(response.FileDescriptors)))
-    fail();
+  const observed: unknown = response.FileDescriptors;
+  if (response.ResponseCode !== "00" || (observed !== null && !Array.isArray(observed))) fail();
   const files = response.FileDescriptors ?? [];
   if (
     files.length > 256 ||
@@ -137,8 +137,7 @@ export async function runVerificationJourney(
     observations.set(outcome, Date.parse(texts(exactXml(bytes, "pain.002.001.10"), "CreDtTm")[0] ?? ""));
     const replay = await client.downloadFile(VOP_OUTPUT, file.FileReference);
     if (replay.ResponseCode !== "00" || replay.Content !== response.Content) fail();
-    const confused = await client.downloadFile("pain.002.001.10", file.FileReference);
-    if (confused.ResponseCode === "00") fail();
+    await requireWrongServiceDenial(client, file.FileReference);
   }
   if ((observations.get("final") ?? NaN) - (observations.get("pending") ?? NaN) !== 30000) fail();
   const after = await snapshotFileTimes(client);
@@ -152,4 +151,22 @@ export async function runVerificationJourney(
       )
     )
       fail();
+}
+
+/** Only the explicit File Exchange refusal counts; a network or authentication error does not. */
+export async function requireWrongServiceDenial(
+  client: Pick<SimulatorFilesClient, "downloadFile">,
+  reference: string,
+): Promise<void> {
+  let result: unknown;
+  try {
+    result = await client.downloadFile("pain.002.001.10", reference);
+  } catch (error: unknown) {
+    if (error === null || typeof error !== "object" || !("response" in error)) fail();
+    const response = error.response;
+    if (response === null || typeof response !== "object" || !("data" in response)) fail();
+    result = response.data;
+  }
+  if (result === null || typeof result !== "object" || !("ResponseCode" in result) || result.ResponseCode !== "01")
+    fail();
 }
