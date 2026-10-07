@@ -4,7 +4,7 @@ Status: local candidate, not published or qualified against a hosted VoP service
 TASKS.md PAYMENTEXPORT-002 owns completion; its complete journey depends on VOP-004 and final
 release admission. This file is review evidence, not another task ledger.
 
-Source: bankfiles-platform `b126d8ba31b92eb3c8cf299af5bf0ec975a04762`, model 0.132.0.
+Source: bankfiles-platform `bdef1c2015151affcd912e773fb7ebbd6dcc5b5b`, model 0.132.0.
 Retained payment-generation implementation `f4f2428c0f859d61f131b433abb082f937138065` was integrated
 onto SDK main `9b88571`, preserving the versioned plugin-catalogue contracts and permanent File
 Exchange surface. Generated ISO contracts and fixtures were refreshed by their owning sync command
@@ -69,3 +69,11 @@ Simplicity review uses the existing sync and parity gate, with no generated edit
 The complete package gate passes on this pin: 242 tests across 30 files, formatting, lint,
 TypeScript, browser/package builds and package dry-run. Platform aggregate and hosted
 qualification remain pending. Earlier receipts remain bound to their original revisions.
+
+The source pin now follows platform `bdef1c2015151affcd912e773fb7ebbd6dcc5b5b`, which
+refuses lossy VoP database timestamps. Functional review confirms all 84 operation contracts
+are unchanged. Privacy/security review finds no changed principals, payloads or exposure.
+Simplicity/generated-consistency review confirms owner-generated provenance and the parity
+assertion use the same committed revision; no wrapper change is required. The full package
+gate passes on this pin: 242 tests across 30 files, formatting, lint, TypeScript, browser/package
+builds and package dry-run. Platform aggregate and hosted acceptance remain separate.
