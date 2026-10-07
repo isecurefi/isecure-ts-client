@@ -40,7 +40,7 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
-function exactXml(bytes: Uint8Array, messageDefinition: keyof typeof NAMESPACES): string {
+export function exactXml(bytes: Uint8Array, messageDefinition: keyof typeof NAMESPACES): string {
   if (bytes.byteLength === 0 || bytes.byteLength > MAX_XML_BYTES) {
     throw new Error(`${messageDefinition} bytes are empty or exceed the example bound`);
   }
@@ -73,14 +73,14 @@ function decodeXmlText(value: string): string {
   return decoded;
 }
 
-function blocks(xml: string, tag: string): string[] {
+export function blocks(xml: string, tag: string): string[] {
   const name = escapeRegExp(tag);
   return [...xml.matchAll(new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)</${name}>`, "gu"))].map(
     (match) => match[1] ?? "",
   );
 }
 
-function texts(xml: string, tag: string): string[] {
+export function texts(xml: string, tag: string): string[] {
   return blocks(xml, tag).map((value) => decodeXmlText(value.trim()));
 }
 
