@@ -4,7 +4,7 @@ Status: local candidate, not published or qualified against a hosted VoP service
 TASKS.md PAYMENTEXPORT-002 owns completion; its complete journey depends on VOP-004 and final
 release admission. This file is review evidence, not another task ledger.
 
-Source: bankfiles-platform `9748dd868b91dca96f2f7584ecedb747c0f94e21`, model 0.132.0.
+Source: bankfiles-platform `b126d8ba31b92eb3c8cf299af5bf0ec975a04762`, model 0.132.0.
 Retained payment-generation implementation `f4f2428c0f859d61f131b433abb082f937138065` was integrated
 onto SDK main `9b88571`, preserving the versioned plugin-catalogue contracts and permanent File
 Exchange surface. Generated ISO contracts and fixtures were refreshed by their owning sync command
@@ -59,3 +59,13 @@ no permission, disclosure or retry change. Simplicity review retains generated o
 existing wrappers without compatibility shims. The complete package gate passes on this new pin: formatting, lint, TypeScript, 242 tests
 across 30 files, browser/package builds and package dry-run. The platform aggregate is running;
 these local package checks do not qualify hosted VoP or bank integrations.
+
+After merging SDK main `4768f2904365548639edd0ec09a57dc2fc3c1d22`, this candidate retains the
+populated catalogue compatibility qualification and README changes from main. The sync owner now
+pins platform `b126d8ba31b92eb3c8cf299af5bf0ec975a04762`, which merges platform main and preserves
+both signed vocabulary histories. Functional review retains 84 operations with unchanged selected
+contract semantics. Security review finds no added authority, provider calls or automatic retry.
+Simplicity review uses the existing sync and parity gate, with no generated edits or wrappers.
+The complete package gate passes on this pin: 242 tests across 30 files, formatting, lint,
+TypeScript, browser/package builds and package dry-run. Platform aggregate and hosted
+qualification remain pending. Earlier receipts remain bound to their original revisions.
