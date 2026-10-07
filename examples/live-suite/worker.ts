@@ -13,6 +13,7 @@ import {
 } from "../processing-manual-upload/processing-manual-upload.js";
 import { runProcessingSimulatorJourney } from "../processing-simulator-journey/processing-simulator-journey.js";
 
+import { runVerificationJourney } from "./verification.js";
 import { assertRetainedFileTimes, verifyStableFileTimes } from "./timestamps.js";
 
 let phase = "fixture";
@@ -209,8 +210,12 @@ async function main(): Promise<void> {
   await receipt("simulator-access");
   phase = "file-timestamps-before";
   const retainedFileTimes = await verifyStableFileTimes(uploader);
+  phase = "payee-verification";
+  const material = await signingMaterial();
+  await ensureAuthorizeKey(admin, material);
+  await runVerificationJourney(uploader, material, runId);
+  await receipt("payee-verification");
   phase = "payment-feedback-statement";
-  await ensureAuthorizeKey(admin, await signingMaterial());
   const channels: ChannelClients = { admin, data, uploader };
   await runProcessingSimulatorJourney(channels, "balance-chain");
   phase = "file-timestamps-after";

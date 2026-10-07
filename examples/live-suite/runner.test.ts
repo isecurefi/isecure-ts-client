@@ -23,6 +23,9 @@ function adapter(): Adapter {
     simulator: vi.fn(async () => {
       return;
     }),
+    verification: vi.fn(async () => {
+      return;
+    }),
     journey: vi.fn(async () => {
       return;
     }),
@@ -69,6 +72,18 @@ describe("live suite orchestration", () => {
     expect(report.cleanup).toBe("passed");
     expect(a.cleanup).toHaveBeenCalledTimes(1);
     expect(a.journey).not.toHaveBeenCalled();
+  });
+  it("stops before payment and cleans up when verification fails", async () => {
+    const a = adapter();
+    a.verification = vi.fn(async () => {
+      throw new Error("invalid verification evidence");
+    });
+    const report = await runSuite(a, await location());
+    expect(report.status).toBe("failed");
+    expect(report.checks.find((check) => check.name === "payee-verification")?.status).toBe("failed");
+    expect(a.verification).toHaveBeenCalledTimes(1);
+    expect(a.journey).not.toHaveBeenCalled();
+    expect(a.cleanup).toHaveBeenCalledTimes(1);
   });
   it("does not retry an uncertain payment and still cleans its fixture", async () => {
     const a = adapter();
