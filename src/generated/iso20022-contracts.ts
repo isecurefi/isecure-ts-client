@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@744b9be4ee103de2cb7702118640978f42251990
-// model: Bankfiles@0.132.0
-// source-digest: sha256:a3c1f9b1e7b4ad3e8ac8fee7479a1db99fd772839d62179c51aee5c00562741c
+// source: isecurefi/bankfiles-platform@180f5d089e346de330053a1a995012cffff1b2b0
+// model: Bankfiles@0.137.0
+// source-digest: sha256:3aa0844ef0d26dcf1eb06a1b820904422bb923db4d85ec6585b4b82caeef4bc7
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = 'approve' | 'reject';
@@ -646,8 +646,6 @@ export interface PayeeVerificationCapability {
     readonly bank_service_version: string;
     readonly payment_profile_id: string;
     readonly payment_profile_version: string;
-    readonly availability: PayeeVerificationAvailability;
-    readonly reason_codes: readonly string[];
     readonly purpose: PayeeVerificationPurpose;
     readonly request_message_definition: string;
     readonly response_message_definition: string;
@@ -664,7 +662,9 @@ export interface PayeeVerificationCapabilityInput {
 
 export interface PayeeVerificationCapabilityResult {
     readonly context: OperationContext;
-    readonly capability: PayeeVerificationCapability;
+    readonly availability: PayeeVerificationAvailability;
+    readonly reason_codes: readonly string[];
+    readonly capability?: PayeeVerificationCapability;
 }
 
 export interface PayeeVerificationCoverage {
@@ -884,8 +884,6 @@ export interface RequestPayeeVerificationInput {
     readonly capability_id: string;
     readonly capability_revision: string;
     readonly purpose: PayeeVerificationPurpose;
-    readonly disclosure_authorization_reference: ResourceReference;
-    readonly consent_reference?: ResourceReference;
 }
 
 export interface ReviewPayeeVerificationInput {
@@ -2775,7 +2773,11 @@ export const iso20022Operations = {
         "required": false,
         "style": "deepObject",
         "objectFields": [
-          "target",
+          "target.target_kind",
+          "target.payment_order_id",
+          "target.revision_id",
+          "target.exact_revision_digest",
+          "target.input_admission_id",
           "payment_export_profile_id",
           "profile_revision",
           "submission_date"
@@ -2824,7 +2826,11 @@ export const iso20022Operations = {
         "required": false,
         "style": "deepObject",
         "objectFields": [
-          "target",
+          "target.target_kind",
+          "target.payment_order_id",
+          "target.revision_id",
+          "target.exact_revision_digest",
+          "target.input_admission_id",
           "payment_export_profile_id",
           "profile_revision",
           "submission_date"

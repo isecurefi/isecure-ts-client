@@ -351,9 +351,11 @@ function generateParameter(openApi, parameter, operationId) {
     throw new Error(`${operationId} uses an unsupported parameter serialization`);
   }
   const objectFields =
-    style === "deepObject" || (parameter.in === "path" && parameter.schema?.$ref !== undefined)
-      ? requireObjectFields(openApi, parameter.schema, operationId)
-      : [];
+    style === "deepObject"
+      ? requireQueryFields(openApi, parameter.schema, operationId)
+      : parameter.in === "path" && parameter.schema?.$ref !== undefined
+        ? requireObjectFields(openApi, parameter.schema, operationId)
+        : [];
   return {
     name: parameter.name,
     location: parameter.in,
@@ -362,6 +364,35 @@ function generateParameter(openApi, parameter, operationId) {
     style,
     objectFields,
   };
+}
+
+// Deep-object fields are allowed scalar paths, including every closed tagged-choice variant.
+// This is transport metadata, not a second contract validator; the server validates the choice.
+function requireQueryFields(openApi, reference, operationId, prefix = "", depth = 0) {
+  if (depth > 8) throw new Error(`${operationId} query schema exceeds the supported nesting bound`);
+  const schema = reference?.$ref === undefined ? reference : resolveSchema(openApi, reference, operationId);
+  if (Array.isArray(schema?.oneOf)) {
+    return [
+      ...new Set(
+        schema.oneOf.flatMap((variant) => requireQueryFields(openApi, variant, operationId, prefix, depth + 1)),
+      ),
+    ];
+  }
+  if (schema?.type === "object" && schema.additionalProperties === false && schema.properties !== undefined) {
+    const fields = Object.entries(schema.properties);
+    if (fields.length === 0) throw new Error(`${operationId} query object has no fields`);
+    return fields.flatMap(([field, value]) => {
+      if (!/^[a-z][a-z0-9_]*$/u.test(field)) throw new Error(`${operationId} has an unsupported query field`);
+      return requireQueryFields(openApi, value, operationId, prefix === "" ? field : `${prefix}.${field}`, depth + 1);
+    });
+  }
+  if (
+    prefix !== "" &&
+    (["string", "integer", "number", "boolean"].includes(schema?.type) || typeof schema?.const === "string")
+  ) {
+    return [prefix];
+  }
+  throw new Error(`${operationId} query field must be a scalar or a closed object`);
 }
 
 function requireObjectFields(openApi, schemaReference, operationId) {

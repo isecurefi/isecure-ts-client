@@ -558,6 +558,12 @@ automatically. Generate independently with `generateFile`; generation success ma
 verification freshness. The complete hosted discover/request/read/review/generate journey remains
 subject to the platform's combined-service acceptance.
 
+The [payment verification example](examples/payment-verification/README.md) shows explicit
+request preparation, paged results, human review and exact-target re-evaluation around generation.
+Capability discovery returns availability and reasons even when no capability is available.
+The server owns disclosure authorization; the request accepts no caller-supplied authorization
+or consent reference. The example's local HTTP-double tests do not qualify a hosted bank connection.
+
 For compatibility, `paymentOrders` retains aliases over the same generated operations. In
 particular, its older `execute` name creates an attempt only; it does not sign, upload or contact a
 bank. The clearer equivalent is `paymentSubmissions.createAttempt`.
