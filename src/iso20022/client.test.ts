@@ -122,7 +122,6 @@ describe("experimental ISO 20022 client", () => {
           capability_id: profileId,
           capability_revision: "1",
           purpose: "payment_preparation",
-          disclosure_authorization_reference: { ...simulationReference, resource_type: "disclosure_authorization" },
         },
         { idempotencyKey: "synthetic-verification", expectedResourceVersion: '"1"' },
       ),

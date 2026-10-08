@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "744b9be4ee103de2cb7702118640978f42251990",
-    "model": "Bankfiles@0.132.0",
-    "sourceDigest": "sha256:a3c1f9b1e7b4ad3e8ac8fee7479a1db99fd772839d62179c51aee5c00562741c",
+    "revision": "180f5d089e346de330053a1a995012cffff1b2b0",
+    "model": "Bankfiles@0.137.0",
+    "sourceDigest": "sha256:3aa0844ef0d26dcf1eb06a1b820904422bb923db4d85ec6585b4b82caeef4bc7",
     "fixedClock": "2040-01-02T03:04:05.000Z",
     "safety": {
       "syntheticOnly": true,
@@ -1382,39 +1382,10 @@
                   "decided_at": "2040-01-02T03:04:05.000Z"
                 }
               },
-              "capability": {
-                "capability_id": "2a7d932c-eefc-4f82-ac21-31164140587b",
-                "capability_revision": "1",
-                "legal_entity_id": "0c720b84-ec2d-49fa-9a7d-52d37213f0a2",
-                "bank_connection_id": "6de8736f-4edf-4743-827d-8a86997bf6dc",
-                "connection_agreement_id": "cce576dd-1c83-4731-bea8-ed5155fdfe1e",
-                "bank_service_id": "payee_verifications.capability-r",
-                "bank_service_version": "payee_verifications.capability-r",
-                "payment_profile_id": "payee_verifications.capability-r",
-                "payment_profile_version": "payee_verifications.capability-r",
-                "availability": "available",
-                "reason_codes": [
-                  "payee_verifications.capability-r"
-                ],
-                "purpose": "payment_preparation",
-                "request_message_definition": "payee_verifications.capability-r",
-                "response_message_definition": "payee_verifications.capability-r",
-                "limits": {
-                  "maximum_input_bytes": "1",
-                  "maximum_items": 1,
-                  "maximum_concurrent_attempts": 1,
-                  "minimum_poll_interval_seconds": 1,
-                  "work_timeout_seconds": 1,
-                  "maximum_attempts": 1,
-                  "fan_out_permitted": false
-                },
-                "opt_out_permitted": false,
-                "policy_binding": {
-                  "policy_id": "payee_verifications.capability-r",
-                  "policy_version": "payee_verifications.capability-r",
-                  "policy_revision_id": "0da2d9f0-b558-41a6-8a7e-37020eb8572e"
-                }
-              }
+              "availability": "available",
+              "reason_codes": [
+                "payee_verifications.capability-r"
+              ]
             }
           }
         },
@@ -3444,11 +3415,7 @@
             "expected_resource_version": "1",
             "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
             "capability_revision": "1",
-            "purpose": "payment_preparation",
-            "disclosure_authorization_reference": {
-              "resource_type": "payee_verifications.request-inpu",
-              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
-            }
+            "purpose": "payment_preparation"
           },
           "outcome": {
             "kind": "result",
@@ -3572,11 +3539,7 @@
             "expected_resource_version": "1",
             "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
             "capability_revision": "1",
-            "purpose": "payment_preparation",
-            "disclosure_authorization_reference": {
-              "resource_type": "payee_verifications.request-inpu",
-              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
-            }
+            "purpose": "payment_preparation"
           },
           "outcome": {
             "kind": "issues",
@@ -3615,11 +3578,7 @@
             "expected_resource_version": "1",
             "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
             "capability_revision": "1",
-            "purpose": "payment_preparation",
-            "disclosure_authorization_reference": {
-              "resource_type": "payee_verifications.request-inpu",
-              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
-            }
+            "purpose": "payment_preparation"
           },
           "outcome": {
             "kind": "issues",
@@ -3662,11 +3621,7 @@
             "expected_resource_version": "1",
             "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
             "capability_revision": "1",
-            "purpose": "payment_preparation",
-            "disclosure_authorization_reference": {
-              "resource_type": "payee_verifications.request-inpu",
-              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
-            }
+            "purpose": "payment_preparation"
           },
           "outcome": {
             "kind": "result",
@@ -3765,11 +3720,7 @@
             "expected_resource_version": "1",
             "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
             "capability_revision": "1",
-            "purpose": "payment_preparation",
-            "disclosure_authorization_reference": {
-              "resource_type": "payee_verifications.request-inpu",
-              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
-            }
+            "purpose": "payment_preparation"
           },
           "outcome": {
             "kind": "issues",
@@ -3812,11 +3763,7 @@
             "expected_resource_version": "1",
             "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
             "capability_revision": "1",
-            "purpose": "payment_preparation",
-            "disclosure_authorization_reference": {
-              "resource_type": "payee_verifications.request-inpu",
-              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
-            }
+            "purpose": "payment_preparation"
           },
           "outcome": {
             "kind": "issues",
@@ -3856,11 +3803,7 @@
             "expected_resource_version": "1",
             "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
             "capability_revision": "1",
-            "purpose": "payment_preparation",
-            "disclosure_authorization_reference": {
-              "resource_type": "payee_verifications.request-inpu",
-              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
-            }
+            "purpose": "payment_preparation"
           },
           "outcome": {
             "kind": "issues",
@@ -3900,11 +3843,7 @@
             "expected_resource_version": "1",
             "capability_id": "791f1545-8054-48a6-a8ba-d7cfae307fff",
             "capability_revision": "1",
-            "purpose": "payment_preparation",
-            "disclosure_authorization_reference": {
-              "resource_type": "payee_verifications.request-inpu",
-              "resource_id": "dcdd5b66-d5c9-48e7-ba55-e8a6727267ae"
-            }
+            "purpose": "payment_preparation"
           },
           "outcome": {
             "kind": "issues",

@@ -828,14 +828,25 @@ function appendDeepObject(
     throw new Iso20022TransportError("serialization_failed", `Query field ${inputField} must be an object`);
   }
   const record = value as Record<string, unknown>;
-  const allowed = new Set(objectFields);
+  const allowed = new Set(objectFields.map((path) => path.split(".")[0]));
   if (Object.keys(record).some((field) => !allowed.has(field))) {
     throw new Iso20022TransportError("serialization_failed", `Query field ${inputField} has an unknown member`);
   }
-  for (const field of objectFields) {
+  for (const field of allowed) {
+    if (field === undefined) continue;
     const fieldValue = record[field];
     if (fieldValue !== undefined) {
-      url.searchParams.append(`${parameterName}[${field}]`, serializeQueryValue(`${inputField}.${field}`, fieldValue));
+      const children = objectFields
+        .filter((path) => path.startsWith(`${field}.`))
+        .map((path) => path.slice(field.length + 1));
+      if (children.length > 0) {
+        appendDeepObject(url, `${parameterName}[${field}]`, `${inputField}.${field}`, children, fieldValue);
+      } else {
+        url.searchParams.append(
+          `${parameterName}[${field}]`,
+          serializeQueryValue(`${inputField}.${field}`, fieldValue),
+        );
+      }
     }
   }
 }
