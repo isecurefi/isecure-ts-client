@@ -2,7 +2,7 @@
 
 TypeScript SDK for the ISECure WS Channel API.
 
-The checked-in OpenAPI contract is [`wsapi_v2.json`](wsapi_v2.json), pinned to the upstream revision in [`wsapi_v2.source.json`](wsapi_v2.source.json). It describes API `v2.16.0`, copied exactly from the committed owning WS API repository. The source metadata identifies that repository, path, revision and digest; this local contract advance does not mean the new route is deployed or the public reference has been updated. The [live REST API reference](https://www.isecure.fi/wsapi_v2/) documents the published API.
+The checked-in OpenAPI contract is [`wsapi_v2.json`](wsapi_v2.json), pinned to the upstream revision in [`wsapi_v2.source.json`](wsapi_v2.source.json). It describes API `v2.16.0`, copied exactly from the committed owning WS API repository. The source metadata identifies that repository, path, revision and digest. The [live REST API reference](https://www.isecure.fi/wsapi_v2/) documents the same version; its published examples include website sanitization and SDK samples.
 
 ## Install
 
