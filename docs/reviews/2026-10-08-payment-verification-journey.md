@@ -72,3 +72,10 @@ handwritten bank contract or new wrapper is added. Its read-only check passes. `
 passes formatting, ESLint, type checking, all 284 tests in 32 files with coverage, browser build,
 package build and package dry-run. This qualifies the SDK candidate locally, not the deployed bank
 journey or npm publication.
+
+The source pair advances to platform `5769a16e18583e58d9e607e46638fcda6f32d950` after its
+retained File Exchange tool/fixture pin correction. **Correctness:** API types and operation
+inventory are unchanged; the SDK source pin and independent parity assertion advance together.
+**Evidence/security:** this does not reuse a failed platform aggregate or claim deployment.
+**Simplicity/drift:** synchronization and its read-only check pass, followed by the complete SDK
+package gate (284 tests). No SDK behavior or permission changes were required.
