@@ -1,5 +1,5 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@97dac3be3c3479d4f5b02b322f210fcb09782342
+// source: isecurefi/bankfiles-platform@5769a16e18583e58d9e607e46638fcda6f32d950
 // model: Bankfiles@0.138.0
 // source-digest: sha256:fe71dfeb149009373a4d229dab9fac09e85d2b6a41199d11dd1b8376d5692015
 // Exact decimals and 64-bit integers are JSON decimal strings.
