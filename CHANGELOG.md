@@ -10,6 +10,20 @@
 
 # Changelog
 
+## [4.1.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.1.0...isecure-ts-client-v4.1.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* list omasp in Bank parameter descriptions ([8f09b62](https://github.com/isecurefi/isecure-ts-client/commit/8f09b620ff2dcbb22fdf3f2b135ecbb1b76dce35))
+
+## [4.1.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.0.0...isecure-ts-client-v4.1.0) (2026-10-07)
+
+
+### Features
+
+* **platform:** integrate versioned catalogue contracts with current banking profiles ([9b88571](https://github.com/isecurefi/isecure-ts-client/commit/9b88571d664945f1ae8c27120ebdde8812ee2139))
+
 ## [4.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v3.1.0...isecure-ts-client-v4.0.0) (2026-09-28)
 
 

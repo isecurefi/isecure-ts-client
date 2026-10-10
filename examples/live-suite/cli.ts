@@ -58,7 +58,7 @@ async function main(): Promise<void> {
   const runWorker = async () => {
     workerExit = await command(worker, [directory], 600000);
   };
-  // One worker retains its authenticated sessions across the three API checks.
+  // One worker retains its authenticated sessions across the API checks.
   // Worker receipts contain fixed stage names only, never responses or exception messages.
   const receiptPassed = async (name: string) => {
     const receipt = JSON.parse(await readFile(path.join(directory, "workflow.json"), "utf8")) as { passed?: string[] };
@@ -72,6 +72,7 @@ async function main(): Promise<void> {
       await receiptPassed("shared-authentication");
     },
     simulator: () => receiptPassed("simulator-access"),
+    verification: () => receiptPassed("payee-verification"),
     journey: async () => {
       await receiptPassed("payment-feedback-statement");
       if (workerExit !== 0) throw new Error("Live workflow failed");
