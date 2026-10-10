@@ -22,6 +22,14 @@ balance transition. Before and after the payment, it also checks that file creat
 stable across repeated listings separated by a clock tick and downloads. Existing files must retain
 their timestamps when new payment outputs arrive. These checks are suite code, not SDK behavior.
 
+Before the payment, a separate signed File Exchange VoP upload uses `pain.001.001.09 VOP`
+and downloads only `pain.002.001.10 VOP`. It covers six transactions across three payment
+blocks, repeated identifiers, absent instruction IDs, retained UETRs, pending then all six final
+Nordea-style outcomes, close-match name placement, exact repeated downloads and wrong-service
+download denial. Report creation times differ by 30 virtual seconds. Existing payment and cash
+files must be unchanged, with no new ordinary outputs. File timestamps remain immutable real
+recording times. This is synthetic simulator evidence, not Nordea transport qualification.
+
 File listings run one at a time, and empty feedback folders may contain `FileDescriptors: null`.
 The retained fixture's statements are linked by their exact opening and closing balances to find
 one current balance, because simulator listing timestamps can tie. Disconnected or cyclic histories

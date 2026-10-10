@@ -6,6 +6,7 @@ export const CHECKS = [
   "fixture-prepare",
   "shared-authentication",
   "simulator-access",
+  "payee-verification",
   "payment-feedback-statement",
 ] as const;
 export type Check = (typeof CHECKS)[number];
@@ -23,6 +24,7 @@ export interface Adapter {
   prepare: () => Promise<void>;
   authenticate: () => Promise<void>;
   simulator: () => Promise<void>;
+  verification: () => Promise<void>;
   journey: () => Promise<void>;
   cleanup: () => Promise<void>;
 }
@@ -55,6 +57,7 @@ export async function runSuite(adapter: Adapter, directory: string): Promise<Rep
       },
       () => adapter.authenticate(),
       () => adapter.simulator(),
+      () => adapter.verification(),
       () => adapter.journey(),
     ];
     for (let index = 0; index < CHECKS.length; index += 1) {
