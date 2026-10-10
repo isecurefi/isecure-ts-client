@@ -1,6 +1,6 @@
 # Payment verification SDK journey — 8 October 2026
 
-Candidate only. PAYMENTEXPORT-002 in bankfiles-platform owns completion. The SDK selects committed
+Initial 8 October candidate. PAYMENTEXPORT-002 in bankfiles-platform owns completion. This receipt selects committed
 platform `180f5d089e346de330053a1a995012cffff1b2b0` (model 0.137.0), using its existing sync owner.
 The platform's later uncommitted runtime work is not covered by this source pin or this receipt.
 
@@ -49,3 +49,26 @@ evidence, revocation, uncertain review, malformed nested parameters and incomple
 They do **not** prove server authorization, database behavior, bank integration or hosted readiness.
 The next acceptance gate is this journey through the actual API and generated database permissions,
 followed by the final platform/SDK source-pair qualification. No package publication is claimed.
+
+## 10 October — combined OP deployment candidate
+
+Merged SDK main `b4db932` into the existing integration branch and synchronized the 84 operations
+from committed platform `97dac3be3c3479d4f5b02b322f210fcb09782342`, model 0.138.0. This supersedes
+the earlier contract pin; the earlier journey evidence remains historical. Platform aggregate and
+deployed SDK acceptance are still pending.
+
+**Pass 1 — correctness.** The generated contract adds the eight explicit verification scenario
+outcomes. Operation inventory and the existing payment/verification journey remain intact. The
+initial package gate caught the old independent revision assertion; updating that assertion to the
+selected committed source resolves it without changing any comparison or operation expectation.
+
+**Pass 2 — evidence and security.** Contract source, generated client, synthetic scenarios and parity
+assertion identify the same revision. The imported main changes retain File Exchange signing and
+its VoP feedback qualification. No credentials, trust approval, automatic human review or hosted
+availability claims are introduced.
+
+**Pass 3 — simplicity and drift.** The existing synchronization command generates the changes; no
+handwritten bank contract or new wrapper is added. Its read-only check passes. `yarn prepublishOnly`
+passes formatting, ESLint, type checking, all 284 tests in 32 files with coverage, browser build,
+package build and package dry-run. This qualifies the SDK candidate locally, not the deployed bank
+journey or npm publication.

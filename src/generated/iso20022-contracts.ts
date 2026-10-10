@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@180f5d089e346de330053a1a995012cffff1b2b0
-// model: Bankfiles@0.137.0
-// source-digest: sha256:3aa0844ef0d26dcf1eb06a1b820904422bb923db4d85ec6585b4b82caeef4bc7
+// source: isecurefi/bankfiles-platform@97dac3be3c3479d4f5b02b322f210fcb09782342
+// model: Bankfiles@0.138.0
+// source-digest: sha256:fe71dfeb149009373a4d229dab9fac09e85d2b6a41199d11dd1b8376d5692015
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = 'approve' | 'reject';
@@ -270,7 +270,15 @@ export type SimulationScenarioOutcome =
     | 'return'
     | 'reverse'
     | 'cancel'
-    | 'indeterminate';
+    | 'indeterminate'
+    | 'verification_pending'
+    | 'verification_match'
+    | 'verification_close_match'
+    | 'verification_no_match'
+    | 'verification_unavailable'
+    | 'verification_rejected'
+    | 'verification_technical_error'
+    | 'verification_mixed';
 
 export type SimulationScenarioState = 'draft' | 'active' | 'superseded';
 
