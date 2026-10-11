@@ -62,6 +62,12 @@ Custom Platform transports must accept the expanded `platformOperationIds` union
 this addition. Read calls carry no command metadata; mutations require their generated retry and
 concurrency options. No automatic mutation retry or authentication fallback is introduced.
 
+The experimental Processing transport adds an explicit schema-2 session opt-in for authenticated
+routing scope. Default exchange remains schema 1. Its metadata getter is a schema-discriminated
+union; consumers that opt into schema 2 must narrow it before using scope. Additive schema-2
+metadata is ignored safely, while invalid required fields and silent server downgrades are refused.
+This metadata never grants authority or replaces current server checks.
+
 ## Runtime support
 
 Node `>= 24` and modern browser bundlers are supported (see the README "Runtime Support" section). Dropping a supported runtime is a breaking change.

@@ -65,6 +65,20 @@ export interface ProcessingSessionMetadata {
   readonly tokenType: "Processing";
 }
 
+/** Authenticated routing identities; these identifiers grant no permission by themselves. */
+export interface ProcessingSessionScope {
+  readonly tenantId: string;
+  readonly legalEntityId: string;
+  readonly actorId: string;
+}
+
+export interface ProcessingScopedSessionMetadata extends Omit<ProcessingSessionMetadata, "schemaVersion"> {
+  readonly schemaVersion: 2;
+  readonly scope: ProcessingSessionScope;
+}
+
+export type ProcessingSessionInformation = ProcessingSessionMetadata | ProcessingScopedSessionMetadata;
+
 export interface ProcessingEventStreamOptions {
   /** Resume after the last completely handled item. The cursor stays opaque. */
   readonly lastEventId?: string;
@@ -175,6 +189,7 @@ export class Iso20022HttpTransport implements Iso20022Transport {
   private readonly maxResponseBytes: number;
   private readonly timeoutMs: number;
   private processingSession: ProcessingSessionCredential | undefined;
+  private sessionExchangeAttempt: symbol | undefined;
 
   constructor(options: Iso20022HttpTransportOptions) {
     this.baseUrl = parseBaseUrl(options.baseUrl);
@@ -201,9 +216,20 @@ export class Iso20022HttpTransport implements Iso20022Transport {
   }
 
   /** Exchange the shared WSChannel identity for a short-lived, audience-bound Processing session. */
-  async exchangeProcessingSession(): Promise<ProcessingSessionMetadata> {
-    this.processingSession = undefined;
+  exchangeProcessingSession(options?: { readonly schemaVersion?: 1 }): Promise<ProcessingSessionMetadata>;
+  exchangeProcessingSession(options: { readonly schemaVersion: 2 }): Promise<ProcessingScopedSessionMetadata>;
+  async exchangeProcessingSession(
+    options: { readonly schemaVersion?: 1 | 2 } = {},
+  ): Promise<ProcessingSessionInformation> {
+    this.clearProcessingSession();
+    const attempt = Symbol();
+    this.sessionExchangeAttempt = attempt;
+    const schemaVersion = options.schemaVersion ?? 1;
+    if (schemaVersion !== 1 && schemaVersion !== 2) {
+      throw new Iso20022TransportError("invalid_configuration", "The Processing session schema is unsupported");
+    }
     const authentication = await resolveBootstrapAuthentication(this.bootstrapAuthentication);
+    this.requireCurrentSessionExchange(attempt);
     const controller = new AbortController();
     const timer = abortAfter(controller, this.timeoutMs);
     try {
@@ -211,6 +237,7 @@ export class Iso20022HttpTransport implements Iso20022Transport {
         method: "POST",
         headers: {
           Accept: "application/json",
+          ...(schemaVersion === 2 ? { "ISECure-Session-Schema-Version": "2" } : {}),
           Authorization: authentication.idToken,
           "x-api-key": authentication.apiKey,
         },
@@ -219,7 +246,8 @@ export class Iso20022HttpTransport implements Iso20022Transport {
       });
       const body = await parseResponse(response, this.maxResponseBytes);
       if (!response.ok) throw processingHttpError(response.status, body);
-      const session = parseProcessingSession(body, authentication.apiKey, this.processingAudience);
+      const session = parseProcessingSession(body, authentication.apiKey, this.processingAudience, schemaVersion);
+      this.requireCurrentSessionExchange(attempt);
       this.processingSession = session;
       return sessionMetadata(session);
     } catch (cause) {
@@ -227,15 +255,23 @@ export class Iso20022HttpTransport implements Iso20022Transport {
       throw requestFailure(controller);
     } finally {
       clearTimeout(timer);
+      if (this.sessionExchangeAttempt === attempt) this.sessionExchangeAttempt = undefined;
+    }
+  }
+
+  private requireCurrentSessionExchange(attempt: symbol): void {
+    if (this.sessionExchangeAttempt !== attempt) {
+      throw new Iso20022TransportError("invalid_session", "The Processing session exchange is no longer current");
     }
   }
 
   /** Forget the Processing credential immediately; shared WSChannel authentication is untouched. */
   clearProcessingSession(): void {
+    this.sessionExchangeAttempt = undefined;
     this.processingSession = undefined;
   }
 
-  get processingSessionMetadata(): ProcessingSessionMetadata | undefined {
+  get processingSessionMetadata(): ProcessingSessionInformation | undefined {
     return this.processingSession === undefined ? undefined : sessionMetadata(this.processingSession);
   }
 
@@ -523,10 +559,10 @@ function parseEventStreamItem(value: string): ProcessingEventStreamItem {
   return { kind, id, data: data as Readonly<Record<string, unknown>> };
 }
 
-interface ProcessingSessionCredential extends ProcessingSessionMetadata {
+type ProcessingSessionCredential = ProcessingSessionInformation & {
   readonly apiKey: string;
   readonly processingSession: string;
-}
+};
 
 type Iso20022Operation = (typeof iso20022Operations)[Iso20022OperationId];
 
@@ -637,15 +673,16 @@ function parseProcessingSession(
   body: Record<string, unknown>,
   apiKey: string,
   expectedAudience: string,
+  expectedSchemaVersion: 1 | 2,
 ): ProcessingSessionCredential {
   const expectedKeys = ["audience", "expiresAtEpochSeconds", "processingSession", "schemaVersion", "tokenType"];
-  if (JSON.stringify(Object.keys(body).sort()) !== JSON.stringify(expectedKeys)) {
+  if (expectedSchemaVersion === 1 && JSON.stringify(Object.keys(body).sort()) !== JSON.stringify(expectedKeys)) {
     throw new Iso20022TransportError("invalid_session", "The Processing session response is malformed");
   }
   const now = Math.floor(Date.now() / 1000);
   if (
     body.audience !== expectedAudience ||
-    body.schemaVersion !== 1 ||
+    body.schemaVersion !== expectedSchemaVersion ||
     body.tokenType !== "Processing" ||
     typeof body.processingSession !== "string" ||
     !PROCESSING_SESSION_TOKEN_PATTERN.test(body.processingSession) ||
@@ -656,23 +693,46 @@ function parseProcessingSession(
   ) {
     throw new Iso20022TransportError("invalid_session", "The Processing session response is invalid");
   }
-  return {
+  const common = {
     apiKey,
     audience: expectedAudience,
     expiresAtEpochSeconds: body.expiresAtEpochSeconds,
     processingSession: body.processingSession,
-    schemaVersion: 1,
-    tokenType: "Processing",
+    tokenType: "Processing" as const,
   };
+  return expectedSchemaVersion === 1
+    ? { ...common, schemaVersion: 1 }
+    : { ...common, schemaVersion: 2, scope: parseSessionScope(body.scope) };
 }
 
-function sessionMetadata(session: ProcessingSessionCredential): ProcessingSessionMetadata {
-  return {
+function parseSessionScope(value: unknown): ProcessingSessionScope {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Iso20022TransportError("invalid_session", "The Processing account scope is invalid");
+  }
+  const scope = value as Record<string, unknown>;
+  const { tenantId, legalEntityId, actorId } = scope;
+  if (
+    typeof tenantId !== "string" ||
+    !UUID_PATTERN.test(tenantId) ||
+    typeof legalEntityId !== "string" ||
+    !UUID_PATTERN.test(legalEntityId) ||
+    typeof actorId !== "string" ||
+    !UUID_PATTERN.test(actorId)
+  ) {
+    throw new Iso20022TransportError("invalid_session", "The Processing account scope is invalid");
+  }
+  return { tenantId, legalEntityId, actorId };
+}
+
+function sessionMetadata(session: ProcessingSessionCredential): ProcessingSessionInformation {
+  const common = {
     audience: session.audience,
     expiresAtEpochSeconds: session.expiresAtEpochSeconds,
-    schemaVersion: session.schemaVersion,
     tokenType: session.tokenType,
   };
+  return session.schemaVersion === 1
+    ? { ...common, schemaVersion: 1 }
+    : { ...common, schemaVersion: 2, scope: { ...session.scope } };
 }
 
 function hasAsciiControl(value: string): boolean {

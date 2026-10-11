@@ -15,6 +15,9 @@ export {
   type ProcessingEventStreamItem,
   type ProcessingEventStreamOptions,
   type ProcessingSessionMetadata,
+  type ProcessingSessionScope,
+  type ProcessingScopedSessionMetadata,
+  type ProcessingSessionInformation,
   type VerifiedPaymentExportContent,
   type VerifiedPaymentExportContentMetadata,
 } from "./transport.js";
