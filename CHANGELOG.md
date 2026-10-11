@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.1.1...isecure-ts-client-v4.2.0) (2026-10-11)
+
+### Features
+
+* **platform:** expose hosted Integration lifecycle and setup ([d22cd44](https://github.com/isecurefi/isecure-ts-client/commit/d22cd4485a382bc0d176c413d527b242c6ecf272))
+* **processing:** negotiate server scope and discard obsolete sessions ([1c4fe76](https://github.com/isecurefi/isecure-ts-client/commit/1c4fe768e25c1b4bb95b134d72f6f4a57eb4b00a))
+
 ## [4.1.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.1.0...isecure-ts-client-v4.1.1) (2026-10-08)
 
 ### Bug Fixes
