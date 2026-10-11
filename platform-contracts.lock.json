@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "5769a16e18583e58d9e607e46638fcda6f32d950",
-    "processingClientSha256": "73ec3e372e1a468db4ce5437bd8ee700388aa314c8f219b020740d35e30fc7fc",
-    "processingOpenApiSha256": "26daad854ff27ad1254ea548e4d408401a2df3f36096b85f1dda4a9004c30698",
-    "processingMockSha256": "c58504fd8b74185460543862e647f2aeb73da1f17489eed574911c4a269df4aa"
+    "revision": "a573303c21befb39dd87414d5ebb2156b5228860",
+    "processingClientSha256": "8d8b4efb19635a1feda77437f67bd7ef841546070ed0771a6bb994743f761480",
+    "processingOpenApiSha256": "8a7355ccedfdaa7251a69fb5b236650bd2ee0469f03b48c552cfa86ca2248840",
+    "processingMockSha256": "ab6d4e7ac49d0440ba5b6290ca96897131d38765b4c5d8259232cabbcee0405c"
   },
   "generated": {
     "path": "src/generated/iso20022-contracts.ts",
-    "sha256": "c8a9662e46ad20e3e9482918112841c91c94656b14c34fffc4f2869be3d3d9e8",
+    "sha256": "798eb5630c45b4321cc601d31b81f10bdfc7ba306cf560ae902343c124583422",
     "operationIds": [
       "balances.explain",
       "balances.get",
@@ -17,6 +17,21 @@
       "entries.explain",
       "entries.get",
       "entries.list",
+      "integrations.activate",
+      "integrations.approve",
+      "integrations.create_draft",
+      "integrations.get",
+      "integrations.list",
+      "integrations.pause",
+      "integrations.resolve_active_connector",
+      "integrations.revise_draft",
+      "integrations.revoke",
+      "integrations.setup_answer",
+      "integrations.setup_begin",
+      "integrations.setup_cancel",
+      "integrations.setup_read",
+      "integrations.setup_resume",
+      "integrations.submit_for_review",
       "payee_verifications.capability",
       "payee_verifications.evidence",
       "payee_verifications.explain",
@@ -99,6 +114,6 @@
   },
   "generatedMock": {
     "path": "test-data/generated/iso20022-scenarios.json",
-    "sha256": "a77648a217ad60cf81f67c7bbfcc98a62454db7a490cf2c8079da1ea482ee824"
+    "sha256": "f2837ed67f7a21fda84e7500f52fccfdc266738eddb858c03bf9133eeb03e918"
   }
 }

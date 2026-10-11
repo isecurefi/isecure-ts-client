@@ -143,6 +143,36 @@ function invoke(
   input: Record<string, unknown>,
 ): Promise<unknown> {
   switch (operationId) {
+    case "integrations.activate":
+      return platform.integrations.activate(input as never, revisionOptions(operationId));
+    case "integrations.approve":
+      return platform.integrations.approve(input as never, revisionOptions(operationId));
+    case "integrations.create_draft":
+      return platform.integrations.createDraft(input as never, commandOptions(operationId));
+    case "integrations.get":
+      return platform.integrations.get(input as never);
+    case "integrations.list":
+      return platform.integrations.list(input);
+    case "integrations.pause":
+      return platform.integrations.pause(input as never, revisionOptions(operationId));
+    case "integrations.resolve_active_connector":
+      return platform.integrations.resolveActiveConnector(input as never);
+    case "integrations.revise_draft":
+      return platform.integrations.reviseDraft(input as never, revisionOptions(operationId));
+    case "integrations.revoke":
+      return platform.integrations.revoke(input as never, revisionOptions(operationId));
+    case "integrations.setup_answer":
+      return platform.integrations.setupAnswer(input as never, revisionOptions(operationId));
+    case "integrations.setup_begin":
+      return platform.integrations.setupBegin(input as never, revisionOptions(operationId));
+    case "integrations.setup_cancel":
+      return platform.integrations.setupCancel(input as never, revisionOptions(operationId));
+    case "integrations.setup_read":
+      return platform.integrations.setupRead(input as never);
+    case "integrations.setup_resume":
+      return platform.integrations.setupResume(input as never, revisionOptions(operationId));
+    case "integrations.submit_for_review":
+      return platform.integrations.submitForReview(input as never, revisionOptions(operationId));
     case "payee_verifications.capability":
       return client.payeeVerifications.capability(input as never);
     case "payee_verifications.evidence":
