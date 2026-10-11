@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@5769a16e18583e58d9e607e46638fcda6f32d950
+// source: isecurefi/bankfiles-platform@a573303c21befb39dd87414d5ebb2156b5228860
 // model: Bankfiles@0.138.0
-// source-digest: sha256:fe71dfeb149009373a4d229dab9fac09e85d2b6a41199d11dd1b8376d5692015
+// source-digest: sha256:41e5991f361d97ec09f266bca09ece8ea03351032bb3440aad4b8d122a44171d
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = 'approve' | 'reject';
@@ -10,6 +10,9 @@ export type BalanceBoundary =
     'opening' | 'closing' | 'intraday' | 'available' | 'expected' | 'forward_available' | 'other';
 
 export type CashReportKind = 'camt_052' | 'camt_053' | 'camt_054';
+
+export type ConnectorExternalOutcomeCertainty =
+    'not_attempted' | 'confirmed' | 'rejected' | 'indeterminate';
 
 export type DebitCredit = 'debit' | 'credit';
 
@@ -36,6 +39,74 @@ export type PaymentExecutionObservationOutcome = 'submitted' | 'refused' | 'inde
 
 export type AccountCapabilityAvailability =
     'available' | 'pending' | 'unavailable' | 'expired' | 'uncertain';
+
+export type ConnectorSetupEffect =
+    | 'provider_contacted'
+    | 'business_data_imported'
+    | 'business_data_disclosed'
+    | 'external_mutation_performed';
+
+export type ConnectorSetupExecutionStatus =
+    | 'awaiting_input'
+    | 'in_flight'
+    | 'recovery_required'
+    | 'completed'
+    | 'cancelled'
+    | 'expired'
+    | 'unavailable';
+
+export type ConnectorSetupOutcome = 'passed' | 'failed' | 'cancelled' | 'unavailable';
+
+export type ConnectorSetupStateActionEffect =
+    'local_only' | 'provider_read' | 'provider_mutation' | 'may_send_code';
+
+export type ConnectorSetupStateActionKind =
+    | 'continue'
+    | 'cancel'
+    | 'inspect'
+    | 'retry'
+    | 'resend'
+    | 'back'
+    | 'reauthenticate'
+    | 'restart'
+    | 'reconcile'
+    | 'resume';
+
+export type IntegrationSetupChallengeKind = 'select_one' | 'acknowledge';
+
+export type IntegrationSetupStatus = 'active' | 'cleanup_pending' | 'closed';
+
+export type ConnectorAuthorizationKind =
+    | 'delegated_oauth'
+    | 'oauth_client_credentials'
+    | 'api_token'
+    | 'reusable_password'
+    | 'certificate'
+    | 'local_signing_key';
+
+export type ConnectorAuthorizationPurpose =
+    | 'source_read'
+    | 'destination_delivery'
+    | 'callback_client_authentication'
+    | 'webhook_verification'
+    | 'payload_signing';
+
+export type ConnectorDirection = 'source' | 'destination' | 'bidirectional';
+
+export type GuardrailRevisionState =
+    'draft' | 'in_review' | 'approved' | 'active' | 'suspended' | 'superseded' | 'revoked';
+
+export type IntegrationAdapterKind = 'bank' | 'erp' | 'invoice' | 'receipt' | 'delivery';
+
+export type IntegrationCredentialBindingState =
+    'pending' | 'ready' | 'suspended' | 'expired' | 'revoked';
+
+export type IntegrationLifecycleState =
+    'draft' | 'in_review' | 'approved' | 'active' | 'paused' | 'revoked' | 'superseded';
+
+export type IntegrationTemporalTarget = 'iso_date' | 'iso_instant' | 'iso_local_date_time';
+
+export type IntegrationUnmappedCodeBehavior = 'reject' | 'omit' | 'preserve';
 
 export type CancellationBoundary = 'preventable' | 'race_possible' | 'irreversible';
 
@@ -289,6 +360,333 @@ export type SimulationWorkspaceResetScope =
     'runtime_state' | 'runtime_state_and_balances' | 'runtime_state_balances_and_active_scenarios';
 
 export type SimulationWorkspaceState = 'draft' | 'active' | 'suspended' | 'closed';
+
+export interface ConnectorSetupChallengeOption {
+    readonly option_id: string;
+    readonly label_key: string;
+}
+
+export interface ConnectorSetupConfirmedState {
+    readonly declaration: ConnectorSetupStateDeclaration;
+    readonly recorded_at: string;
+}
+
+export interface ConnectorSetupJourneyStage {
+    readonly stage_id: string;
+    readonly label_key: string;
+}
+
+export interface ConnectorSetupStateAction {
+    readonly action_id: string;
+    readonly action_kind: ConnectorSetupStateActionKind;
+    readonly label_key: string;
+    readonly effect: ConnectorSetupStateActionEffect;
+    readonly not_before?: string;
+}
+
+export interface ConnectorSetupStateDeclaration {
+    readonly state_id: string;
+    readonly account_id: string;
+    readonly account_label_key: string;
+    readonly phase_id: string;
+    readonly phase_label_key: string;
+    readonly purpose_id: string;
+    readonly purpose_label_key: string;
+    readonly explanation_key: string;
+    readonly actions: readonly ConnectorSetupStateAction[];
+}
+
+export interface IntegrationSetupAcknowledgementAnswer {
+    readonly accepted: boolean;
+}
+
+export interface IntegrationSetupAnswerInput {
+    readonly setup_session_id: string;
+    readonly expected_checkpoint_generation: string;
+    readonly challenge_id: string;
+    readonly challenge_sequence: string;
+    readonly answer: IntegrationSetupAnswer;
+}
+
+export interface IntegrationSetupBeginInput {
+    readonly integration_id: string;
+    readonly expected_revision: string;
+}
+
+export interface IntegrationSetupChallenge {
+    readonly challenge_id: string;
+    readonly challenge_sequence: string;
+    readonly stages: readonly ConnectorSetupJourneyStage[];
+    readonly current_stage_id: string;
+    readonly back_stage_id?: string;
+    readonly challenge_kind: IntegrationSetupChallengeKind;
+    readonly prompt_key: string;
+    readonly safe_masked_hint?: string;
+    readonly options: readonly ConnectorSetupChallengeOption[];
+    readonly issued_at: string;
+    readonly expires_at: string;
+}
+
+export interface IntegrationSetupReadInput {
+    readonly setup_session_id: string;
+}
+
+export interface IntegrationSetupResult {
+    readonly context: OperationContext;
+    readonly setup_session_id: string;
+    readonly checkpoint_generation: string;
+    readonly status: IntegrationSetupStatus;
+    readonly progress?: IntegrationSetupProgress;
+    readonly state?: IntegrationSetupState;
+}
+
+export interface IntegrationSetupResultDetail {
+    readonly outcome: ConnectorSetupOutcome;
+    readonly issue_codes: readonly string[];
+    readonly check_codes: readonly string[];
+    readonly effects: readonly ConnectorSetupEffect[];
+}
+
+export interface IntegrationSetupSelectionAnswer {
+    readonly option_id: string;
+}
+
+export interface IntegrationSetupState {
+    readonly state_revision: string;
+    readonly execution_status: ConnectorSetupExecutionStatus;
+    readonly external_outcome: ConnectorExternalOutcomeCertainty;
+    readonly observed_at: string;
+    readonly expires_at?: string;
+    readonly last_confirmed_state?: ConnectorSetupConfirmedState;
+}
+
+export interface IntegrationSetupTransitionInput {
+    readonly setup_session_id: string;
+    readonly expected_checkpoint_generation: string;
+}
+
+export interface ConnectorConfigurationEntry {
+    readonly field_id: string;
+    readonly value: GuardrailLiteral;
+}
+
+export interface ConnectorConfigurationRevision {
+    readonly connector_id: string;
+    readonly parent_connector_id?: string;
+    readonly revision: string;
+    readonly legal_entity_id: string;
+    readonly connector_type_id: string;
+    readonly plugin_version: string;
+    readonly enabled_capability_ids: readonly string[];
+    readonly values: readonly ConnectorConfigurationEntry[];
+    readonly credential_binding_ids: readonly string[];
+    readonly state: GuardrailRevisionState;
+    readonly effective_from?: string;
+    readonly effective_to?: string;
+}
+
+export interface GuardrailBooleanValue {
+    readonly value: boolean;
+}
+
+export interface GuardrailCodeValue {
+    readonly value: string;
+}
+
+export interface GuardrailCustomerEnumValue {
+    readonly vocabulary_id: string;
+    readonly vocabulary_revision: string;
+    readonly enum_id: string;
+    readonly value_id: string;
+}
+
+export interface GuardrailDateValue {
+    readonly value: string;
+}
+
+export interface GuardrailExactMoney {
+    readonly coefficient: string;
+    readonly scale: number;
+    readonly currency: string;
+}
+
+export interface GuardrailGovernedReferenceValue {
+    readonly resource_type: string;
+    readonly resource_id: string;
+    readonly resource_version?: string;
+}
+
+export interface GuardrailInstantValue {
+    readonly value: string;
+}
+
+export interface GuardrailIntegerValue {
+    readonly value: string;
+}
+
+export interface GuardrailMoneyValue {
+    readonly value: GuardrailExactMoney;
+}
+
+export interface GuardrailPlatformEnumValue {
+    readonly enum_id: string;
+    readonly value_id: string;
+}
+
+export interface GuardrailTextValue {
+    readonly value: string;
+}
+
+export interface ConnectorCatalogueManifestBinding {
+    readonly connector_type_id: string;
+    readonly plugin_version: string;
+    readonly package_digest: string;
+    readonly manifest_digest: string;
+    readonly platform_contract_version: string;
+    readonly publisher_key_id: string;
+}
+
+export interface IntegrationActiveConnectorInput {
+    readonly integration_id: string;
+}
+
+export interface IntegrationActiveConnectorResult {
+    readonly context: OperationContext;
+    readonly integration_id: string;
+    readonly integration_revision: string;
+    readonly integration_revision_digest: string;
+    readonly configuration: ConnectorConfigurationRevision;
+    readonly credential_bindings: readonly IntegrationCredentialBindingReference[];
+    readonly manifest_binding: ConnectorCatalogueManifestBinding;
+    readonly resolved_at: string;
+}
+
+export interface IntegrationCodeMapEntry {
+    readonly source_code: string;
+    readonly target_code: string;
+}
+
+export interface IntegrationCodeMapTransform {
+    readonly entries: readonly IntegrationCodeMapEntry[];
+    readonly unmapped_behavior: IntegrationUnmappedCodeBehavior;
+}
+
+export interface IntegrationCopyTransform {
+    readonly preserve_absence: boolean;
+}
+
+export interface IntegrationCredentialBindingReference {
+    readonly credential_binding_id: string;
+    readonly slot_id: string;
+    readonly authorization_kind: ConnectorAuthorizationKind;
+    readonly purpose: ConnectorAuthorizationPurpose;
+    readonly capability_ids: readonly string[];
+    readonly state: IntegrationCredentialBindingState;
+    readonly bound_at: string;
+    readonly expires_at?: string;
+}
+
+export interface IntegrationDefinition {
+    readonly configuration: ConnectorConfigurationRevision;
+    readonly mapping_revisions: readonly IntegrationMappingRevision[];
+    readonly credential_bindings: readonly IntegrationCredentialBindingReference[];
+    readonly adapter_kinds: readonly IntegrationAdapterKind[];
+    readonly direction: ConnectorDirection;
+    readonly acknowledged_limitation_codes: readonly string[];
+}
+
+export interface IntegrationDraftInput {
+    readonly integration_definition: IntegrationDefinition;
+}
+
+export interface IntegrationFieldMapping {
+    readonly mapping_entry_id: string;
+    readonly source_field_id: string;
+    readonly target_field_id: string;
+    readonly transform: IntegrationMappingTransform;
+    readonly required_mapping: boolean;
+}
+
+export interface IntegrationGetInput {
+    readonly integration_id: string;
+    readonly revision?: string;
+}
+
+export interface IntegrationGetResult {
+    readonly context: OperationContext;
+    readonly integration: IntegrationResource;
+}
+
+export interface IntegrationIssues {
+    readonly issues: readonly OperationIssue[];
+}
+
+export interface IntegrationListInput {
+    readonly legal_entity_id?: string;
+    readonly connector_type_id?: string;
+    readonly adapter_kind?: IntegrationAdapterKind;
+    readonly state?: IntegrationLifecycleState;
+    readonly page_size?: number;
+    readonly cursor?: string;
+}
+
+export interface IntegrationListResult {
+    readonly context: OperationContext;
+    readonly integrations: readonly IntegrationResource[];
+    readonly page: PageResult;
+}
+
+export interface IntegrationLiteralTransform {
+    readonly value: GuardrailLiteral;
+}
+
+export interface IntegrationMappingRevision {
+    readonly mapping_id: string;
+    readonly revision: string;
+    readonly connector_type_id: string;
+    readonly capability_id: string;
+    readonly source_catalog_id: string;
+    readonly source_catalog_version: string;
+    readonly target_catalog_id: string;
+    readonly target_catalog_version: string;
+    readonly entries: readonly IntegrationFieldMapping[];
+    readonly state: GuardrailRevisionState;
+}
+
+export interface IntegrationResource {
+    readonly integration_id: string;
+    readonly revision: string;
+    readonly integration_definition: IntegrationDefinition;
+    readonly state: IntegrationLifecycleState;
+    readonly created_at: string;
+    readonly submitted_for_review_at?: string;
+    readonly approved_at?: string;
+    readonly activated_at?: string;
+    readonly paused_at?: string;
+    readonly revoked_at?: string;
+}
+
+export interface IntegrationReviseInput {
+    readonly integration_id: string;
+    readonly expected_revision: string;
+    readonly integration_definition: IntegrationDefinition;
+}
+
+export interface IntegrationTemporalTransform {
+    readonly target: IntegrationTemporalTarget;
+}
+
+export interface IntegrationTransitionInput {
+    readonly integration_id: string;
+    readonly expected_revision: string;
+    readonly reason_code?: string;
+}
+
+export interface IntegrationWriteResult {
+    readonly context: OperationContext;
+    readonly integration: IntegrationResource;
+    readonly issues: readonly OperationIssue[];
+}
 
 export interface BalanceGetResult {
     readonly context: OperationContext;
@@ -2292,6 +2690,32 @@ export interface TransitionSimulationWorkspaceInput {
     readonly expected_resource_version: string;
 }
 
+export type IntegrationSetupAnswer =
+    (IntegrationSetupSelectionAnswer & { readonly answer_type: "selection" })
+    | (IntegrationSetupAcknowledgementAnswer & { readonly answer_type: "acknowledgement" });
+
+export type IntegrationSetupProgress =
+    (IntegrationSetupChallenge & { readonly progress_type: "challenge" })
+    | (IntegrationSetupResultDetail & { readonly progress_type: "result" });
+
+export type GuardrailLiteral =
+    (GuardrailBooleanValue & { readonly value_type: "boolean" })
+    | (GuardrailTextValue & { readonly value_type: "text" })
+    | (GuardrailCodeValue & { readonly value_type: "code" })
+    | (GuardrailDateValue & { readonly value_type: "date" })
+    | (GuardrailInstantValue & { readonly value_type: "instant" })
+    | (GuardrailIntegerValue & { readonly value_type: "integer" })
+    | (GuardrailMoneyValue & { readonly value_type: "exact_money" })
+    | (GuardrailPlatformEnumValue & { readonly value_type: "platform_enum" })
+    | (GuardrailCustomerEnumValue & { readonly value_type: "customer_enum" })
+    | (GuardrailGovernedReferenceValue & { readonly value_type: "governed_reference" });
+
+export type IntegrationMappingTransform =
+    (IntegrationCopyTransform & { readonly transform_type: "copy" })
+    | (IntegrationLiteralTransform & { readonly transform_type: "literal" })
+    | (IntegrationCodeMapTransform & { readonly transform_type: "code_map" })
+    | (IntegrationTemporalTransform & { readonly transform_type: "temporal" });
+
 export type RequiredAction =
     (HumanReviewAction & { readonly action_type: "human_review" })
     | (StrongAuthenticationAction & { readonly action_type: "strong_authentication" })
@@ -2685,6 +3109,587 @@ export const iso20022Operations = {
         "objectFields": []
       }
     ]
+  },
+  "integrations.activate": {
+    "method": "POST",
+    "path": "/v1/integrations:activate",
+    "version": 2,
+    "contractDigest": "sha256:f3329d8e561373f9c692f071fdc5f570ae77fe1f7485dfd7e183aa5b7ceba159",
+    "permission": "activate",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.integrations_api.IntegrationTransitionInput",
+    "result": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.approve": {
+    "method": "POST",
+    "path": "/v1/integrations:approve",
+    "version": 1,
+    "contractDigest": "sha256:6237d0c9c3f84e309b239eb8b59fb23346e3690dedeaf1911a474544df4376de",
+    "permission": "approve",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.integrations_api.IntegrationTransitionInput",
+    "result": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.create_draft": {
+    "method": "POST",
+    "path": "/v1/integrations:create-draft",
+    "version": 2,
+    "contractDigest": "sha256:0eb2ece286e2672d9e5f521bb9b19d08d5e28eb05d5ef20b46ac703efeeb80e9",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.integrations_api.IntegrationDraftInput",
+    "result": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.get": {
+    "method": "GET",
+    "path": "/v1/integrations/{integration_id}",
+    "version": 1,
+    "contractDigest": "sha256:dc8f55e71e61b1f0a04ededdc5e3b0f2aac70225c4bb93616d5567b83ceaab9f",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.integrations_api.IntegrationGetInput",
+    "result": "isecure.bankfiles.integrations_api.IntegrationGetResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "integration_id",
+        "location": "path",
+        "inputField": "integration_id",
+        "required": true,
+        "style": "simple",
+        "objectFields": []
+      },
+      {
+        "name": "revision",
+        "location": "query",
+        "inputField": "revision",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      }
+    ]
+  },
+  "integrations.list": {
+    "method": "GET",
+    "path": "/v1/integrations",
+    "version": 1,
+    "contractDigest": "sha256:dd6d1e1f601606a7a93ed03aa667fabbe70f5b64bf02309c7dc3b5c2df0a0fe4",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.integrations_api.IntegrationListInput",
+    "result": "isecure.bankfiles.integrations_api.IntegrationListResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "legal_entity_id",
+        "location": "query",
+        "inputField": "legal_entity_id",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "connector_type_id",
+        "location": "query",
+        "inputField": "connector_type_id",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "adapter_kind",
+        "location": "query",
+        "inputField": "adapter_kind",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "state",
+        "location": "query",
+        "inputField": "state",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page_size",
+        "location": "query",
+        "inputField": "page_size",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "cursor",
+        "location": "query",
+        "inputField": "cursor",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      }
+    ]
+  },
+  "integrations.pause": {
+    "method": "POST",
+    "path": "/v1/integrations:pause",
+    "version": 2,
+    "contractDigest": "sha256:1ca370761ab2469b40daf2a45d786410d10ae81e5a8b505c17da29a6a415aaaa",
+    "permission": "activate",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.integrations_api.IntegrationTransitionInput",
+    "result": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.resolve_active_connector": {
+    "method": "POST",
+    "path": "/v1/integrations:resolve-active-connector",
+    "version": 1,
+    "contractDigest": "sha256:2f73938e644793f8a74c1f6cbaccad9a2a070f8671680462945b48af0948f7c3",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.integrations_api.IntegrationActiveConnectorInput",
+    "result": "isecure.bankfiles.integrations_api.IntegrationActiveConnectorResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.revise_draft": {
+    "method": "POST",
+    "path": "/v1/integrations:revise-draft",
+    "version": 2,
+    "contractDigest": "sha256:2046b4ea7c2f8cdae4118a3f2bfe612ed6c7246a6e25f5c18355129851685f11",
+    "permission": "propose",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.integrations_api.IntegrationReviseInput",
+    "result": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.revoke": {
+    "method": "POST",
+    "path": "/v1/integrations:revoke",
+    "version": 2,
+    "contractDigest": "sha256:cd05d6dc25fbafd7f91be499d3bac2163e934e903c8fc6d72c4587b5aba2a6ba",
+    "permission": "activate",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.integrations_api.IntegrationTransitionInput",
+    "result": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.setup_answer": {
+    "method": "POST",
+    "path": "/v1/integrations:setup-answer",
+    "version": 1,
+    "contractDigest": "sha256:f63706e73ebc112f0c76b6fda09c28d103af7f2fd9a184e8390615fbf283a536",
+    "permission": "execute",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.connector_setup_api.IntegrationSetupAnswerInput",
+    "result": "isecure.bankfiles.connector_setup_api.IntegrationSetupResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.setup_begin": {
+    "method": "POST",
+    "path": "/v1/integrations:setup-begin",
+    "version": 1,
+    "contractDigest": "sha256:7dc338d4195e266d73225a3c3747bb29446d6d200680d38a8d4a7c28818c4ca0",
+    "permission": "execute",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.connector_setup_api.IntegrationSetupBeginInput",
+    "result": "isecure.bankfiles.connector_setup_api.IntegrationSetupResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.setup_cancel": {
+    "method": "POST",
+    "path": "/v1/integrations:setup-cancel",
+    "version": 1,
+    "contractDigest": "sha256:eb92b2f229128b051e3f16698a1d0b1bffd86f084f758f53d794525ce5fbb073",
+    "permission": "execute",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.connector_setup_api.IntegrationSetupTransitionInput",
+    "result": "isecure.bankfiles.connector_setup_api.IntegrationSetupResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.setup_read": {
+    "method": "POST",
+    "path": "/v1/integrations:setup-read",
+    "version": 1,
+    "contractDigest": "sha256:92b3963c098bfcf27054e3937b675ef2682e6265b24897aaf30de1212b464356",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.connector_setup_api.IntegrationSetupReadInput",
+    "result": "isecure.bankfiles.connector_setup_api.IntegrationSetupResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.setup_resume": {
+    "method": "POST",
+    "path": "/v1/integrations:setup-resume",
+    "version": 1,
+    "contractDigest": "sha256:45664dc17edff28c8ba783c9e2d96ac2f7b7e521bd18317a7c133433a2919a22",
+    "permission": "execute",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.connector_setup_api.IntegrationSetupTransitionInput",
+    "result": "isecure.bankfiles.connector_setup_api.IntegrationSetupResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "integrations.submit_for_review": {
+    "method": "POST",
+    "path": "/v1/integrations:submit-for-review",
+    "version": 2,
+    "contractDigest": "sha256:b46d863e681ce51a1c903d04d2ba9f33673573b3990229be38f31639d12627d9",
+    "permission": "submit_for_review",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.integrations_api.IntegrationTransitionInput",
+    "result": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
+    "issues": "isecure.bankfiles.integrations_api.IntegrationIssues",
+    "idempotency": "required",
+    "expectedVersion": "required",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": {
+      "type": "string",
+      "minLength": null,
+      "maxLength": null,
+      "pattern": "^\"(?:0|[1-9][0-9]*)\"$"
+    },
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
   },
   "payee_verifications.capability": {
     "method": "POST",

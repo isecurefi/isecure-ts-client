@@ -1,5 +1,10 @@
 ## Unreleased
 
+- Add typed `platform.integrations` lifecycle and hosted setup operations from the pinned
+  platform candidate, preserving generated command versions, retry identity and checkpoint
+  concurrency. Catalogue formats remain independent; publication and live hosted qualification
+  are pending.
+
 - Add experimental `paymentBatches.generateFile` / `paymentOrders.generateFile` for bounded,
   integrity-checked XML from a finalized order and configured bank profile, without approval or
   bank submission. Custom ISO 20022 transports must implement `generatePaymentFile`.

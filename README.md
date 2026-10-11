@@ -621,9 +621,9 @@ operations over the same authenticated Processing transport as the ISO 20022 cli
 import { Iso20022HttpTransport } from "isecure-ts-client/iso20022";
 import { createPlatformClient } from "isecure-ts-client/platform";
 
-const platform = createPlatformClient(
-  new Iso20022HttpTransport({ baseUrl, bootstrapAuthentication, processingAudience }),
-);
+const transport = new Iso20022HttpTransport({ baseUrl, bootstrapAuthentication, processingAudience });
+await transport.exchangeProcessingSession();
+const platform = createPlatformClient(transport);
 const { entries } = await platform.pluginCatalogue.list({});
 ```
 
@@ -640,6 +640,31 @@ roles; the Platform API is the only listing authority, and each entry carries it
 release entry (`release_entry`). `pluginArtifact.get` returns a five-minute link to a listed
 release's signed package or resource bundle; the whole listing is never linked. A link is a bearer
 capability: fetch it promptly, never log it, and verify the bytes against their signatures.
+
+The `integrations` namespace exposes generated draft creation/revision, list/get, review,
+approval, activation, pause/revoke and active-connector resolution. Hosted setup uses
+`setupBegin`, `setupRead`, `setupAnswer`, `setupResume` and `setupCancel`. Methods use each
+operation's generated contract version independently of the application or plugin version.
+These client methods do not establish deployment availability or provider qualification.
+
+```ts
+const progress = await platform.integrations.setupBegin(
+  { integration_id: savedIntegrationId, expected_revision: savedRevision },
+  { idempotencyKey: retryId, expectedResourceVersion: `"${savedRevision}"` },
+);
+const retained = await platform.integrations.setupRead({ setup_session_id: progress.setup_session_id });
+```
+
+Keep the returned setup session and checkpoint generation with the user's current form. Answer,
+resume and cancel require that checkpoint generation in the input and its quoted value in
+`expectedResourceVersion`. Use a new retry ID for a new command and preserve it for an explicit
+retry of the same command. Reading retained setup does not begin another attempt. The SDK does
+not silently retry commands, restart setup, or refresh authentication. On session expiry, the
+application can retain the form, obtain fresh sign-in, explicitly exchange a Processing session,
+and read the retained setup before continuing. A stale checkpoint requires reconciliation;
+permission refusal or uncertain provider outcomes must not trigger automatic resubmission.
+Provider credentials remain under server custody; these methods carry generated references and
+challenge answers, not publisher secrets.
 
 ## Supported Operations
 

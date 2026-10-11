@@ -97,7 +97,10 @@ describe("Platform API client", () => {
   });
 
   it("never links the whole listing: the Platform API is the only listing authority", () => {
-    expect(platformOperationIds).toEqual(["plugin_artifact.get", "plugin_catalogue.list"]);
+    expect(platformOperationIds.filter((operation) => operation.startsWith("plugin_"))).toEqual([
+      "plugin_artifact.get",
+      "plugin_catalogue.list",
+    ]);
     expect(Object.keys(iso20022Operations)).not.toContain("plugin_registry_index.get");
     const client = createPlatformClient(new RecordingTransport());
     expect("pluginRegistryIndex" in client).toBe(false);

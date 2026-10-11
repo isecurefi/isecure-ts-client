@@ -52,6 +52,16 @@ require a plugin rebuild or an application release. A breaking envelope or requi
 needs a new format major. Compatibility, signatures and current account grants are separate checks;
 no catalogue format selection grants authority to install or execute a plugin.
 
+## Hosted Integration setup
+
+The additive `./platform` Integration lifecycle and setup methods use independently versioned
+generated operations. Introducing those methods does not change catalogue format selection or
+require rebuilding plugins. Lifecycle permissions, current credentials and setup checkpoint
+admission remain server decisions. Method availability does not certify a deployment or plugin.
+Custom Platform transports must accept the expanded `platformOperationIds` union when adopting
+this addition. Read calls carry no command metadata; mutations require their generated retry and
+concurrency options. No automatic mutation retry or authentication fallback is introduced.
+
 ## Runtime support
 
 Node `>= 24` and modern browser bundlers are supported (see the README "Runtime Support" section). Dropping a supported runtime is a breaking change.
