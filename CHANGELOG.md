@@ -1,5 +1,12 @@
 ## Unreleased
 
+- Prevent a late Processing session exchange from restoring credentials after sign-out or
+  overwriting a newer exchange. Both legacy and scoped exchanges use the same cancellation guard.
+
+- Add experimental explicit schema-2 Processing session exchange with authenticated account scope;
+  preserve schema-1 default exchange. The metadata getter is a schema-discriminated union.
+  Server delivery and application adoption remain pending.
+
 - Add typed `platform.integrations` lifecycle and hosted setup operations from the pinned
   platform candidate, preserving generated command versions, retry identity and checkpoint
   concurrency. Catalogue formats remain independent; publication and live hosted qualification

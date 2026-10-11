@@ -655,6 +655,23 @@ const progress = await platform.integrations.setupBegin(
 const retained = await platform.integrations.setupRead({ setup_session_id: progress.setup_session_id });
 ```
 
+Hosted draft creation needs the authenticated server account scope. Desktop storage IDs are not
+server identities. An application adopting the schema-2 session endpoint can explicitly request it:
+
+```ts
+const session = await transport.exchangeProcessingSession({ schemaVersion: 2 });
+const { tenantId, legalEntityId, actorId } = session.scope;
+```
+
+The scoped exchange sends `ISECure-Session-Schema-Version: 2`. An older server returning schema 1
+is rejected for that opt-in; the client never guesses a scope or silently downgrades. Ordinary
+`exchangeProcessingSession()` keeps the existing schema-1 response and headers unchanged.
+Schema 2 accepts additive metadata but exposes only validated routing IDs, audience and expiry;
+it never returns the session credential. These IDs confer no permission. Clear session metadata
+on sign-out/account changes, and re-read it after renewal rather than retaining another account's
+scope. `processingSessionMetadata` now returns the schema-1 or schema-2 discriminated union.
+The schema-2 server endpoint is a delivery candidate, not claimed available on live deployments.
+
 Keep the returned setup session and checkpoint generation with the user's current form. Answer,
 resume and cancel require that checkpoint generation in the input and its quoted value in
 `expectedResourceVersion`. Use a new retry ID for a new command and preserve it for an explicit
