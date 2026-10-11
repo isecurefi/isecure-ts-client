@@ -45,3 +45,22 @@ Test lint findings were corrected without changing rules. Final `yarn prepublish
 under `Connector-ux-20261010/mobilepay/session-scope-sdk-*`, including the sign-out RED/GREEN logs.
 This is an unpublished SDK candidate; native endpoint and installed application acceptance are
 separate outstanding gates. No production or npm publication is claimed.
+
+## Corrected platform provenance follow-up
+
+The generator now consumes committed platform candidate
+`cc18a3c21b2a740771d0cae652c94484c8695b56`, which includes the reviewed hosted-storage boundary
+and API-pack version correction. Functional review confirms the 99 selected operations, public
+TypeScript definitions, request metadata and synthetic scenarios are unchanged; only source
+provenance and its lock digests change. Security/privacy review finds no new values or permission:
+the scenario content and synthetic safety declarations are unchanged. Simplicity/drift review
+confirms all three files came from the owning sync command, with no handwritten generated edits.
+The existing contract parity and full SDK checks verify this candidate; platform aggregate and
+application/live-provider qualification remain separate outstanding gates.
+
+The first follow-up aggregate correctly rejected the old independent revision assertion. That
+assertion was advanced to the reviewed source revision, retaining strict parity checking. The
+second aggregate passes all 321 tests, formatting, lint, types, browser and package checks;
+`session-scope-sdk-final-contract.log` separately confirms generator parity for all 99 operations.
+Evidence uses `session-scope-sdk-final-*` under the same private evidence directory. No package
+version bump, npm publication or application adoption is included in this provenance update.
