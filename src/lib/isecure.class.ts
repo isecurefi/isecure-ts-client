@@ -64,6 +64,7 @@ import {
 } from "./api-types.js";
 import { encryptPasswordChallenge } from "./challenge-crypto.js";
 import { ISecureError } from "./errors.js";
+import { validateRegistrationPassword } from "./registration-password.js";
 import type { RedactionMode } from "./redact.js";
 import { UrlBuilder } from "./urls.js";
 import {
@@ -196,13 +197,16 @@ export class WSChannel {
     this.props = { ...this.props, ...overrideProps };
   }
 
+  /** Checks the published password requirements before fetching a registration challenge. */
   async register(): Promise<RegisterResponse> {
+    const password = this.props.Password;
+    validateRegistrationPassword(password);
     const ChResp = await this.getRegistrationChallenge();
     const request: RegisterRequest = {
       ApiKey: this.props.ApiKey ?? "0",
       ChResp,
       Company: this.props.Company,
-      Encrypted: await this.encryptPasswordChallenge(ChResp),
+      Encrypted: await this.encryptPasswordChallenge(ChResp, password),
       Name: this.props.Name,
       Phone: this.props.Phone,
     };

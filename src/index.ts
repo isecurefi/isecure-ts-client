@@ -10,6 +10,11 @@ export {
 export { redactUrl, redactValue, type RedactionMode } from "./lib/redact.js";
 export { SDK_VERSION, USER_AGENT } from "./lib/version.js";
 export {
+  ISecurePasswordValidationError,
+  validateRegistrationPassword,
+  type RegistrationPasswordIssue,
+} from "./lib/registration-password.js";
+export {
   classifyErrorReason,
   cognitoToMethod,
   methodToCognito,
