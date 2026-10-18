@@ -1,5 +1,10 @@
 ## Unreleased
 
+- Validate the documented registration password requirements before any request. Export
+  `validateRegistrationPassword` and `ISecurePasswordValidationError` with safe issue codes;
+  document the 20-character minimum and required character types prominently. Existing-account
+  login remains unchanged.
+
 - Prevent a late Processing session exchange from restoring credentials after sign-out or
   overwriting a newer exchange. Both legacy and scoped exchanges use the same cancellation guard.
 

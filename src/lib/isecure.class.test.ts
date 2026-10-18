@@ -286,6 +286,39 @@ describe("WSChannel", () => {
     expect(serialized).toContain("[redacted]");
   });
 
+  it.each([
+    { label: "too short", password: "Aa1!" + "x".repeat(15), issue: "too_short" },
+    { label: "no uppercase", password: "aa1!" + "x".repeat(16), issue: "missing_uppercase" },
+    { label: "no lowercase", password: "AA1!" + "X".repeat(16), issue: "missing_lowercase" },
+    { label: "no number", password: "Aaa!" + "x".repeat(16), issue: "missing_number" },
+    { label: "no symbol", password: "Aa12" + "x".repeat(16), issue: "missing_symbol" },
+  ])("rejects registration with $label before any HTTP request or logging", async ({ password, issue }) => {
+    const transport = new FakeTransport();
+    const logs: unknown[] = [];
+    const logger: Logger = {
+      debug(message, meta) {
+        logs.push([message, meta]);
+      },
+      info(message, meta) {
+        logs.push([message, meta]);
+      },
+      warn(message, meta) {
+        logs.push([message, meta]);
+      },
+      error(message, meta) {
+        logs.push([message, meta]);
+      },
+    };
+    const client = new WSChannel(props({ Password: password }), { transport, logger });
+    await expect(client.register()).rejects.toMatchObject({
+      name: "ISecurePasswordValidationError",
+      issues: [issue],
+    });
+    expect(transport.requests).toHaveLength(0);
+    expect(logs).toHaveLength(0);
+    expect(client.session).toEqual({});
+  });
+
   it("registers with a challenge response body generated from the OpenAPI Register request shape", async () => {
     const transport = new FakeTransport();
     transport.respond((request) => {
@@ -312,6 +345,17 @@ describe("WSChannel", () => {
     });
     expect((transport.requests[1]?.body as { Encrypted?: string }).Encrypted).toEqual(expect.any(String));
     expect(client.session.apiKey).toBe("registered-api-key");
+  });
+
+  it("does not apply new-registration password requirements to existing-account login", async () => {
+    const transport = new FakeTransport();
+    transport.respond((request) => {
+      if (request.method === "GET") return response({ Challenge: challenge });
+      return response({ ResponseCode: "00", IdToken: "synthetic-token", ApiKey: "synthetic-key" });
+    });
+    const client = new WSChannel(props({ Password: "Legacy1!", Mode: "data" }), { transport });
+    expect((await client.login()).status).toBe("authenticated");
+    expect(transport.requests).toHaveLength(2);
   });
 
   it("starts and completes password reset with generated OpenAPI request shapes", async () => {

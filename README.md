@@ -35,7 +35,7 @@ import { WSChannel } from "isecure-ts-client";
 | `ISECURE_NAME`           | Yes      | Full user name for registration.                                                  |
 | `ISECURE_EMAIL`          | Yes      | Account email address.                                                            |
 | `ISECURE_PHONE`          | Yes      | Phone number with country code, for example `+358401234567`.                      |
-| `ISECURE_PASSWORD`       | Yes      | Account password.                                                                 |
+| `ISECURE_PASSWORD`       | Yes      | Registration: at least 20 characters, with A-Z, a-z, 0-9 and a special character. |
 | `ISECURE_PUBLIC_KEY_PEM` | Yes      | ISECure RSA public key in PEM format.                                             |
 | `ISECURE_MODE`           | No       | `admin` or `data`. Defaults to `data` in examples.                                |
 | `ISECURE_BANK`           | No       | Bank identifier. Defaults to `nordea` in examples.                                |
@@ -80,6 +80,45 @@ TOTP authentication, cleanup and a sanitized report. It performs one run per inv
 requires an admitted synthetic fixture; see its documented provisioning and coverage limits.
 
 ## First Registration
+
+Registration passwords must contain **at least 20 characters**, including an uppercase letter
+(`A-Z`), a lowercase letter (`a-z`), a number (`0-9`) and a special character such as `!`, `@`, `#`
+or `_`. These are the published [WS API registration requirements](https://www.isecure.fi/wsapi_v2/).
+Use a password manager to generate a unique password. Register `admin` first; use `ApiKey: "0"` for
+a new integrator. Company, name, email and an international phone number are required; a business
+ID is not a registration field. Registration does not automatically grant Bank Simulator access.
+
+`register()` checks the password before fetching a challenge, encrypting it or making any HTTP
+request. Invalid passwords throw `ISecurePasswordValidationError`, whose `issues` lists all missing
+requirements: `too_short`, `missing_uppercase`, `missing_lowercase`, `missing_number` and/or
+`missing_symbol`. Its message and issue codes contain no password. This local error has no
+`requestId`, because no request was sent. Existing-account login is not subject to this registration
+check. The checks use the documented policy, not a live policy lookup; the server remains the final
+authority. RSA encryption also enforces its separate key-dependent maximum UTF-8 byte length.
+
+Forms can call the exported `validateRegistrationPassword(password)` helper before creating a
+client. It returns normally when the local checks pass and throws the same typed error otherwise.
+Handle errors without logging passwords, encryption payloads or raw response bodies:
+
+```ts
+import { ISecureHttpError, ISecurePasswordValidationError } from "isecure-ts-client";
+
+try {
+  const registration = await client.register();
+  // Retain registration.ApiKey for subsequent client instances.
+} catch (error) {
+  if (error instanceof ISecurePasswordValidationError) {
+    console.error(error.message); // For example: "... Use at least 20 characters."
+    // Use error.issues for field hints or translated messages.
+  } else if (error instanceof ISecureHttpError) {
+    console.error(error.responseText, error.requestId); // Keep RequestId for support.
+  } else {
+    throw error;
+  }
+}
+```
+
+The complete registration and login sequence is:
 
 ```ts
 const registration = await client.register();
