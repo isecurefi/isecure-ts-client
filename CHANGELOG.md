@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.2.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.2.0...isecure-ts-client-v4.2.1) (2026-10-18)
+
+### Bug Fixes
+
+- Validate the documented registration password requirements before any request. Export
+  `validateRegistrationPassword` and `ISecurePasswordValidationError` with safe issue codes;
+  document the 20-character minimum and required character types prominently. Existing-account
+  login remains unchanged.
+
 ## [4.2.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.1.1...isecure-ts-client-v4.2.0) (2026-10-11)
 
 ### Features
