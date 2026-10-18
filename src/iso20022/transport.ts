@@ -566,14 +566,14 @@ type ProcessingSessionCredential = ProcessingSessionInformation & {
 
 type Iso20022Operation = (typeof iso20022Operations)[Iso20022OperationId];
 
-function lookupOperation(operationId: Iso20022OperationId): Iso20022Operation {
+export function lookupOperation(operationId: Iso20022OperationId): Iso20022Operation {
   if (!Object.prototype.hasOwnProperty.call(iso20022Operations, operationId)) {
     throw new Iso20022TransportError("unsupported_operation", "The operation is not exposed by this surface");
   }
   return iso20022Operations[operationId];
 }
 
-function parseBaseUrl(value: string | URL): URL {
+export function parseBaseUrl(value: string | URL): URL {
   let url: URL;
   try {
     url = new URL(value.toString());
@@ -600,7 +600,12 @@ function isLoopback(hostname: string): boolean {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
 }
 
-function parseByteLimit(value: number | undefined, defaultValue: number, maximum: number, label: string): number {
+export function parseByteLimit(
+  value: number | undefined,
+  defaultValue: number,
+  maximum: number,
+  label: string,
+): number {
   const selected = value ?? defaultValue;
   if (!Number.isSafeInteger(selected) || selected < 1 || selected > maximum) {
     throw new Iso20022TransportError(
@@ -611,7 +616,7 @@ function parseByteLimit(value: number | undefined, defaultValue: number, maximum
   return selected;
 }
 
-function parseTimeoutMs(value: number | undefined): number {
+export function parseTimeoutMs(value: number | undefined): number {
   const selected = value ?? DEFAULT_TIMEOUT_MS;
   if (!Number.isSafeInteger(selected) || selected < 1 || selected > MAX_TIMEOUT_MS) {
     throw new Iso20022TransportError(
@@ -622,7 +627,7 @@ function parseTimeoutMs(value: number | undefined): number {
   return selected;
 }
 
-async function resolveBootstrapAuthentication(
+export async function resolveBootstrapAuthentication(
   provider: ProcessingBootstrapAuthenticationProvider,
 ): Promise<ProcessingBootstrapAuthentication> {
   let authentication: unknown;
@@ -743,7 +748,7 @@ function hasAsciiControl(value: string): boolean {
   return false;
 }
 
-function requireInputRecord(input: unknown): Record<string, unknown> {
+export function requireInputRecord(input: unknown): Record<string, unknown> {
   if (input === null || typeof input !== "object" || Array.isArray(input)) {
     throw new Iso20022TransportError("serialization_failed", "Operation input must be an object");
   }
@@ -814,7 +819,7 @@ function matchesGeneratedStringSchema(value: string, schema: GeneratedStringSche
   );
 }
 
-function buildUrl(baseUrl: URL, operation: Iso20022Operation, input: Record<string, unknown>): URL {
+export function buildUrl(baseUrl: URL, operation: Iso20022Operation, input: Record<string, unknown>): URL {
   let path: string = operation.path;
   const url = new URL(operation.path.slice(1), baseUrl);
   for (const parameter of operation.parameters) {
@@ -946,7 +951,7 @@ function serializeRequestBody(input: Record<string, unknown>, maxBytes: number):
   return body;
 }
 
-async function parseResponse(response: Response, maxBytes: number): Promise<Record<string, unknown>> {
+export async function parseResponse(response: Response, maxBytes: number): Promise<Record<string, unknown>> {
   const mediaType = response.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase();
   if (mediaType !== "application/json" && !mediaType?.endsWith("+json")) {
     throw new Iso20022TransportError("malformed_response", "The Processing API response is not JSON");

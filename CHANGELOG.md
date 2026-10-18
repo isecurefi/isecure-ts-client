@@ -1,5 +1,6 @@
 ## Unreleased
 
+
 - Prevent a late Processing session exchange from restoring credentials after sign-out or
   overwriting a newer exchange. Both legacy and scoped exchanges use the same cancellation guard.
 

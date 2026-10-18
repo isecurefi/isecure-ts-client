@@ -654,17 +654,25 @@ npm run sync:platform-contracts -- --revision <full-platform-commit>
 ## Platform API Client
 
 The separate `isecure-ts-client/platform` entry point exposes the platform's generated Platform API
-operations over the same authenticated Processing transport as the ISO 20022 client:
+operations. Catalogue discovery and signed download links use the independent Plugin API:
 
 ```ts
-import { Iso20022HttpTransport } from "isecure-ts-client/iso20022";
-import { createPlatformClient } from "isecure-ts-client/platform";
+import { createPlatformClient, PluginHttpTransport } from "isecure-ts-client/platform";
 
-const transport = new Iso20022HttpTransport({ baseUrl, bootstrapAuthentication, processingAudience });
-await transport.exchangeProcessingSession();
-const platform = createPlatformClient(transport);
+const plugins = new PluginHttpTransport({
+  baseUrl: pluginApiBaseUrl, // Deployment-provided root URL.
+  authentication: () => ({ apiKey: currentApiKey, idToken: currentIdToken }),
+});
+const platform = createPlatformClient(plugins);
 const { entries } = await platform.pluginCatalogue.list({});
 ```
+
+This transport sends the current WS-channel ID token directly, with no Processing session exchange.
+It permits only the two plugin read operations, refuses redirects, bounds response size and time,
+and performs no automatic retries. `PluginHttpError` exposes HTTP status and the response body;
+never log tokens, signed download links or response bodies. The intended deployment roots are
+`https://plugins-api.test.isecure.fi` and `https://plugins-api.isecure.fi`; deployment availability
+is separate from SDK support.
 
 Catalogue format selection is independent of app and plugin versions. Existing callers can keep
 `list({})`, which returns the legacy response. `list({ catalogue_format_version: 2 })` opts into
@@ -684,14 +692,21 @@ The `integrations` namespace exposes generated draft creation/revision, list/get
 approval, activation, pause/revoke and active-connector resolution. Hosted setup uses
 `setupBegin`, `setupRead`, `setupAnswer`, `setupResume` and `setupCancel`. Methods use each
 operation's generated contract version independently of the application or plugin version.
-These client methods do not establish deployment availability or provider qualification.
+These operations still require `Iso20022HttpTransport` from `isecure-ts-client/iso20022` and a
+separately deployed Processing API. `PluginHttpTransport` refuses them. These client methods do
+not establish deployment availability or provider qualification.
 
 ```ts
-const progress = await platform.integrations.setupBegin(
+import { Iso20022HttpTransport } from "isecure-ts-client/iso20022";
+
+const transport = new Iso20022HttpTransport({ baseUrl, bootstrapAuthentication, processingAudience });
+await transport.exchangeProcessingSession();
+const hosted = createPlatformClient(transport);
+const progress = await hosted.integrations.setupBegin(
   { integration_id: savedIntegrationId, expected_revision: savedRevision },
   { idempotencyKey: retryId, expectedResourceVersion: `"${savedRevision}"` },
 );
-const retained = await platform.integrations.setupRead({ setup_session_id: progress.setup_session_id });
+const retained = await hosted.integrations.setupRead({ setup_session_id: progress.setup_session_id });
 ```
 
 Hosted draft creation needs the authenticated server account scope. Desktop storage IDs are not

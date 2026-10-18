@@ -25,8 +25,8 @@ import type {
 } from "../generated/iso20022-contracts.js";
 
 /**
- * The authenticated Processing transport the Platform API shares (ADR 0093). `Iso20022HttpTransport`
- * implements it: it exchanges the signed-in session and resolves each generated operation's route.
+ * Generated Platform operation transport. PluginHttpTransport serves catalogue/artifact reads;
+ * Iso20022HttpTransport serves separately deployed hosted Integration operations.
  */
 export interface PlatformTransport {
   invoke<Input, Result>(
