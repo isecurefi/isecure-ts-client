@@ -1,4 +1,5 @@
 export { createPlatformClient, platformOperationIds, type PlatformClient, type PlatformTransport } from "./client.js";
+export { PluginHttpTransport, PluginHttpError, type PluginHttpTransportOptions } from "./transport.js";
 export type {
   ConnectorConfigurationEntry,
   ConnectorConfigurationRevision,
