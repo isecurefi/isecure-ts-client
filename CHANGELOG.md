@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.3.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.2.1...isecure-ts-client-v4.3.0) (2026-10-18)
+
+### Features
+
+* **platform:** add independent authenticated Plugin API transport ([42a2c1d](https://github.com/isecurefi/isecure-ts-client/commit/42a2c1dc9c534b989ba76d48292e36dd3ec778fe))
+
 ## [4.2.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.2.0...isecure-ts-client-v4.2.1) (2026-10-18)
 
 ### Bug Fixes
