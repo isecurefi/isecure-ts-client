@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.4.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.3.0...isecure-ts-client-v4.4.0) (2026-10-19)
+
+
+### Features
+
+* add independent Simulator administration transport ([f35456a](https://github.com/isecurefi/isecure-ts-client/commit/f35456a7a2e4ac05c6b325b6dfa135d1949cc3be))
+
 ## [4.3.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.2.1...isecure-ts-client-v4.3.0) (2026-10-18)
 
 ### Features
