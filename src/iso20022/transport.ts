@@ -760,11 +760,20 @@ function buildHeaders(
   operation: Iso20022Operation,
   metadata: ProcessingRequestMetadata,
 ): Record<string, string> {
+  return {
+    ...buildOperationHeaders(operation, metadata),
+    Authorization: `Processing ${session.processingSession}`,
+    "x-api-key": session.apiKey,
+  };
+}
+
+export function buildOperationHeaders(
+  operation: Iso20022Operation,
+  metadata: ProcessingRequestMetadata,
+): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: operation.successResponse.mediaType,
-    Authorization: `Processing ${session.processingSession}`,
     "ISECure-Contract-Version": String(operation.version),
-    "x-api-key": session.apiKey,
   };
   bindRequiredHeader(
     headers,
@@ -922,7 +931,7 @@ function serializeQueryValue(field: string, value: unknown): string {
   throw new Iso20022TransportError("serialization_failed", `Query field ${field} is not a JSON scalar`);
 }
 
-function serializeRequestBody(input: Record<string, unknown>, maxBytes: number): string {
+export function serializeRequestBody(input: Record<string, unknown>, maxBytes: number): string {
   let body: string | undefined;
   try {
     body = JSON.stringify(input, (key, value: unknown) => {

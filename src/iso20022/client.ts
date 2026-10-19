@@ -1,3 +1,5 @@
+import { invoke } from "./operation.js";
+import { createSimulationAdminClient } from "./simulation-admin-client.js";
 import {
   iso20022Operations,
   type ImportPayeeVerificationInput,
@@ -39,8 +41,6 @@ import {
   type ControlSimulationClockInput,
   type CreateSimulationBranchInput,
   type CreateSimulationCheckpointInput,
-  type CreateSimulationScenarioInput,
-  type CreateSimulationWorkspaceInput,
   type DecidePaymentApprovalRequestInput,
   type DownloadPaymentExportContentInput,
   type GeneratePaymentOrderFileInput,
@@ -84,15 +84,11 @@ import {
   type RemovePaymentOrderTransfersInput,
   type ResetSimulationWorkspaceInput,
   type RevokePaymentExportProfileInput,
-  type ReviseSimulationScenarioInput,
-  type ReviseSimulationWorkspaceInput,
   type RevisePaymentOrderInput,
   type RevisePaymentOrderTransferInput,
   type SimulationArtifactListInput,
   type SimulationArtifactListResult,
   type SimulationBranchResult,
-  type SimulationCapabilityListInput,
-  type SimulationCapabilityListResult,
   type SimulationCheckpointResult,
   type SimulationClockControlResult,
   type SimulationEventListInput,
@@ -102,14 +98,6 @@ import {
   type SimulationRunListInput,
   type SimulationRunListResult,
   type SimulationRunMutationResult,
-  type SimulationScenarioGetResult,
-  type SimulationScenarioListInput,
-  type SimulationScenarioListResult,
-  type SimulationScenarioMutationResult,
-  type SimulationWorkspaceGetResult,
-  type SimulationWorkspaceListInput,
-  type SimulationWorkspaceListResult,
-  type SimulationWorkspaceMutationResult,
   type SimulationWorkspaceResetResult,
   type StartSimulationRunInput,
   type StatementGetResult,
@@ -118,7 +106,6 @@ import {
   type TransactionGetResult,
   type TransactionListInput,
   type TransactionListResult,
-  type TransitionSimulationWorkspaceInput,
   type ValidationGetResult,
   type ValidationListInput,
   type ValidationListResult,
@@ -141,6 +128,7 @@ import type {
  * optimistic-concurrency metadata.
  */
 export function createIso20022Client(transport: Iso20022Transport) {
+  const simulationConfiguration = createSimulationAdminClient(transport);
   const paymentFileDownload = {
     download: (
       input: DownloadPaymentExportContentInput,
@@ -298,18 +286,6 @@ export function createIso20022Client(transport: Iso20022Transport) {
         input,
       ),
   } as const;
-
-  const simulationWorkspaceTransition = (
-    operationId: "simulation_workspaces.activate" | "simulation_workspaces.close" | "simulation_workspaces.suspend",
-    input: TransitionSimulationWorkspaceInput,
-    options: ProcessingRevisionCommandOptions,
-  ) =>
-    invoke<TransitionSimulationWorkspaceInput, SimulationWorkspaceMutationResult>(
-      transport,
-      operationId,
-      input,
-      options,
-    );
 
   return {
     payeeVerifications: {
@@ -472,14 +448,7 @@ export function createIso20022Client(transport: Iso20022Transport) {
           options,
         ),
     },
-    simulationCapabilities: {
-      list: (input: SimulationCapabilityListInput) =>
-        invoke<SimulationCapabilityListInput, SimulationCapabilityListResult>(
-          transport,
-          "simulation_capabilities.list",
-          input,
-        ),
-    },
+    simulationCapabilities: simulationConfiguration.simulationCapabilities,
     simulationCheckpoints: {
       create: (input: CreateSimulationCheckpointInput, options: ProcessingRevisionCommandOptions) =>
         invoke<CreateSimulationCheckpointInput, SimulationCheckpointResult>(
@@ -515,50 +484,9 @@ export function createIso20022Client(transport: Iso20022Transport) {
           options,
         ),
     },
-    simulationScenarios: {
-      create: (input: CreateSimulationScenarioInput, options: ProcessingCommandOptions) =>
-        invoke<CreateSimulationScenarioInput, SimulationScenarioMutationResult>(
-          transport,
-          "simulation_scenarios.create",
-          input,
-          options,
-        ),
-      get: (input: SimulationResourceGetInput) =>
-        invoke<SimulationResourceGetInput, SimulationScenarioGetResult>(transport, "simulation_scenarios.get", input),
-      list: (input: SimulationScenarioListInput) =>
-        invoke<SimulationScenarioListInput, SimulationScenarioListResult>(
-          transport,
-          "simulation_scenarios.list",
-          input,
-        ),
-      revise: (input: ReviseSimulationScenarioInput, options: ProcessingRevisionCommandOptions) =>
-        invoke<ReviseSimulationScenarioInput, SimulationScenarioMutationResult>(
-          transport,
-          "simulation_scenarios.revise",
-          input,
-          options,
-        ),
-    },
+    simulationScenarios: simulationConfiguration.simulationScenarios,
     simulationWorkspaces: {
-      activate: (input: TransitionSimulationWorkspaceInput, options: ProcessingRevisionCommandOptions) =>
-        simulationWorkspaceTransition("simulation_workspaces.activate", input, options),
-      close: (input: TransitionSimulationWorkspaceInput, options: ProcessingRevisionCommandOptions) =>
-        simulationWorkspaceTransition("simulation_workspaces.close", input, options),
-      create: (input: CreateSimulationWorkspaceInput, options: ProcessingCommandOptions) =>
-        invoke<CreateSimulationWorkspaceInput, SimulationWorkspaceMutationResult>(
-          transport,
-          "simulation_workspaces.create",
-          input,
-          options,
-        ),
-      get: (input: SimulationResourceGetInput) =>
-        invoke<SimulationResourceGetInput, SimulationWorkspaceGetResult>(transport, "simulation_workspaces.get", input),
-      list: (input: SimulationWorkspaceListInput) =>
-        invoke<SimulationWorkspaceListInput, SimulationWorkspaceListResult>(
-          transport,
-          "simulation_workspaces.list",
-          input,
-        ),
+      ...simulationConfiguration.simulationWorkspaces,
       reset: (input: ResetSimulationWorkspaceInput, options: ProcessingRevisionCommandOptions) =>
         invoke<ResetSimulationWorkspaceInput, SimulationWorkspaceResetResult>(
           transport,
@@ -566,15 +494,6 @@ export function createIso20022Client(transport: Iso20022Transport) {
           input,
           options,
         ),
-      revise: (input: ReviseSimulationWorkspaceInput, options: ProcessingRevisionCommandOptions) =>
-        invoke<ReviseSimulationWorkspaceInput, SimulationWorkspaceMutationResult>(
-          transport,
-          "simulation_workspaces.revise",
-          input,
-          options,
-        ),
-      suspend: (input: TransitionSimulationWorkspaceInput, options: ProcessingRevisionCommandOptions) =>
-        simulationWorkspaceTransition("simulation_workspaces.suspend", input, options),
     },
     statements: {
       explain: (input: ObservationExplainInput) =>
@@ -604,19 +523,6 @@ export function createIso20022Client(transport: Iso20022Transport) {
 }
 
 export type Iso20022Client = ReturnType<typeof createIso20022Client>;
-
-function invoke<Input, Result>(
-  transport: Iso20022Transport,
-  operationId: keyof typeof iso20022Operations,
-  input: Input,
-  options: Omit<ProcessingRequestMetadata, "contractVersion"> = {},
-): Promise<Result> {
-  const metadata: ProcessingRequestMetadata = {
-    contractVersion: iso20022Operations[operationId].version,
-    ...options,
-  };
-  return transport.invoke<Input, Result>(operationId, input, metadata);
-}
 
 function commandMetadata(
   operationId: keyof typeof iso20022Operations,

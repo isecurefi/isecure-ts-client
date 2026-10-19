@@ -28,3 +28,10 @@ export type {
   PaymentOrderOutcomeResource as PaymentOutcome,
   PaymentOrderResource as PaymentBatch,
 } from "../generated/iso20022-contracts.js";
+
+export { createSimulationAdminClient, type SimulationAdminClient } from "./simulation-admin-client.js";
+export {
+  SimulationAdminHttpTransport,
+  SimulationAdminHttpError,
+  type SimulationAdminHttpTransportOptions,
+} from "./simulation-admin-transport.js";

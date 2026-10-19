@@ -359,7 +359,7 @@ describe("experimental ISO 20022 client", () => {
     expect(client.paymentOrders.finalizeDraft).toBe(client.paymentBatches.finalize);
     expect(client.paymentOrders.reviseDraft).toBe(client.paymentBatches.replaceDraft);
     expect(client).not.toHaveProperty("paymentFeedbacks");
-    expect(Object.keys(client.simulationWorkspaces)).toEqual([
+    expect(Object.keys(client.simulationWorkspaces).sort()).toEqual([
       "activate",
       "close",
       "create",
