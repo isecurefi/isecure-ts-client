@@ -1,885 +1,134 @@
-# ISECure TypeScript Client
+# ISECure TypeScript SDK
 
-TypeScript SDK for the ISECure WS Channel API.
+Exchange bank files through the ISECure WS Channel API, browse the plugin catalogue, and manage
+Bank Simulator workspaces and scenarios. Each service checks the signed-in account's access.
 
-The checked-in OpenAPI contract is [`wsapi_v2.json`](wsapi_v2.json), pinned to the upstream revision in [`wsapi_v2.source.json`](wsapi_v2.source.json). It describes API `v2.16.0`, copied exactly from the committed owning WS API repository. The source metadata identifies that repository, path, revision and digest. The [live REST API reference](https://www.isecure.fi/wsapi_v2/) documents the same version; its published examples include website sanitization and SDK samples.
+[API reference](https://www.isecure.fi/wsapi_v2/) · [Examples](examples/) ·
+[Changelog](CHANGELOG.md) · [API stability](STABILITY.md)
 
 ## Install
 
-Requires Node.js 24 or later.
+Requires Node.js 24 or later. Modern browser bundlers are also supported; see [Runtime support](#runtime-support).
 
 ```sh
 npm install isecure-ts-client
 ```
 
+## Choose a client
+
+| Service                  | Client                                            | Import                       | Access required                                        |
+| ------------------------ | ------------------------------------------------- | ---------------------------- | ------------------------------------------------------ |
+| Bank file exchange       | `WSChannel`                                       | `isecure-ts-client`          | WS account and bank enrollment                         |
+| Simulator administration | `createSimulationAdminClient`                     | `isecure-ts-client/iso20022` | Separate administration subscription and manager grant |
+| Plugin catalogue         | `createPlatformClient` with `PluginHttpTransport` | `isecure-ts-client/platform` | Catalogue subscription and applicable grants           |
+| Experimental Processing  | `createIso20022Client`                            | `isecure-ts-client/iso20022` | Separate deployment and Processing access              |
+
+The `iso20022` entry point is experimental. A method being present in the SDK does not grant access
+or mean that its service is deployed. See [API stability](STABILITY.md).
+
+## Quick start: list bank files
+
+For an existing account, supply its API key, password and the ISECure RSA public key for the chosen
+environment. The environment variables below are examples; pass their values to the constructor.
+
 ```ts
 import { WSChannel } from "isecure-ts-client";
-```
 
-## Customer Start Steps
-
-1. Install `isecure-ts-client`.
-2. Configure account, bank, endpoint, password, and RSA public key values.
-3. Create `WSChannel`.
-4. Call `register()` for first-time account setup, or `login()` for an existing account.
-5. Complete any returned auth state: MFA, email verification, or phone verification.
-6. Use supported operations such as `listFiles`, `uploadFile`, and `uploadPgpKey`.
-
-## Configuration
-
-| Environment variable     | Required | Description                                                                       |
-| ------------------------ | -------- | --------------------------------------------------------------------------------- |
-| `ISECURE_BASE_URL`       | No       | API endpoint. Defaults to `https://ws-api.test.isecure.fi/v2` in examples.        |
-| `ISECURE_API_KEY`        | No       | Existing integrator API key. Use `0` or omit for initial integrator registration. |
-| `ISECURE_COMPANY`        | Yes      | Company name for registration.                                                    |
-| `ISECURE_NAME`           | Yes      | Full user name for registration.                                                  |
-| `ISECURE_EMAIL`          | Yes      | Account email address.                                                            |
-| `ISECURE_PHONE`          | Yes      | Phone number with country code, for example `+358401234567`.                      |
-| `ISECURE_PASSWORD`       | Yes      | Registration: at least 20 characters, with A-Z, a-z, 0-9 and a special character. |
-| `ISECURE_PUBLIC_KEY_PEM` | Yes      | ISECure RSA public key in PEM format.                                             |
-| `ISECURE_MODE`           | No       | `admin` or `data`. Defaults to `data` in examples.                                |
-| `ISECURE_BANK`           | No       | Bank identifier. Defaults to `nordea` in examples.                                |
-
-## Basic Usage
-
-```ts
 const client = new WSChannel({
-  ApiKey: process.env.ISECURE_API_KEY ?? "0",
+  ApiKey: process.env.ISECURE_API_KEY!,
   Company: "Example Company",
   Name: "Example User",
-  Password: process.env.ISECURE_PASSWORD!,
+  Email: "user@example.test",
   Phone: "+358401234567",
+  Password: process.env.ISECURE_PASSWORD!,
   PublicKey: process.env.ISECURE_PUBLIC_KEY_PEM!,
   BaseUrl: "https://ws-api.test.isecure.fi/v2",
-  Email: "user@example.test",
   Mode: "data",
-  Bank: "nordea",
+  Bank: "simulator", // Requires separate File Exchange Simulator enrollment.
 });
 
 const state = await client.login();
-
 if (state.status === "authenticated") {
   const files = await client.listFiles({ Status: "ALL" });
-  console.log(files.FileDescriptors);
+  // Handle files.FileDescriptors in your application; avoid logging customer data.
+} else {
+  // Ask the user to complete the returned MFA or verification step, or show the failure.
+  // See the authentication guide for the supported states and prompt adapter.
 }
 ```
 
-For a complete gpgtest `simulator` flow—including registration/login, certificate enrollment, PGP
-key management, detached signing, signed `pain.001.001.09` upload, file listing, and downloading the
-initial and payment-derived `camt.053` files—see the
-[bank simulator end-to-end example](examples/bank-simulator/README.md) or run
-`yarn example:simulator`.
+| Environment | File Exchange base URL              |
+| ----------- | ----------------------------------- |
+| Test        | `https://ws-api.test.isecure.fi/v2` |
+| Production  | `https://ws-api.isecure.fi/v2`      |
 
-To generate and independently approve the payment through the hosted Processing API before the
-same local signing/upload step, then correlate and verify all three simulator outputs, use the
-[Processing-to-simulator journey](examples/processing-simulator-journey/README.md) or run
-`yarn example:processing-simulator`.
+For registration, certificate enrollment, signing, upload and download, follow the
+[File Exchange Simulator example](examples/bank-simulator/README.md).
 
-The [live-suite runner](examples/live-suite/README.md) wraps this journey with fixture preflight,
-TOTP authentication, cleanup and a sanitized report. It performs one run per invocation and
-requires an admitted synthetic fixture; see its documented provisioning and coverage limits.
+## Register and sign in
 
-## First Registration
+Register an `admin` account first. Use `ApiKey: "0"` for a new integrator, then retain the returned
+API key securely. Registration requires company, name, email and an international phone number;
+a business ID is not required.
 
-Registration passwords must contain **at least 20 characters**, including an uppercase letter
-(`A-Z`), a lowercase letter (`a-z`), a number (`0-9`) and a special character such as `!`, `@`, `#`
-or `_`. These are the published [WS API registration requirements](https://www.isecure.fi/wsapi_v2/).
-Use a password manager to generate a unique password. Register `admin` first; use `ApiKey: "0"` for
-a new integrator. Company, name, email and an international phone number are required; a business
-ID is not a registration field. Registration does not automatically grant Bank Simulator access.
+Passwords must have **at least 20 characters**, including uppercase and lowercase letters, a number
+and a special character. `register()` checks this before sending a request. Forms can use
+`validateRegistrationPassword()` and handle `ISecurePasswordValidationError.issues` for field hints.
+Existing-account login is not subject to this registration check.
 
-`register()` checks the password before fetching a challenge, encrypting it or making any HTTP
-request. Invalid passwords throw `ISecurePasswordValidationError`, whose `issues` lists all missing
-requirements: `too_short`, `missing_uppercase`, `missing_lowercase`, `missing_number` and/or
-`missing_symbol`. Its message and issue codes contain no password. This local error has no
-`requestId`, because no request was sent. Existing-account login is not subject to this registration
-check. The checks use the documented policy, not a live policy lookup; the server remains the final
-authority. RSA encryption also enforces its separate key-dependent maximum UTF-8 byte length.
+Login may require MFA, email or phone verification. Follow the returned state; do not repeat login
+in an unbounded loop. See [Registration, login and sessions](docs/authentication.md) for TOTP,
+CLI prompts and session renewal. Registration alone grants neither Simulator enrollment.
 
-Forms can call the exported `validateRegistrationPassword(password)` helper before creating a
-client. It returns normally when the local checks pass and throws the same typed error otherwise.
-Handle errors without logging passwords, encryption payloads or raw response bodies:
+## Bank Simulator administration
 
-```ts
-import { ISecureHttpError, ISecurePasswordValidationError } from "isecure-ts-client";
+Manage workspace and scenario configuration with `createSimulationAdminClient` and
+`SimulationAdminHttpTransport`. They use the existing WS login directly, without a Processing session.
 
-try {
-  const registration = await client.register();
-  // Retain registration.ApiKey for subsequent client instances.
-} catch (error) {
-  if (error instanceof ISecurePasswordValidationError) {
-    console.error(error.message); // For example: "... Use at least 20 characters."
-    // Use error.issues for field hints or translated messages.
-  } else if (error instanceof ISecureHttpError) {
-    console.error(error.responseText, error.requestId); // Keep RequestId for support.
-  } else {
-    throw error;
-  }
-}
-```
+**The two Simulator enrollments are separate:**
 
-The complete registration and login sequence is:
+- **File Exchange Simulator** (`bank-simulator`): exchange files with the `simulator` bank.
+- **Simulator administration** (`bank-simulation`): manage configuration, with an additional explicit manager grant.
 
-```ts
-const registration = await client.register();
-console.log(registration.ApiKey);
+Neither enrollment grants the other. The administration client supports twelve configuration
+operations; it does **not** execute runs, reset state or retrieve simulation outputs.
 
-let state = await client.login();
+See the [administration guide](docs/simulator-administration.md) for a code example, test and
+production URLs, cancellation and safe command retries.
 
-while (state.status !== "authenticated") {
-  if (state.status === "needs_mfa") {
-    state = await client.submitMfaCode("123456");
-    continue;
-  }
+## Plugins and Processing
 
-  if (state.status === "needs_email_verification") {
-    await client.verifyEmail("123456");
-    state = await client.login();
-    continue;
-  }
+Use `PluginHttpTransport` to list permitted plugins and request signed download links with the
+current WS login. See the [Plugin API guide](docs/plugins.md). Catalogue access does not grant
+permission to every plugin.
 
-  if (state.status === "needs_phone_verification") {
-    await client.verifyPhone("123456");
-    state = await client.login();
-    continue;
-  }
+The [experimental Processing guide](docs/processing.md) covers payment generation, observations
+and hosted workflows. These require a separately deployed Processing service. The independent
+Plugin and Simulator administration APIs do not require that service.
 
-  if (state.status === "failed") {
-    throw new Error(state.responseText);
-  }
+## Errors and retries
 
-  state = await client.login();
-}
-```
+WS Channel exposes `ISecureHttpError`, `ISecureNetworkError` and `ISecureAbortError`. For HTTP
+failures, retain `requestId` for support. Do not log credentials, raw response bodies or bank files.
+Logging is off unless you supply a logger.
 
-Admin login and first-time registration may require MFA, email, or phone verification. The SDK returns typed auth states instead of reading from the terminal:
+Retry behavior differs by transport: WS Channel has bounded retries, while Plugin and Simulator
+administration transports never retry automatically. After an uncertain administration command,
+keep its original input, idempotency key and expected revision for an explicit retry.
 
-```ts
-const state = await client.login();
+See [File Exchange operations and error handling](docs/file-exchange.md) for error types, retry
+settings, audit history, account usage and account management.
 
-if (state.status === "needs_mfa") {
-  // state.method is "sms" or "totp" (Google Authenticator) so you can label the prompt.
-  await client.submitMfaCode("123456");
-}
+## Runtime support
 
-if (state.status === "needs_email_verification") {
-  await client.verifyEmail("123456");
-}
+Browser runtimes need WebCrypto (`globalThis.crypto.subtle`) and an API endpoint that permits their
+origin through CORS. Keep credentials on your backend for customer-facing web applications unless
+you have a suitable trusted browser design.
 
-if (state.status === "needs_phone_verification") {
-  await client.verifyPhone("123456");
-}
-```
+## Contributing
 
-### Enrolling Google Authenticator (TOTP)
+See [Development and releases](docs/development.md) for setup, checks, generated contracts and the
+Release Please publishing workflow. Examples and guides live in this repository; the npm package
+contains the SDK, README, changelog, stability policy and license.
 
-An existing SMS user can start using Google Authenticator or another TOTP app without
-registering again. First finish phone and email verification. Start a fresh admin
-login and submit its SMS code with `{ setupTotp: true }`; do not reuse a completed
-MFA session. If login offers `needs_mfa_selection`, choose `"sms"` only if it is
-included in `state.methods`.
-
-Show the returned `otpauthUri` as a QR code, or use `secret` for manual entry. Scan
-it with the authenticator, then confirm a current six-digit code with `verifyTotp`.
-Enrollment is complete only when its result is `verification_accepted`. If login
-instead requests phone or email verification, finish that step and start a fresh
-login before requesting enrollment again.
-
-As verified on 21 September 2026, production makes TOTP preferred for new
-enrollments. Test enables both factors without a preference. Both keep SMS enabled;
-existing accounts retain their preferences. On subsequent logins, follow
-`needs_mfa.method`. Offer a choice only for `needs_mfa_selection`, using
-`selectMfaType` and the returned state. Selection applies to that login and does
-not change stored preferences.
-
-A direct TOTP challenge cannot be switched to SMS. If the authenticator is lost
-and SMS is not offered, contact support. The public API has no MFA-reset or
-backup-code endpoint; password reset does not reset MFA. See the live REST
-reference's **Initial registration with TOTP**, **Login after TOTP enrollment**,
-and **Interrupted enrollment and lost authenticators** sections.
-
-```ts
-// Complete login with the SMS code AND ask to set up TOTP in one step:
-const state = await client.submitMfaCode(smsCode, { setupTotp: true });
-
-if (state.status === "authenticated" && state.totpEnrollment) {
-  const { secret, otpauthUri, accessToken } = state.totpEnrollment;
-  // Render otpauthUri as a QR code (or show `secret` for manual entry).
-  // accessToken is held in memory only — do not persist it.
-  const verification = await client.verifyTotp(accessToken, codeFromAuthenticatorApp);
-  if (verification.status !== "verification_accepted") {
-    throw new Error("TOTP enrollment was not confirmed");
-  }
-}
-```
-
-For CLI scripts, pass a prompt adapter. `loginWithPrompt` follows the returned authentication states, including fresh MFA after accepted email or phone verification. It stops on repeated verification or the transition limit and returns `stalled`. HTTP and transport errors still throw; handle those separately from returned authentication states.
-
-```ts
-const state = await client.loginWithPrompt({
-  requestMfaCode: async () => "...",
-  requestEmailCode: async () => "...",
-  requestPhoneCode: async () => "...",
-});
-
-if (state.status === "authenticated") {
-  // ready to call authenticated operations
-} else if (state.status === "stalled") {
-  // an accepted verification did not advance login (e.g. backend did not flip
-  // confirmation). `state.step` names the stuck step instead of looping.
-  console.error(`Login stalled on ${state.step} after ${state.transitions} steps`);
-} else if (state.status === "failed") {
-  // `state.reason` is a discriminable AuthErrorReason such as "invalid_code",
-  // "expired_code", "too_many_attempts", or "missing_access_token".
-  console.error(`Login failed (${state.reason}): ${state.responseText}`);
-}
-```
-
-Verification helpers (`verifyEmail`, `verifyPhone`) and `classifyVerificationResponse` return the same typed `failed` state with an `AuthErrorReason`, so invalid/expired codes, rate limiting, and already-verified cases are discriminable rather than collapsed into a single error string.
-
-## Session Account
-
-Authenticated `login()` and `submitMfaCode()` states carry the server-decided `Account` object on
-`state.response.Account` (`SessionAccount`): `Type` is `operator`, `integrator` or `customer`,
-`Entitlements` lists the tenant's active products (absent if the lookup was unavailable), and
-`Features` lists per-user preview flags. Use it to choose what to show; the API enforces access on
-every operation regardless.
-
-```ts
-const state = await client.login();
-if (state.status === "authenticated") {
-  const { Type, Entitlements = [] } = state.response.Account ?? { Type: "customer" };
-  console.log(Type, Entitlements);
-}
-```
-
-## Account Lifecycle (integrator owner)
-
-The integrator API key owner manages its customer accounts from an `admin` mode session.
-`retireCert` renames the active certificate of the client's `Bank` so a new enrollment or
-import can follow; pass `Account` to act on a customer account under the same API key.
-`deleteAccount` is permanent and removes both Cognito users, the account record and every
-certificate on it. Audit evidence is retained separately for ten years. The API requires the admin login (with MFA) to be at most 10 minutes old
-and rejects older sessions with `Re-authenticate to delete accounts`; the SDK refuses a
-confirmation that does not repeat the email exactly before sending anything.
-
-```ts
-await client.retireCert({ Account: "customer@example.com" });
-await client.deleteAccount("customer@example.com", "customer@example.com");
-```
-
-## Audit history
-
-`listAuditEvents()` reads one page of sanitized account-management and certificate renewal evidence, newest first.
-An authenticated integrator API-key owner sees its tenant; a customer sees only its own
-account. Both admin and data modes can read. The server checks the session and API-key
-ownership on every request; the SDK does not grant access based on client-side roles.
-
-WS API 2.15 adds optional `Tenant` for verified superadmins. With `Account` alone, the server
-resolves the account's current tenant; deleted accounts require explicit `Tenant`. Integrators
-keep access to their own deleted-account history without a lookup. Keep Tenant and Account
-unchanged while following NextToken. The server decides operator authority, not the SDK.
-
-Available since WS API 2.11.0 and deployed to production and test as of 2026-09-20.
-Use `BaseUrl: "https://ws-api.isecure.fi/v2"` for production or
-`BaseUrl: "https://ws-api.test.isecure.fi/v2"` for test.
-
-```ts
-import type { ListAuditEventsQuery } from "isecure-ts-client";
-
-const query: ListAuditEventsQuery = {
-  // Optional for an integrator; omit to see its whole tenant.
-  Account: "customer@example.com",
-  Action: "certificate.retire",
-  Outcome: "completed",
-  Limit: 50,
-};
-const first = await client.listAuditEvents(query);
-console.log(first.Events);
-if (first.NextToken) {
-  // Fetch the next page on demand, including after an empty page.
-  const next = await client.listAuditEvents({ ...query, NextToken: first.NextToken });
-  console.log(next.Events);
-}
-```
-
-Filters are `Account`, `From`, `To`, `Action`, `Outcome`, `Limit`, and `NextToken`.
-`From` and `To` are UTC timestamps. The default window is seven days; the maximum
-is 31 days per query, with `From` on or after 2024-01-01. `Limit` is 1–100 (default
-100), and a page may contain fewer events. Tokens expire after 24 hours and bind
-the caller, tenant, account and filters; keep `Account` unchanged on later pages.
-Omitted time/filter values are retained from the cursor.
-
-The method makes one API request and does not fetch further pages automatically.
-Responses use `ListAuditEventsResponse` and `AuditEventDescriptor`. Audit evidence
-includes actors, affected accounts, actions, outcomes and correlation identifiers;
-it excludes SOAP messages, bank-file contents, credentials and private keys.
-Delivery is asynchronous. Deduplicate by `eventId` across pages because delivery
-retries can repeat events. Integrators can read a deleted customer's retained history.
-
-### Automatic certificate renewal errors (WS API 2.12.0)
-
-Filter `listAuditEvents({ Account: "customer@example.com", Action: "certificate.renew" })`
-to read renewal attempts. Events include UTC timestamps, `actorType: "system"`,
-`operationId`, and optional `bankResponseCode` / `bankResponseText`. Preserve the code
-as a string (including leading zeroes) and render the sanitized message as plain text.
-Only `phase: "result", outcome: "completed"` confirms certificate persistence.
-A bank rejection uses `rejected`; processing/storage failures use `failed`; a check
-that did not need renewal uses `skipped`. A request without a final result is incomplete
-evidence. Correlate its events by `operationId` and deduplicate by `eventId` across pages.
-WS API 2.12.0 renewal audit fields are deployed to production and test as of 2026-09-20.
-They remain optional when no valid bank response is available or its text must be omitted.
-Raw bank SOAP, credentials and internal exceptions are never audit fields.
-
-## Debug Logging
-
-Logging is opt-in. By default the SDK uses a no-op logger and emits nothing. Inject a `logger` and keep `LogLevel` at `debug` (the default) to get redacted request/response debug lines for every call — secrets, tokens, and one-time codes are stripped before logging:
-
-```ts
-const client = new WSChannel(
-  { ...props, LogLevel: "debug" },
-  {
-    logger: {
-      debug: (message, meta) => console.debug(message, meta),
-      info: () => {},
-      warn: () => {},
-      error: () => {},
-    },
-  },
-);
-```
-
-Set `LogLevel: "silent"` (or omit the logger) to disable transport logging. The redaction lives in `LoggingTransport`, which wraps whatever transport you provide, so a custom transport is logged too.
-
-Redaction strips known secrets and PII (tokens, passwords, codes, email, phone, name), masks token-like values regardless of field name, and removes emails from logged URLs. For low-trust log sinks, pass `redaction: "strict"` (via `WSChannelOptions` or `LoggingTransportOptions`) to redact everything except an allowlist of known-safe fields.
-
-## Errors and Resilience
-
-Logical failures returned by the API as HTTP 200 with `ResponseCode !== "00"` surface through the typed auth/verification states described above. Transport-level failures throw a typed error hierarchy instead of raw `AxiosError`s:
-
-- `ISecureHttpError` — a non-2xx response, exposing `status`, `responseCode`, `responseText`, `requestId` (quote this in support tickets), and the raw `body`.
-- `ISecureNetworkError` — a network failure or timeout (`timedOut`, `code`, `cause`).
-- `ISecureAbortError` — a request cancelled via `AbortSignal`.
-
-All extend `ISecureError`; use `isISecureError(err)` to narrow.
-
-```ts
-import { isISecureError, ISecureHttpError } from "isecure-ts-client";
-
-try {
-  await client.listFiles({ Status: "ALL" });
-} catch (err) {
-  if (err instanceof ISecureHttpError) {
-    console.error(`HTTP ${err.status} (RequestId ${err.requestId}): ${err.responseText}`);
-  } else if (isISecureError(err)) {
-    console.error(err.message);
-  }
-}
-```
-
-The default `AxiosTransport` applies production defaults — a 30s timeout and bounded exponential-backoff retries (with jitter and `Retry-After` support) for transient failures (network errors, 408/425/429/5xx). Tune them via `AxiosTransportOptions`:
-
-```ts
-const client = new WSChannel(props, {
-  transport: new AxiosTransport({ timeoutMs: 10_000, retries: 3 }),
-});
-```
-
-The transport also honors an `AbortSignal` on each `TransportRequest` (cancelling an in-flight request or a pending retry backoff), which custom transports and integrations can use directly.
-
-## Company workspace authority
-
-`client.readWorkspaceAuthority(nativeChallenge, { signal })` calls the authenticated
-`POST /desktop/workspace-authority` contract. The challenge must be a canonical 32-byte base64url
-value generated by the native workspace owner. The request uses the current session and subscription;
-it accepts no tenant selector, company, actor or role input. It follows the existing session-refresh
-hook and forwards cancellation. This request explicitly disables Axios retries, including rate-limit
-retries and transport-wide opt-ins. Custom transports must honor `TransportRequest.retry: false`.
-
-Signed schema v2 includes explicit enrolled company names, external identity and platform registration dates. These facts must stay in protected native storage and must not be logged. The SDK never supplies missing directory facts or migrates legacy evidence.
-
-The response's `Assertion` is opaque signed evidence. The SDK does not decode it, retain it in the
-session, cache it or turn it into permissions. The trusted native consumer must verify its signature,
-fixed environment trust, schema, session/challenge binding, expiry and enrollment revisions/digest before
-using it. At an unchanged company/membership revision pair, `enrollmentDigest` must remain fixed;
-the current assignment array may change at scheduled time boundaries. A login/session change while the request is pending requires a new native challenge; the
-old response must not be adopted. Both Challenge and Assertion are always redacted from SDK logs,
-even if the server returns malformed evidence. Treat native acceptance as a separate result from
-successful HTTP transport. The backend route and native onboarding are not yet live-qualified.
-
-## Session Lifecycle
-
-The SDK tracks the id-token expiry returned at login. Inspect it with `client.isAuthenticated()`, `client.isSessionExpired()`, and `client.sessionExpiresAt`. When an authenticated call is made on an expired session, the SDK invokes an optional refresh hook so you can re-establish the session in one place instead of handling 401s everywhere:
-
-```ts
-const client = new WSChannel(props, {
-  expirySkewMs: 30_000, // refresh 30s early
-  onSessionExpired: async (channel) => {
-    await channel.loginWithPrompt(promptAdapter);
-  },
-});
-```
-
-Without a hook, an authenticated call on an expired session throws `ISecureError` rather than sending a request that would 401. `logout()` always works, even when expired.
-
-## Runtime Support
-
-The SDK supports Node.js and modern browser bundlers. Password challenge encryption uses WebCrypto-compatible RSA-OAEP with SHA-1, so browser runtimes must provide `globalThis.crypto.subtle`.
-
-Browser applications also need the ISECure WS API endpoint to allow the application origin with CORS. Avoid exposing production passwords, API keys, or id tokens in untrusted browser code; for most customer-facing web apps, run this SDK on your backend and call that backend from the browser.
-
-The runnable terminal implementation lives in [`examples/full-workflow/full-workflow.ts`](examples/full-workflow/full-workflow.ts).
-
-## Experimental ISO 20022 Processing Client
-
-The separate `isecure-ts-client/iso20022` entry point exposes the platform's generated observation,
-payment-batch, payment-submission and payment-outcome operations. It does not change the permanent
-WS Channel/File Exchange client above.
-
-```ts
-import {
-  createIso20022Client,
-  Iso20022HttpTransport,
-  ProcessingEntitlementDeniedError,
-} from "isecure-ts-client/iso20022";
-
-const transport = new Iso20022HttpTransport({
-  baseUrl: "https://release-selected-processing-api.example/",
-  processingAudience: "isecure-processing-example-v1",
-  bootstrapAuthentication: async () => ({
-    apiKey: await currentApiKey(),
-    idToken: await currentIdToken(),
-  }),
-});
-await transport.exchangeProcessingSession();
-const iso20022 = createIso20022Client(transport);
-
-try {
-  const page = await iso20022.statements.list({
-    bank_account_id: "00000000-0000-4000-8000-000000000001",
-    page_size: 50,
-  });
-  console.log(page.statements);
-
-  const capabilities = await iso20022.paymentCapabilities.list({
-    connected_account_id: "00000000-0000-4000-8000-000000000002",
-    page: { page_size: 50 },
-  });
-  console.log(capabilities.capabilities);
-} catch (error) {
-  if (error instanceof ProcessingEntitlementDeniedError) {
-    // Authentication succeeded, but this tenant has no active entitlement for the operation.
-  }
-}
-```
-
-This surface is an experimental adapter over the digest-pinned platform contract, not an ISO
-standard implementation or a support claim. Exact ISO syntax and validation remain upstream and
-server-side. The SDK adds no bank profile, qualification, financial validation, policy, workflow,
-retry, approval, execution, or authority semantics. Generated command methods require the exact
-idempotency and expected-resource-version options declared by their operation; the client forwards
-them and performs no local replay or state transition. Every call sends the operation's explicit
-generated contract version; request URLs, JSON request/response bytes, and duration are bounded,
-and responses must be JSON. The HTTP adapter never retries a request and rejects plaintext
-non-loopback endpoints.
-
-### Independent Bank Simulator administration
-
-`createSimulationAdminClient` and `SimulationAdminHttpTransport` expose twelve configuration
-operations using your existing WS login. They require no Processing session or SSE stream.
-An ordinary Bank Simulator account is not sufficient: the service requires a current subscription
-and an explicit management grant. Authorization remains on the server.
-
-```ts
-import { createSimulationAdminClient, SimulationAdminHttpTransport } from "isecure-ts-client/iso20022";
-
-const loginLifetime = new AbortController();
-const simulatorAdmin = createSimulationAdminClient(
-  new SimulationAdminHttpTransport({
-    baseUrl: simulatorAdministrationUrl, // Exact endpoint supplied for your environment.
-    authentication: () => ({ idToken: currentLogin.idToken, apiKey: currentLogin.apiKey }),
-    signal: loginLifetime.signal,
-  }),
-);
-const workspaces = await simulatorAdmin.simulationWorkspaces.list({ page: { page_size: 25 } });
-// On sign-out or account replacement, discard this client and its displayed data:
-loginLifetime.abort();
-```
-
-The client exposes capabilities, workspace list/get/create/revise/activate/suspend/close, and
-scenario list/get/create/revise. Activation changes configuration only. Run execution, reset,
-clocks, checkpoints, branches and output retrieval are unavailable through this transport. Existing
-customer Bank Simulator file exchange remains separate and unchanged. SDK support does not by itself
-establish that the independent service is deployed or that execution is qualified.
-
-The transport resolves identity on every request, refuses redirects and browser caching, limits
-command bodies to 256 KiB and bounds response size and elapsed time. `SimulationAdminHttpError`
-extends `Iso20022HttpError` with HTTP status and the service response. No request is automatically
-retried. A timeout, cancellation or lost response does not prove a command failed to commit.
-Retain the original input, idempotency key and expected revision for an explicit retry; never replace
-the key merely because a response was lost. A conflict requires refreshing the current revision;
-an expired command key (HTTP 410) requires reconciliation before starting a new command.
-
-### Separately deployed Processing Simulation surface
-
-The same experimental entry point also exposes the generated Bank Simulation control plane under
-plain-English namespaces: `simulationCapabilities`, `simulationWorkspaces`, `simulationScenarios`,
-`simulationRuns`, `simulationClocks`, `simulationCheckpoints`, `simulationBranches`,
-`simulationEvents`, and `simulationArtifacts`. These methods expose only the public Processing
-operations. They do not expose the private simulator Module transition, checkpoint bytes, AWS
-resources, or a second File Exchange client. Artifact results are exact references; callers use the
-unchanged File Exchange surface for authorized bytes. The control API is qualified only for governed
-synthetic testing in non-production `gpgtest`; no RC/production route or real-bank support is
-implied. The generated operation metadata records the dedicated `manage_simulation` permission and
-exact public audiences; the server remains the sole authority for authentication, permission
-assignments, entitlement, and revocation.
-
-```ts
-const capabilities = await iso20022.simulationCapabilities.list({ page: { page_size: 25 } });
-
-const page = await iso20022.simulationWorkspaces.list({
-  state: "active",
-  page: { page_size: 25 },
-});
-
-await iso20022.simulationClocks.control(
-  {
-    workspace_reference: {
-      resource_type: "simulation_workspace",
-      resource_id: workspaceId,
-      resource_version: "7",
-      revision_id: workspaceRevisionId,
-    },
-    expected_clock_revision: "11",
-    control_kind: "step_event",
-  },
-  {
-    idempotencyKey: "clock-step-11",
-    expectedResourceVersion: '"7"',
-  },
-);
-```
-
-The client forwards exact resource references and snapshot cursors. It does not cache tenant state,
-deduplicate commands, retry mutations, infer revisions, or execute simulator rules locally. Clear
-the separate Processing session with `transport.clearProcessingSession()` when access is revoked or
-the integration signs out.
-
-The same transport can open one finite authenticated SSE lease without exposing its private
-Processing token. Stream items are bounded `event` or `task` notification objects plus heartbeats.
-The SDK deliberately does not interpret their payload, reconnect, or treat them as complete
-evidence. Retain the last completely handled opaque cursor, reconnect explicitly, tolerate
-duplicates, and reconcile through generated list/get operations after every gap, expired cursor, or
-indeterminate command.
-
-```ts
-const controller = new AbortController();
-
-for await (const item of transport.streamProcessingEvents({
-  lastEventId: previousCursor,
-  signal: controller.signal,
-})) {
-  if (item.kind === "heartbeat") continue;
-  previousCursor = item.id;
-  // Refresh the exact authorized Run, task, event, and Artifact resources.
-}
-```
-
-Each server lease is intentionally finite. Cancel it on sign-out, permission/entitlement loss, or
-when the consuming view is no longer active. A notification is not payment approval, bank
-acceptance, settlement, or a replacement for the cursor-paged event resource.
-
-The plain-English payment surface separates four concepts:
-
-- `paymentBatches` builds, validates, finalizes, reviews and downloads a batch containing multiple
-  payments;
-- `paymentSubmissions` creates and observes one authorized attempt to send an exact approved file;
-- `paymentOutcomes` exposes conclusions derived by the server from retained bank evidence; and
-- the unchanged File Exchange client remains the separate channel upload boundary.
-
-For generation without an approval workflow, use `paymentBatches.generateFile` with the exact
-finalized order revision and configured profile revision:
-
-```ts
-const content = await iso20022.paymentBatches.generateFile({
-  payment_order_id: paymentOrderId,
-  order_revision_id: orderRevisionId,
-  payment_export_profile_id: profileId,
-  profile_revision: profileRevision,
-});
-// content.bytes contains integrity-checked XML; save it only in an authorized destination.
-```
-
-This experimental operation requires deployment availability, a Processing session and read
-entitlement. The SDK checks response bounds, XML media type, artifact identity, byte length,
-SHA-256 and `no-store` before returning bytes. Generation creates no approval, release, retained
-export or bank submission. The existing approved-export download still requires its separate
-artifact authority. Neither path retries or uploads automatically.
-
-The experimental `payeeVerifications` namespace exposes the payment-bound VoP v2 contract:
-`capability`, `importInput`, `request`, `list`, `get`, `explain`, `items`, `observations`, `evidence`
-and `review`. This candidate has local contract tests; hosted VoP availability and bank-connected
-qualification remain pending. A method being present does not establish connection eligibility.
-
-Pass the exact order revision, revision digest, export-profile revision and submission date as the
-verification target. `get` and `explain` return the server's usability evaluation for that target,
-including its evaluation time, observation set and policy binding. Work state, match outcomes,
-usability and the human decision remain separate facts. A succeeded task need not mean every
-payee matched. Evidence and suggested names require authorized access.
-
-`importInput` admits uploaded V9 bytes through Processing before a verification request; it does
-not accept an arbitrary Artifact ID. `request` and `review` require explicit idempotency and expected
-version metadata. Review requires a human-authenticated session and records a decision against the
-exact target, observation set and policy. It does not approve a payment. Reads never request a new
-verification, and the SDK does not poll, resubmit uncertain work or change payment details
-automatically. Generate independently with `generateFile`; generation success makes no claim about
-verification freshness. The complete hosted discover/request/read/review/generate journey remains
-subject to the platform's combined-service acceptance.
-
-The [payment verification example](examples/payment-verification/README.md) shows explicit
-request preparation, paged results, human review and exact-target re-evaluation around generation.
-Capability discovery returns availability and reasons even when no capability is available.
-The server owns disclosure authorization; the request accepts no caller-supplied authorization
-or consent reference. The example's local HTTP-double tests do not qualify a hosted bank connection.
-
-For compatibility, `paymentOrders` retains aliases over the same generated operations. In
-particular, its older `execute` name creates an attempt only; it does not sign, upload or contact a
-bank. The clearer equivalent is `paymentSubmissions.createAttempt`.
-
-A local Connector uses `paymentSubmissions.claim`, downloads the exact attempt-bound file through
-`paymentSubmissions.download`, signs those unchanged bytes inside its protected local key boundary,
-uploads through its separately qualified channel client, and calls
-`paymentSubmissions.reportUpload`. The Processing client accepts no private key, password or
-detached-signature field and performs no automatic retry or upload orchestration. An upload report
-never proves bank acceptance.
-
-There is deliberately no `paymentFeedbacks` client namespace yet. The current Processing contract
-exposes evidence references and derived `paymentOutcomes`, but no independently addressable bank-
-feedback resource. The SDK does not rename an outcome as feedback or invent a client-only contract.
-
-The runnable [manual Processing-to-ISECure upload example](examples/processing-manual-upload/README.md)
-shows the currently available bridge: two separately authenticated users create and approve a
-Processing payment export, the SDK integrity-verifies the generated `pain.001.001.09`, and the
-example detached-OpenPGP-signs and uploads those exact in-memory bytes through the unchanged
-`WSChannel`. This is an explicit, non-retried manual upload—not `paymentOrders.execute`, automatic
-bank orchestration, feedback reconciliation, bank acceptance, or production qualification.
-
-The local experimental contract includes Danske Finland's ordinary V9 SEPA payment profiles.
-Discover the current deployment's availability with `paymentExportProfiles.list()`; the SDK
-contains no bank catalog or bank rules. Danske's account capability requires a
-`{ option_type: "proposed_submission_date", proposed_submission_date: "YYYY-MM-DD" }`
-order option, separate from `requested_execution_date`. Processing seals it in the order revision
-and returns it in export metadata. The SDK forwards the authored date without deriving it from
-its clock. Feedback, statements and notifications retain the same generated observation interfaces;
-financial interpretation, service selection and qualification remain platform responsibilities.
-This local adoption does not assert deployment, bank agreement or production acceptance.
-
-The source pin and artifact hashes are recorded in `platform-contracts.lock.json`. With a compatible
-`bankfiles-platform` checkout next to this repository, maintainers update and verify the generated
-surface using:
-
-```sh
-npm run sync:platform-contracts
-npm run check:platform-contracts
-```
-
-For a release candidate, pin the exact platform commit explicitly so a concurrent platform `HEAD`
-change cannot alter the generated bytes:
-
-```sh
-npm run sync:platform-contracts -- --revision <full-platform-commit>
-```
-
-## Platform API Client
-
-The separate `isecure-ts-client/platform` entry point exposes the platform's generated Platform API
-operations. Catalogue discovery and signed download links use the independent Plugin API:
-
-```ts
-import { createPlatformClient, PluginHttpTransport } from "isecure-ts-client/platform";
-
-const plugins = new PluginHttpTransport({
-  baseUrl: pluginApiBaseUrl, // Deployment-provided root URL.
-  authentication: () => ({ apiKey: currentApiKey, idToken: currentIdToken }),
-});
-const platform = createPlatformClient(plugins);
-const { entries } = await platform.pluginCatalogue.list({});
-```
-
-This transport sends the current WS-channel ID token directly, with no Processing session exchange.
-It permits only the two plugin read operations, refuses redirects, bounds response size and time,
-and performs no automatic retries. `PluginHttpError` exposes HTTP status and the response body;
-never log tokens, signed download links or response bodies. The intended deployment roots are
-`https://plugins-api.test.isecure.fi` and `https://plugins-api.isecure.fi`; deployment availability
-is separate from SDK support.
-
-Catalogue format selection is independent of app and plugin versions. Existing callers can keep
-`list({})`, which returns the legacy response. `list({ catalogue_format_version: 2 })` opts into
-`catalogue_format_version` and per-release `entry_issues` alongside the usable `entries`. Issues
-contain public release identities and closed reasons; they grant no permission and do not revoke
-installed packages. Hosts assess compatibility for each release, and still verify signed packages
-and resources before use. A caller supporting an older server may retry the legacy request only
-when the server explicitly rejects the new input contract, never after an authorization failure.
-
-`pluginCatalogue.list` returns the plugin catalogue filtered to the signed-in caller's tenant and
-roles; the Platform API is the only listing authority, and each entry carries its complete canonical
-release entry (`release_entry`). `pluginArtifact.get` returns a five-minute link to a listed
-release's signed package or resource bundle; the whole listing is never linked. A link is a bearer
-capability: fetch it promptly, never log it, and verify the bytes against their signatures.
-
-The `integrations` namespace exposes generated draft creation/revision, list/get, review,
-approval, activation, pause/revoke and active-connector resolution. Hosted setup uses
-`setupBegin`, `setupRead`, `setupAnswer`, `setupResume` and `setupCancel`. Methods use each
-operation's generated contract version independently of the application or plugin version.
-These operations still require `Iso20022HttpTransport` from `isecure-ts-client/iso20022` and a
-separately deployed Processing API. `PluginHttpTransport` refuses them. These client methods do
-not establish deployment availability or provider qualification.
-
-```ts
-import { Iso20022HttpTransport } from "isecure-ts-client/iso20022";
-
-const transport = new Iso20022HttpTransport({ baseUrl, bootstrapAuthentication, processingAudience });
-await transport.exchangeProcessingSession();
-const hosted = createPlatformClient(transport);
-const progress = await hosted.integrations.setupBegin(
-  { integration_id: savedIntegrationId, expected_revision: savedRevision },
-  { idempotencyKey: retryId, expectedResourceVersion: `"${savedRevision}"` },
-);
-const retained = await hosted.integrations.setupRead({ setup_session_id: progress.setup_session_id });
-```
-
-Hosted draft creation needs the authenticated server account scope. Desktop storage IDs are not
-server identities. An application adopting the schema-2 session endpoint can explicitly request it:
-
-```ts
-const session = await transport.exchangeProcessingSession({ schemaVersion: 2 });
-const { tenantId, legalEntityId, actorId } = session.scope;
-```
-
-The scoped exchange sends `ISECure-Session-Schema-Version: 2`. An older server returning schema 1
-is rejected for that opt-in; the client never guesses a scope or silently downgrades. Ordinary
-`exchangeProcessingSession()` keeps the existing schema-1 response and headers unchanged.
-Schema 2 accepts additive metadata but exposes only validated routing IDs, audience and expiry;
-it never returns the session credential. These IDs confer no permission. Clear session metadata
-on sign-out/account changes, and re-read it after renewal rather than retaining another account's
-scope. `processingSessionMetadata` now returns the schema-1 or schema-2 discriminated union.
-The schema-2 server endpoint is a delivery candidate, not claimed available on live deployments.
-
-Keep the returned setup session and checkpoint generation with the user's current form. Answer,
-resume and cancel require that checkpoint generation in the input and its quoted value in
-`expectedResourceVersion`. Use a new retry ID for a new command and preserve it for an explicit
-retry of the same command. Reading retained setup does not begin another attempt. The SDK does
-not silently retry commands, restart setup, or refresh authentication. On session expiry, the
-application can retain the form, obtain fresh sign-in, explicitly exchange a Processing session,
-and read the retained setup before continuing. A stale checkpoint requires reconciliation;
-permission refusal or uncertain provider outcomes must not trigger automatic resubmission.
-Provider credentials remain under server custody; these methods carry generated references and
-challenge answers, not publisher secrets.
-
-## Supported Operations
-
-Generated request and response types are built from `wsapi_v2.json` with `swagger2openapi` and `openapi-typescript`.
-
-Currently supported:
-
-- `InitRegister`
-- `Register`
-- `InitPasswordReset`
-- `PasswordReset`
-- `InitLogin`
-- `Login`
-- `LoginMFA`
-- `SelectMFA`
-- `VerifyEmail`
-- `VerifyPhone`
-- `ListCerts`
-- `ConfigCerts`
-- `ShareCerts`
-- `UnshareCerts`
-- `ExportCert`
-- `ImportCert`
-- `EnrollCert`
-- `RetireCert`
-- `UploadKey`
-- `UploadFile`
-- `ListFiles`
-- `DownloadFile`
-- `DeleteFile`
-- `ListAccounts`
-- `DeleteAccount`
-- `ListKeys`
-- `DeleteKey`
-- `Logout`
-
-All operations in `wsapi_v2.json` are now represented by `WSChannel` methods. The operation list is exported as `SUPPORTED_OPERATIONS`; `UNSUPPORTED_OPERATIONS` is empty.
-
-## Development
-
-```sh
-yarn install --frozen-lockfile
-yarn audit
-yarn format:check
-yarn lint
-yarn typecheck
-yarn test
-yarn browser:check
-yarn pack:check
-```
-
-Important gates:
-
-- `yarn generate:types` converts Swagger 2.0 to OpenAPI 3.0 and generates TypeScript types.
-- `npm run check:platform-contracts` verifies the experimental ISO observation surface against its
-  pinned platform contracts when the platform checkout is available.
-- `yarn audit` checks dependency advisories.
-- `yarn format:check` checks Prettier formatting.
-- `yarn lint` runs ESLint with type-aware rules.
-- `yarn typecheck` runs strict TypeScript for the SDK and examples.
-- `yarn test` runs Vitest with coverage thresholds.
-- `yarn browser:check` verifies the package entrypoint bundles for browser targets.
-- `yarn pack:check` verifies the library-only package payload.
-
-Examples compile separately to `dist-examples`; they are not part of the npm package payload.
-
-## Releases
-
-Semantic versions are prepared by Release Please from conventional commits:
-
-- `fix: ...` creates a patch release.
-- `feat: ...` creates a minor release.
-- `feat!: ...` or `BREAKING CHANGE:` creates a major release.
-
-Release Please opens a version/changelog PR. Merging that PR creates the GitHub release, and the publish workflow publishes the package to npm.
-
-Fully automated publishing requires repository secret `RELEASE_PLEASE_TOKEN` with a fine-grained GitHub token that can write contents, pull requests, and issues. The release workflow intentionally fails without that secret, because GitHub releases created by `GITHUB_TOKEN` do not trigger the npm publish workflow.
-
-The npm package must also be configured with a trusted publisher:
-
-- Publisher: GitHub Actions
-- Organization or user: `dforsber`
-- Repository: `isecure-ts-client`
-- Workflow filename: `publish.yml`
-- Environment name: `npm`
-- Allowed action: `npm publish`
-
-## Account usage
-
-`client.listAccountUsage({ Month: "2026-09" })` reads observed bank-account usage through
-the authenticated API. Tenant owners see their tenant and its users; customer accounts
-see only themselves. The ISECure operator may pass `Tenant` to select another tenant.
-`Account` narrows the result to one permitted user.
-
-The server calculates monthly distinct accounts as the union of daily observations.
-Do not sum daily values or user counts to calculate tenant totals. `MissingDays`,
-daily `Issues`, and an absent `UniqueAccounts` preserve missing coverage. The basis
-covers accounts observed in supported CAMT files, not all contracted or idle accounts.
-Payment rows and invoice issuance are outside this operation.
-
-For local catalogue compatibility qualification, build the candidate and run
-`node scripts/qualify-plugin-catalogue-compatibility.mjs /absolute/path/to/installed/isecure-ts-client`.
-The retained package must be released 4.0.0. This exercises real SDK transports with synthetic server
-responses across 18 combinations: empty listings, two release versions with additive metadata, and
-mixed malformed transport members. It checks exact response preservation, format-2 diagnostics and
-the explicit legacy refusal/fallback. This is transport qualification; caller/native admission owns
-malformed-entry isolation, signatures, compatibility and authorization. It does not certify a live
-deployment or native plugin execution.
+[MIT license](LICENSE)
