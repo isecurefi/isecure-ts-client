@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "cc18a3c21b2a740771d0cae652c94484c8695b56",
-    "model": "Bankfiles@0.138.0",
-    "sourceDigest": "sha256:3d39314377a7d91e49d48034bb9a647ee65e68c16ab9e2e3024393ce9ba30fc9",
+    "revision": "fdd36b60ae2f5122bbfe46140146736776ce161f",
+    "model": "Bankfiles@0.139.0",
+    "sourceDigest": "sha256:8a615ba9857d791ba7786af9525dceed2d06d27c4bcd79b6513e09680de0e378",
     "fixedClock": "2040-01-02T03:04:05.000Z",
     "safety": {
       "syntheticOnly": true,
@@ -1312,7 +1312,7 @@
       "operationId": "integrations.activate",
       "version": 2,
       "contractDigest": "sha256:f3329d8e561373f9c692f071fdc5f570ae77fe1f7485dfd7e183aa5b7ceba159",
-      "eventClosureDigest": "sha256:cb6bb89fffa13bc92828d676d8ce54d2361c401c5dbe2fd4a6be0c593f83fb51",
+      "eventClosureDigest": "sha256:78a54be1823105336ea81763b5fd54eb6939dcc9d10328487c2e60b5629ee1fe",
       "inputContract": "isecure.bankfiles.integrations_api.IntegrationTransitionInput",
       "resultContract": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -1782,7 +1782,7 @@
       "operationId": "integrations.approve",
       "version": 1,
       "contractDigest": "sha256:6237d0c9c3f84e309b239eb8b59fb23346e3690dedeaf1911a474544df4376de",
-      "eventClosureDigest": "sha256:7281d342ae4f0bf23a1077d48520b29d0b7a8300a8fa33cd94de2de469e2ce87",
+      "eventClosureDigest": "sha256:24c1ee6c4f471c38e968c716003b0d904e646330d1fd03b19ecff41ce43612cb",
       "inputContract": "isecure.bankfiles.integrations_api.IntegrationTransitionInput",
       "resultContract": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -2252,7 +2252,7 @@
       "operationId": "integrations.create_draft",
       "version": 2,
       "contractDigest": "sha256:0eb2ece286e2672d9e5f521bb9b19d08d5e28eb05d5ef20b46ac703efeeb80e9",
-      "eventClosureDigest": "sha256:98d9b3f979344a03e243aab7ed72cf23449c7c3146d387816f099c73f547a699",
+      "eventClosureDigest": "sha256:da7f36fe661f026e72befb0e4e5235659a85c3f550c09cf37b890d33bcb959c3",
       "inputContract": "isecure.bankfiles.integrations_api.IntegrationDraftInput",
       "resultContract": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -3477,7 +3477,7 @@
       "operationId": "integrations.pause",
       "version": 2,
       "contractDigest": "sha256:1ca370761ab2469b40daf2a45d786410d10ae81e5a8b505c17da29a6a415aaaa",
-      "eventClosureDigest": "sha256:f2aac136d84950e036c2495c20b0b8759b88f9373830a0104eb6840db6ecbfc0",
+      "eventClosureDigest": "sha256:7462596ddabb0dd7b74da145bbe29e32d4055c1cc23281c2a9aa4b7513a1add2",
       "inputContract": "isecure.bankfiles.integrations_api.IntegrationTransitionInput",
       "resultContract": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -4142,7 +4142,7 @@
       "operationId": "integrations.revise_draft",
       "version": 2,
       "contractDigest": "sha256:2046b4ea7c2f8cdae4118a3f2bfe612ed6c7246a6e25f5c18355129851685f11",
-      "eventClosureDigest": "sha256:d7ddd76fa9adac3971cc7d166eefebec0d37429e7d105388a878e5ca844dc07f",
+      "eventClosureDigest": "sha256:96fb63c28438a5df022e66f1794bd50219933f7b88ac3497b39e34671395cf93",
       "inputContract": "isecure.bankfiles.integrations_api.IntegrationReviseInput",
       "resultContract": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -4777,7 +4777,7 @@
       "operationId": "integrations.revoke",
       "version": 2,
       "contractDigest": "sha256:cd05d6dc25fbafd7f91be499d3bac2163e934e903c8fc6d72c4587b5aba2a6ba",
-      "eventClosureDigest": "sha256:9f37e7fb3a1c23c26d9d1d0479417812dcd985d099313313b88f2621975c2afe",
+      "eventClosureDigest": "sha256:1f15bd8bfe6097610e1305c9cffa7a62da0fa87d64b646bd33156b579e10f9fd",
       "inputContract": "isecure.bankfiles.integrations_api.IntegrationTransitionInput",
       "resultContract": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -5247,7 +5247,7 @@
       "operationId": "integrations.setup_answer",
       "version": 1,
       "contractDigest": "sha256:f63706e73ebc112f0c76b6fda09c28d103af7f2fd9a184e8390615fbf283a536",
-      "eventClosureDigest": "sha256:cec9cba633076392d5c63525b54897c1584854adc866ae916e546be4a2fbcd45",
+      "eventClosureDigest": "sha256:0966b46ea08aaa8c25ac1573b7daffed9b1c1614195a6ecdce154b656b3c5a4b",
       "inputContract": "isecure.bankfiles.connector_setup_api.IntegrationSetupAnswerInput",
       "resultContract": "isecure.bankfiles.connector_setup_api.IntegrationSetupResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -5601,7 +5601,7 @@
       "operationId": "integrations.setup_begin",
       "version": 1,
       "contractDigest": "sha256:7dc338d4195e266d73225a3c3747bb29446d6d200680d38a8d4a7c28818c4ca0",
-      "eventClosureDigest": "sha256:838a8bba8d235f6c3f70fe0c997fe822e25eea6d7dfadcee5674fbca06580067",
+      "eventClosureDigest": "sha256:fe71215127ee0b5f20364ee77edd99152de81fd697b45fe0f4bb8da40a530792",
       "inputContract": "isecure.bankfiles.connector_setup_api.IntegrationSetupBeginInput",
       "resultContract": "isecure.bankfiles.connector_setup_api.IntegrationSetupResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -5907,7 +5907,7 @@
       "operationId": "integrations.setup_cancel",
       "version": 1,
       "contractDigest": "sha256:eb92b2f229128b051e3f16698a1d0b1bffd86f084f758f53d794525ce5fbb073",
-      "eventClosureDigest": "sha256:56f98fbd9d1b835beb7142f1db6c1e66cdd74f7ea938828effd63d067c79ed51",
+      "eventClosureDigest": "sha256:d84db33f544582d61214f608e99dec60a46729390b11df95630833a0f21a7e9a",
       "inputContract": "isecure.bankfiles.connector_setup_api.IntegrationSetupTransitionInput",
       "resultContract": "isecure.bankfiles.connector_setup_api.IntegrationSetupResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -6363,7 +6363,7 @@
       "operationId": "integrations.setup_resume",
       "version": 1,
       "contractDigest": "sha256:45664dc17edff28c8ba783c9e2d96ac2f7b7e521bd18317a7c133433a2919a22",
-      "eventClosureDigest": "sha256:05937c25294f6486ed8bed77b241f078090bda48e4a483f8d47c6f72ec8c2b59",
+      "eventClosureDigest": "sha256:0d6b4ce1e5d767b5d24efb27c4cb68300cc1f180dc91a69408cce6dc02836afc",
       "inputContract": "isecure.bankfiles.connector_setup_api.IntegrationSetupTransitionInput",
       "resultContract": "isecure.bankfiles.connector_setup_api.IntegrationSetupResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -6669,7 +6669,7 @@
       "operationId": "integrations.submit_for_review",
       "version": 2,
       "contractDigest": "sha256:b46d863e681ce51a1c903d04d2ba9f33673573b3990229be38f31639d12627d9",
-      "eventClosureDigest": "sha256:5abf25854903024f4c76772a5173d6326920d8ba70e007f1673c0af9414ec363",
+      "eventClosureDigest": "sha256:fb549da358352d79805a3a6e5b46f913aaa1e52aadc8e64e3321d042ed4e9138",
       "inputContract": "isecure.bankfiles.integrations_api.IntegrationTransitionInput",
       "resultContract": "isecure.bankfiles.integrations_api.IntegrationWriteResult",
       "issueContract": "isecure.bankfiles.integrations_api.IntegrationIssues",
@@ -10238,7 +10238,7 @@
       "operationId": "payment_approval_requests.decide",
       "version": 1,
       "contractDigest": "sha256:5ab90e67325ab3a39a95e29628ebaa19d29c669fcdb1e63828eaa81c6ce1b7d7",
-      "eventClosureDigest": "sha256:a751adee0aee9ff5ad04ebd24fa77273cf674845568b625fb1d50d8dcb2854f9",
+      "eventClosureDigest": "sha256:dd1ba1e888d4fbe2553a3e94aa2a05a211bdc9f4022504cc74e3305041a4cbb4",
       "inputContract": "isecure.bankfiles.payments_api.DecidePaymentApprovalRequestInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentApprovalDecisionResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -12764,7 +12764,7 @@
       "operationId": "payment_execution_fulfillments.claim",
       "version": 1,
       "contractDigest": "sha256:2d4bf454343f38ad3d19be57e55595d17e40df650a59a2841e724d0683d2b414",
-      "eventClosureDigest": "sha256:b7ec782e4bdfb23901cef19dd7a1f26e341824148e4d796583f207c75062d475",
+      "eventClosureDigest": "sha256:0084ca1ed2217025d9a389ffd8bfbd2c4264e84a0ed2b8a6146f7415693350fc",
       "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentClaimInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentExecutionFulfillmentResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -13187,7 +13187,7 @@
       "operationId": "payment_execution_observations.report",
       "version": 1,
       "contractDigest": "sha256:a5acc23d3344a94fa3388bbf6af781e9f51146d1d5487ef4bf8894e42ed63d82",
-      "eventClosureDigest": "sha256:43dcda2daf655c5b47b4a43ca2ba463f3d0150b166af47f37af5161937382b16",
+      "eventClosureDigest": "sha256:33902d33ad43e61c54320f275d9cb120674211973e98105377a565e55061e4de",
       "inputContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentExecutionConnectorObservationResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -13849,7 +13849,7 @@
       "operationId": "payment_export_profiles.configure",
       "version": 1,
       "contractDigest": "sha256:d1dfea42aaa194db43101014f3aba331aca6a0e44ef05f06d85c7078d8c7790b",
-      "eventClosureDigest": "sha256:cdec0736c86e1ec53e7de1419bf45295e5a3c3055e53da3b800cebd1b675c1fb",
+      "eventClosureDigest": "sha256:8a8a179ab8efd6c38f1f5ddeb9f1953a6356fe9ff5f33d709fafd58475d5e6a7",
       "inputContract": "isecure.bankfiles.payments_api.ConfigurePaymentExportProfileInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -14582,7 +14582,7 @@
       "operationId": "payment_export_profiles.revoke",
       "version": 1,
       "contractDigest": "sha256:de9e12f5bfcc83240eee01cc7f7a894f76ccfe1df7dc8d3d18a8e5f09b82c232",
-      "eventClosureDigest": "sha256:f1029216226d3826a0a1c02359bdb12e8f145368d607021ef900c0eef433cfc4",
+      "eventClosureDigest": "sha256:117d75eeedd5bbb39d6569187df3e1dee109283188916289b37af6720bad2dfb",
       "inputContract": "isecure.bankfiles.payments_api.RevokePaymentExportProfileInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -15048,7 +15048,7 @@
       "operationId": "payment_exports.download_content",
       "version": 1,
       "contractDigest": "sha256:c7bc845d103b087e9714cb51261a56f512520d99c5394c63c8b6ef9a65bbe4dd",
-      "eventClosureDigest": "sha256:2c760f16bdcebc311dfec0a0f18cbfe3ea424fe410067e49a1959a128ca940ac",
+      "eventClosureDigest": "sha256:b0e6cdbe77c6c1e8d7d19a2a496516489b9f4d26994518d0fac0af336693a22b",
       "inputContract": "isecure.bankfiles.payments_api.DownloadPaymentExportContentInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentExportContentResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -15656,7 +15656,7 @@
       "operationId": "payment_exports.release",
       "version": 1,
       "contractDigest": "sha256:e572d8b0feb3eada5d396be036cf816411fc3773c8264fcb892eb90387a0b87a",
-      "eventClosureDigest": "sha256:d04aee7fb4ca785f31b30f09052c1ba786697fa245de397c6a7117b948b2382a",
+      "eventClosureDigest": "sha256:61bf434b8d678db5a561d8b7e61f93be34d0fad4dae501472fa3eed3c4ec518a",
       "inputContract": "isecure.bankfiles.payments_api.ReleasePaymentExportInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentExportReleaseResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -16943,7 +16943,7 @@
       "operationId": "payment_orders.append_transfers",
       "version": 1,
       "contractDigest": "sha256:6b9cd39e3f7e11cdf13c229fff00cd678fa3cf1d9859a3cd97d4b6089e18cdf6",
-      "eventClosureDigest": "sha256:4540ca517a7d85830b68bac85eab18ead89ebd0a1238ab6d7260f89afad9564b",
+      "eventClosureDigest": "sha256:ea67c8afea99c55102b97242d559097da1203d0b18275e677bdfb131099ac5cf",
       "inputContract": "isecure.bankfiles.payments_api.AppendPaymentOrderTransfersInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -17552,7 +17552,7 @@
       "operationId": "payment_orders.cancel_draft",
       "version": 1,
       "contractDigest": "sha256:14976041ee01abe2f7ba0a9b2294f5294976f9b497d8a43598d63a75345314ed",
-      "eventClosureDigest": "sha256:b4d84dbdc31e9917e30823ebabdd2862d1faaca060ea45eea6350d5011d395b0",
+      "eventClosureDigest": "sha256:5061f3a0d145f30dbf2abf0f475458c220536adcee59802b21cdfc85189a0539",
       "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -18020,7 +18020,7 @@
       "operationId": "payment_orders.correct",
       "version": 1,
       "contractDigest": "sha256:4b88a7d1738a796f51f8eb4f5297f2bc33d5a59a4f757931d179bdff2bfcd10e",
-      "eventClosureDigest": "sha256:c9c45f6daa59252d365881ae4c7852e7d8f2f5d5221dd7d4e3f9f0230fd5b01e",
+      "eventClosureDigest": "sha256:bd0c4a4d170cf03c5cc15408600d7ac047906a8fc2b7be1c4b0c68e2526c0e21",
       "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -18493,7 +18493,7 @@
       "operationId": "payment_orders.create_draft",
       "version": 1,
       "contractDigest": "sha256:cb1ab14ad98f98172b75edd69c1a0db92371aed66beffac568c1c40c3c7f839e",
-      "eventClosureDigest": "sha256:10faf083b8b55dcc7f791081aaa02128075fe462b406a43103b504a74f3eab2a",
+      "eventClosureDigest": "sha256:1c9c806310a608e70d463a1bc62e3a21f15825b2825c15b0b93b3f44904fe4d5",
       "inputContract": "isecure.bankfiles.payments_api.PaymentOrderDraftInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -18974,7 +18974,7 @@
       "operationId": "payment_orders.execute",
       "version": 1,
       "contractDigest": "sha256:ac6a4e5f6998e141f7303ab9e3d2047c39cc4bce801df6a3ba63da991770b96c",
-      "eventClosureDigest": "sha256:8f56a34849dfba3d6c9308bf5b0dcb7acd32c910de9936fe99f4ce6f894d532e",
+      "eventClosureDigest": "sha256:2bbfe27751ec1aeaca5489cedf07d692c45ae26e8be96943618a34deb51831ef",
       "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderExecuteResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -19750,7 +19750,7 @@
       "operationId": "payment_orders.finalize_draft",
       "version": 1,
       "contractDigest": "sha256:e8c22ad4b5dae182cefa00329de60625d382371b90452890952b4aa69dcec268",
-      "eventClosureDigest": "sha256:e3c7ce6d4a86e3e343f00a7de21b509df7feacc23e1b3b0503cb676a8e472b8e",
+      "eventClosureDigest": "sha256:03b75ebaea7fdc6d8a70c67912ad99089e9cbc62d4ea30eaead67537d32ad4ee",
       "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderFinalizationResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -21157,7 +21157,7 @@
       "operationId": "payment_orders.remove_transfers",
       "version": 1,
       "contractDigest": "sha256:9e6e2ca12abbc6e09b6274cc359cdff9c9b856ffaa0de7393d25ba860f4d716b",
-      "eventClosureDigest": "sha256:1dc09408a02203dc8a960e9ad4450653187d20d5cb813bcfd6e09cc034e43d8c",
+      "eventClosureDigest": "sha256:ec07f8f53fc73b4db3529307eef7735a89e7362a7a41b5ba9378664d1c6356a1",
       "inputContract": "isecure.bankfiles.payments_api.RemovePaymentOrderTransfersInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -21654,7 +21654,7 @@
       "operationId": "payment_orders.revise_draft",
       "version": 1,
       "contractDigest": "sha256:4f4f717f9a34ba59e99d070b02f9ccc589ea96d85c17ce3b1e037baa823112eb",
-      "eventClosureDigest": "sha256:92b0fed96a910a159f0983525bea38653a22a45b21f317877b145908e294123a",
+      "eventClosureDigest": "sha256:d082bed884665202a4db4a05ba04d481f6b921859009e312291ac3f530a34ab7",
       "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -22207,7 +22207,7 @@
       "operationId": "payment_orders.revise_transfer",
       "version": 1,
       "contractDigest": "sha256:2577dd0e163120a35f7506125b767b048b210d18c372237ce1e9237c5bf35638",
-      "eventClosureDigest": "sha256:85d5417880d23c6c6d7acb43ea73dcc162ac66224b6bb70a5baa91b49ae87b1f",
+      "eventClosureDigest": "sha256:c4fbd2f7339e5ac6c0eb3eb9f2db46706b923daafb7f66436b09adb2f9718ed6",
       "inputContract": "isecure.bankfiles.payments_api.RevisePaymentOrderTransferInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderMutationResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -23054,7 +23054,7 @@
       "operationId": "payment_orders.submit_for_review",
       "version": 1,
       "contractDigest": "sha256:a3a3e08d56f17e44a91667a1b1beb5f56ec7e07289da0d332ae2c4f193eee58d",
-      "eventClosureDigest": "sha256:db7722b11e8433c4bcd30b388de98d8725d9fe1910fb68471d58113cdfca666d",
+      "eventClosureDigest": "sha256:1962406c9aef327e47873bb95f82c4a3c522470a7bc1b2fd7a7a519d11a8651a",
       "inputContract": "isecure.bankfiles.payments_api.PaymentOrderTransitionInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentOrderReviewSubmissionResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -24105,8 +24105,8 @@
     {
       "operationId": "simulation_artifacts.list",
       "version": 3,
-      "contractDigest": "sha256:d1812e62ef688b7c85570774600e775d9ba8bc9522fd43e1299c98ca42aadce3",
-      "eventClosureDigest": "sha256:167061bd1ac9a0279f5743662163779a52778de2b8d7a721e45e73ac4d012f34",
+      "contractDigest": "sha256:a48497f02a70e029c6cd122c2806f9368b64ac2d87989a55475d453ce83a10f9",
+      "eventClosureDigest": "sha256:2dee8bbd5448cb22fe4898c65348a19b5ddfee55069f56dd9bc03eaf3817a350",
       "inputContract": "isecure.bankfiles.simulation.SimulationArtifactListInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationArtifactListResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -24398,7 +24398,7 @@
       "operationId": "simulation_branches.create",
       "version": 4,
       "contractDigest": "sha256:0269ca0f855c23a90212cc8ca2c1869b371cb8833d6f2bfb0c63fec61aa9c20a",
-      "eventClosureDigest": "sha256:de004943acd9fb5d2330bf2f7dcb83cb2295f9a927ea99f4a3d8167bc1a97d68",
+      "eventClosureDigest": "sha256:2a9bf4181f1abf931107f46bb455656c7ace8c5cab3f3a3aaf5ef8748e2c7713",
       "inputContract": "isecure.bankfiles.simulation.CreateSimulationBranchInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationBranchResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -25158,7 +25158,7 @@
       "operationId": "simulation_checkpoints.create",
       "version": 4,
       "contractDigest": "sha256:97fdef985c5897e19f0b43aec41a0e539cb5edc8aa292740c777efe14029d5ac",
-      "eventClosureDigest": "sha256:1d7f1cbf9f7ec994bcc1d2f688736164337d63d266a62b39d2755d9f3db79136",
+      "eventClosureDigest": "sha256:f3c4031e6a453ef62f7752ae29c996ebb66d864e93618ba1ed844065e0417c1a",
       "inputContract": "isecure.bankfiles.simulation.CreateSimulationCheckpointInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationCheckpointResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -25514,7 +25514,7 @@
       "operationId": "simulation_clocks.control",
       "version": 4,
       "contractDigest": "sha256:d683043752ece7bd18c0c834bdeccd3a75ffee86177a0579b4babb2ef0b776e5",
-      "eventClosureDigest": "sha256:e1a021e41d07de504264aea224d5294327e1e9fc68f8cc54e75b19d34f66a769",
+      "eventClosureDigest": "sha256:39ca2a3700db7a415484f49f36c1fbe0cdf418d616e9be2c04ac079f1011eca6",
       "inputContract": "isecure.bankfiles.simulation.ControlSimulationClockInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationClockControlResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -26177,6 +26177,568 @@
                   "safe_message": "The synthetic snapshot cursor is stale; restart the list operation.",
                   "retryable": false,
                   "field_path": "cursor"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "simulation_files.import",
+      "version": 1,
+      "contractDigest": "sha256:d3492b097fe8c51e0533005234aebb14bede74a64bd35e2c82850d530d05e414",
+      "eventClosureDigest": "sha256:58c51b8bc3e686e47f43a2e0616dffb2cda65efc449484d28ed1d6a74b984d5f",
+      "inputContract": "isecure.bankfiles.simulation.ImportSimulationFileInput",
+      "resultContract": "isecure.bankfiles.simulation.SimulationFileImportResult",
+      "issueContract": "isecure.bankfiles.operations.PlatformIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/simulation-files:import",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            409,
+            410,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "simulation_files.import",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "simulation-files import",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "simulation_files-import",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "simulation_files.import.success",
+          "operationId": "simulation_files.import",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.simulation.ImportSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.simulation.SimulationFileImportResult",
+          "input": {
+            "workspace_revision_reference": {
+              "resource_type": "simulation_files.import-input-wo",
+              "resource_id": "660c7e1e-e7c3-49fc-abbf-3b12ceaf19af"
+            },
+            "data_admission_mode": "synthetic",
+            "source": {
+              "source_type": "uploaded_file",
+              "content_base64": "simulation_files.import-input-so"
+            }
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "5bf8c845-18da-49d0-9b77-1381f2b9a6d7",
+                "operation_id": "simulation_files.import",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "7f18eff3-6152-46ca-8491-37f69a898971",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "applied",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "artifact": {
+                "artifact_reference": {
+                  "resource_type": "simulation_files.import-result-a",
+                  "resource_id": "d8fd792f-0203-42a8-9d55-568c72907a9b"
+                },
+                "file_exchange_occurrence_reference": {
+                  "resource_type": "simulation_files.import-result-a",
+                  "resource_id": "eca417f2-15af-45f1-89e9-cfd50848cb05"
+                },
+                "role": "input",
+                "media_type": "simulation_files.import-result-a",
+                "profile_id": "simulation_files.import-result-a",
+                "profile_version": "simulation_files.import-result-a"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "simulation_files.import.invalid_request",
+          "operationId": "simulation_files.import",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.simulation.ImportSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.operations.PlatformIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "simulation_files.import.unauthorized",
+          "operationId": "simulation_files.import",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.simulation.ImportSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.operations.PlatformIssues",
+          "input": {
+            "workspace_revision_reference": {
+              "resource_type": "simulation_files.import-input-wo",
+              "resource_id": "660c7e1e-e7c3-49fc-abbf-3b12ceaf19af"
+            },
+            "data_admission_mode": "synthetic",
+            "source": {
+              "source_type": "uploaded_file",
+              "content_base64": "simulation_files.import-input-so"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "simulation_files.import.retryable",
+          "operationId": "simulation_files.import",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.simulation.ImportSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.operations.PlatformIssues",
+          "input": {
+            "workspace_revision_reference": {
+              "resource_type": "simulation_files.import-input-wo",
+              "resource_id": "660c7e1e-e7c3-49fc-abbf-3b12ceaf19af"
+            },
+            "data_admission_mode": "synthetic",
+            "source": {
+              "source_type": "uploaded_file",
+              "content_base64": "simulation_files.import-input-so"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "simulation_files.import.idempotency_replay",
+          "operationId": "simulation_files.import",
+          "scenario": "idempotency_replay",
+          "inputContract": "isecure.bankfiles.simulation.ImportSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.simulation.SimulationFileImportResult",
+          "input": {
+            "workspace_revision_reference": {
+              "resource_type": "simulation_files.import-input-wo",
+              "resource_id": "660c7e1e-e7c3-49fc-abbf-3b12ceaf19af"
+            },
+            "data_admission_mode": "synthetic",
+            "source": {
+              "source_type": "uploaded_file",
+              "content_base64": "simulation_files.import-input-so"
+            }
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "5bf8c845-18da-49d0-9b77-1381f2b9a6d7",
+                "operation_id": "simulation_files.import",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "7f18eff3-6152-46ca-8491-37f69a898971",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                },
+                "idempotency_result": {
+                  "outcome": "replayed",
+                  "original_request_id": "ecf454c9-413f-4487-a64a-f0e99ebf67b5",
+                  "retained_until": "2040-02-02T03:04:05.000Z"
+                }
+              },
+              "artifact": {
+                "artifact_reference": {
+                  "resource_type": "simulation_files.import-result-a",
+                  "resource_id": "d8fd792f-0203-42a8-9d55-568c72907a9b"
+                },
+                "file_exchange_occurrence_reference": {
+                  "resource_type": "simulation_files.import-result-a",
+                  "resource_id": "eca417f2-15af-45f1-89e9-cfd50848cb05"
+                },
+                "role": "input",
+                "media_type": "simulation_files.import-result-a",
+                "profile_id": "simulation_files.import-result-a",
+                "profile_version": "simulation_files.import-result-a"
+              }
+            }
+          }
+        },
+        {
+          "fixtureId": "simulation_files.import.idempotency_in_progress",
+          "operationId": "simulation_files.import",
+          "scenario": "idempotency_in_progress",
+          "inputContract": "isecure.bankfiles.simulation.ImportSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.operations.PlatformIssues",
+          "input": {
+            "workspace_revision_reference": {
+              "resource_type": "simulation_files.import-input-wo",
+              "resource_id": "660c7e1e-e7c3-49fc-abbf-3b12ceaf19af"
+            },
+            "data_admission_mode": "synthetic",
+            "source": {
+              "source_type": "uploaded_file",
+              "content_base64": "simulation_files.import-input-so"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_IN_PROGRESS",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The original synthetic command is still in progress.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "simulation_files.import.idempotency_mismatch",
+          "operationId": "simulation_files.import",
+          "scenario": "idempotency_mismatch",
+          "inputContract": "isecure.bankfiles.simulation.ImportSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.operations.PlatformIssues",
+          "input": {
+            "workspace_revision_reference": {
+              "resource_type": "simulation_files.import-input-wo",
+              "resource_id": "660c7e1e-e7c3-49fc-abbf-3b12ceaf19af"
+            },
+            "data_admission_mode": "synthetic",
+            "source": {
+              "source_type": "uploaded_file",
+              "content_base64": "simulation_files.import-input-so"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 409,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_MISMATCH",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The idempotency key was previously used with different normalized input.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "simulation_files.import.idempotency_expired",
+          "operationId": "simulation_files.import",
+          "scenario": "idempotency_expired",
+          "inputContract": "isecure.bankfiles.simulation.ImportSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.operations.PlatformIssues",
+          "input": {
+            "workspace_revision_reference": {
+              "resource_type": "simulation_files.import-input-wo",
+              "resource_id": "660c7e1e-e7c3-49fc-abbf-3b12ceaf19af"
+            },
+            "data_admission_mode": "synthetic",
+            "source": {
+              "source_type": "uploaded_file",
+              "content_base64": "simulation_files.import-input-so"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 410,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_IDEMPOTENCY_EXPIRED",
+                  "category": "conflict",
+                  "severity": "error",
+                  "safe_message": "The synthetic idempotency retention window has expired.",
+                  "retryable": false,
+                  "field_path": "idempotency_key"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "simulation_files.read",
+      "version": 1,
+      "contractDigest": "sha256:e4b40c960f550c19e0d0c75982f7e1f96fd178ce33a3b5904740ef60d89a7299",
+      "eventClosureDigest": "sha256:dcf02b135fba9629ca2d0b336406ea6b772931b73a015f826b0f6f2a92935415",
+      "inputContract": "isecure.bankfiles.simulation.ReadSimulationFileInput",
+      "resultContract": "isecure.bankfiles.simulation.SimulationFileContentResult",
+      "issueContract": "isecure.bankfiles.operations.PlatformIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "POST /v1/simulation-files:read",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "simulation_files.read",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "simulation-files read",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "simulation_files-read",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "simulation_files.read.success",
+          "operationId": "simulation_files.read",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.simulation.ReadSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.simulation.SimulationFileContentResult",
+          "input": {
+            "workspace_reference": {
+              "resource_type": "simulation_files.read-input-work",
+              "resource_id": "460e7b42-f529-4617-90d6-da8c7480128c"
+            },
+            "artifact": {
+              "artifact_reference": {
+                "resource_type": "simulation_files.read-input-arti",
+                "resource_id": "d27ad3b1-d02b-4218-926e-2acb74ed3ee9"
+              },
+              "file_exchange_occurrence_reference": {
+                "resource_type": "simulation_files.read-input-arti",
+                "resource_id": "e7f92296-d896-472c-a259-7a5c7e5814ad"
+              },
+              "role": "input",
+              "media_type": "simulation_files.read-input-arti",
+              "profile_id": "simulation_files.read-input-arti",
+              "profile_version": "simulation_files.read-input-arti"
+            }
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "3658f14c-5f8c-42de-a378-04a110e25d64",
+                "operation_id": "simulation_files.read",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "00d8f7ef-5b59-4c0c-81a6-34ece954877b",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "artifact": {
+                "artifact_reference": {
+                  "resource_type": "simulation_files.read-result-art",
+                  "resource_id": "e44c5509-537d-4f6d-88c9-7c80b607921f"
+                },
+                "file_exchange_occurrence_reference": {
+                  "resource_type": "simulation_files.read-result-art",
+                  "resource_id": "8e31e550-93e2-47c4-b75f-37bb55a49d3d"
+                },
+                "role": "input",
+                "media_type": "simulation_files.read-result-art",
+                "profile_id": "simulation_files.read-result-art",
+                "profile_version": "simulation_files.read-result-art"
+              },
+              "content_base64": "simulation_files.read-result-con"
+            }
+          }
+        },
+        {
+          "fixtureId": "simulation_files.read.invalid_request",
+          "operationId": "simulation_files.read",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.simulation.ReadSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.operations.PlatformIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "simulation_files.read.unauthorized",
+          "operationId": "simulation_files.read",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.simulation.ReadSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.operations.PlatformIssues",
+          "input": {
+            "workspace_reference": {
+              "resource_type": "simulation_files.read-input-work",
+              "resource_id": "460e7b42-f529-4617-90d6-da8c7480128c"
+            },
+            "artifact": {
+              "artifact_reference": {
+                "resource_type": "simulation_files.read-input-arti",
+                "resource_id": "d27ad3b1-d02b-4218-926e-2acb74ed3ee9"
+              },
+              "file_exchange_occurrence_reference": {
+                "resource_type": "simulation_files.read-input-arti",
+                "resource_id": "e7f92296-d896-472c-a259-7a5c7e5814ad"
+              },
+              "role": "input",
+              "media_type": "simulation_files.read-input-arti",
+              "profile_id": "simulation_files.read-input-arti",
+              "profile_version": "simulation_files.read-input-arti"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "simulation_files.read.retryable",
+          "operationId": "simulation_files.read",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.simulation.ReadSimulationFileInput",
+          "outcomeContract": "isecure.bankfiles.operations.PlatformIssues",
+          "input": {
+            "workspace_reference": {
+              "resource_type": "simulation_files.read-input-work",
+              "resource_id": "460e7b42-f529-4617-90d6-da8c7480128c"
+            },
+            "artifact": {
+              "artifact_reference": {
+                "resource_type": "simulation_files.read-input-arti",
+                "resource_id": "d27ad3b1-d02b-4218-926e-2acb74ed3ee9"
+              },
+              "file_exchange_occurrence_reference": {
+                "resource_type": "simulation_files.read-input-arti",
+                "resource_id": "e7f92296-d896-472c-a259-7a5c7e5814ad"
+              },
+              "role": "input",
+              "media_type": "simulation_files.read-input-arti",
+              "profile_id": "simulation_files.read-input-arti",
+              "profile_version": "simulation_files.read-input-arti"
+            }
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
                 }
               ]
             }
@@ -26862,7 +27424,7 @@
       "operationId": "simulation_runs.start",
       "version": 4,
       "contractDigest": "sha256:4431e600655c7d1fd79e9434f846ead09783dbb6aa512d6c9db2dad9ecfc06be",
-      "eventClosureDigest": "sha256:2819fa1c93b12769c0bdc8be9fbbd234c4d1463247267600342c6a463589f37a",
+      "eventClosureDigest": "sha256:b00359e372cacb1e5414ba12254d33ca1794be5dad9d70e64ff924a70ec62760",
       "inputContract": "isecure.bankfiles.simulation.StartSimulationRunInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationRunMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -27402,7 +27964,7 @@
       "operationId": "simulation_scenarios.create",
       "version": 4,
       "contractDigest": "sha256:25c2467181466e705ce673083355d784670873b779dcc2d29abebfab100b7667",
-      "eventClosureDigest": "sha256:995bf520f5b5836f18dc96a1561df192b9478ccea43b4218ef2ae49bd2b97b43",
+      "eventClosureDigest": "sha256:d67ee0d5e2afd92bb89691411e4c65d35f7351e70e43ef512400af9b9f103d72",
       "inputContract": "isecure.bankfiles.simulation.CreateSimulationScenarioInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationScenarioMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -28284,7 +28846,7 @@
       "operationId": "simulation_scenarios.revise",
       "version": 4,
       "contractDigest": "sha256:964dbf7234178c1a70f679afadc7cca15a3be538ac97a14f6e4a27488bf24767",
-      "eventClosureDigest": "sha256:bee66155693a7e28282d2dcd568ac53f5fcbe1457aec277689524ed3530ffff8",
+      "eventClosureDigest": "sha256:0b1e3de93e9b5fcfc99c681de7e5765e5af67a5e5cc6591d1bd1ece51994233e",
       "inputContract": "isecure.bankfiles.simulation.ReviseSimulationScenarioInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationScenarioMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -28696,7 +29258,7 @@
       "operationId": "simulation_workspaces.activate",
       "version": 4,
       "contractDigest": "sha256:be864cfd6800ab2068c844c4ef1dbe0767184d6073bcaed0291ce24679a9086f",
-      "eventClosureDigest": "sha256:f1b409ccd7023897ed15cf60f01c1dede7378f77460a1d0fa7881ad0d3afada4",
+      "eventClosureDigest": "sha256:bacaa8b485d4a517bafc6aec65ab3e5bfa445aa22a99e7f687d08256c35ba5c1",
       "inputContract": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -29292,7 +29854,7 @@
       "operationId": "simulation_workspaces.close",
       "version": 4,
       "contractDigest": "sha256:1fcc04f9ab15e4c46c1e8d44a30cc374f8b1c243d3e455586dfa9bca49254282",
-      "eventClosureDigest": "sha256:2382aeeca56bc880d69eafb53ac1d7a8f757c48848f62c012aec1656fa3ee339",
+      "eventClosureDigest": "sha256:552ff712977217a046d97d64ebf428fd11a30858068c480a25a828fa500ee9b5",
       "inputContract": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -29888,7 +30450,7 @@
       "operationId": "simulation_workspaces.create",
       "version": 4,
       "contractDigest": "sha256:f5ead670aa55bdd04c26c3a5dc9bf3f2807d2a8dbcaaf014f39d2ff82809fe34",
-      "eventClosureDigest": "sha256:ccca8e39d3972b83f660e575cd45cfa3e960a32fa20f38ef42f5185086a5bea7",
+      "eventClosureDigest": "sha256:d4533b4890f5f87708ec862532f5d5e97c49fe5c6c070acc937d0c268bc5717b",
       "inputContract": "isecure.bankfiles.simulation.CreateSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -31608,7 +32170,7 @@
       "operationId": "simulation_workspaces.reset",
       "version": 4,
       "contractDigest": "sha256:04236b103473b279c6a42a83294c98227e7761836631471e7ba45cf2b54ddab3",
-      "eventClosureDigest": "sha256:44b4a5eee934670cc4fef668223c89036705bc14af7851ed8404949638825ee8",
+      "eventClosureDigest": "sha256:09ab3deee118f1ff858d6fee349103aa050d757140a2344f9c7117dc0d76d5df",
       "inputContract": "isecure.bankfiles.simulation.ResetSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceResetResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -32260,7 +32822,7 @@
       "operationId": "simulation_workspaces.revise",
       "version": 4,
       "contractDigest": "sha256:838ec9b30941405400f26fbbaa7623048b31ad4dc2cf2fee3914a27f799cc1ef",
-      "eventClosureDigest": "sha256:e010feae885fb8c8a768479299ac5af42e1f147a0e76d57202b89375456b9b6f",
+      "eventClosureDigest": "sha256:56f03cc4e2722d9d6068c1d406797fdf2dd5d6377a7a72f8ed1c4cf7ebb56609",
       "inputContract": "isecure.bankfiles.simulation.ReviseSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -33288,7 +33850,7 @@
       "operationId": "simulation_workspaces.suspend",
       "version": 4,
       "contractDigest": "sha256:1255a220d8695cfb46dcdb442aadaf310456d05468b0a915b4641b4740ba5b40",
-      "eventClosureDigest": "sha256:199e7a478310e22fd9354df012d83a4eeb951e767bffb87cb474a01ba70281a5",
+      "eventClosureDigest": "sha256:38f0a0ec5fedc69ab65a095af4c02df012842127926445826fa4968a4fe259d4",
       "inputContract": "isecure.bankfiles.simulation.TransitionSimulationWorkspaceInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationWorkspaceMutationResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",

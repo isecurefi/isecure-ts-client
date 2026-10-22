@@ -448,6 +448,7 @@ export function createIso20022Client(transport: Iso20022Transport) {
           options,
         ),
     },
+    simulationFiles: simulationConfiguration.simulationFiles,
     simulationCapabilities: simulationConfiguration.simulationCapabilities,
     simulationCheckpoints: {
       create: (input: CreateSimulationCheckpointInput, options: ProcessingRevisionCommandOptions) =>

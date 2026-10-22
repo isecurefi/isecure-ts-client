@@ -250,6 +250,8 @@ describe("experimental ISO 20022 client", () => {
         expectedResourceVersion: '"1"',
       }),
       client.simulationEvents.list({ workspace_reference: simulationReference, page: {} }),
+      client.simulationFiles.import({} as never, { idempotencyKey: "synthetic-file" }),
+      client.simulationFiles.read({} as never),
       client.simulationRuns.get({ resource_reference: simulationReference }),
       client.simulationRuns.list({ workspace_reference: simulationReference, page: {} }),
       client.simulationRuns.start({} as never, { idempotencyKey: "synthetic-run" }),
@@ -294,7 +296,7 @@ describe("experimental ISO 20022 client", () => {
       client.validations.list({ run_kind: "validate" }),
     ]);
 
-    expect(transport.calls).toHaveLength(82);
+    expect(transport.calls).toHaveLength(84);
     const platform: readonly string[] = platformOperationIds;
     expect(transport.calls.map((call) => call.operationId)).toEqual(
       Object.keys(iso20022Operations).filter((operationId) => !platform.includes(operationId)),

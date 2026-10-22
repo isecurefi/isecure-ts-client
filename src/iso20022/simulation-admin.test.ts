@@ -29,7 +29,7 @@ describe("independent Simulator administration transport", () => {
       },
     });
     expect(client).not.toHaveProperty("paymentBatches");
-    expect(client).not.toHaveProperty("simulationRuns");
+    expect(client).toHaveProperty("simulationRuns");
     expect(client.simulationWorkspaces).not.toHaveProperty("reset");
   });
 
@@ -62,7 +62,7 @@ describe("independent Simulator administration transport", () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const transport = new SimulationAdminHttpTransport({ baseUrl, authentication, fetch });
     for (const operation of [
-      "simulation_runs.start",
+      "simulation_clocks.control",
       "simulation_workspaces.reset",
       "plugin_catalogue.list",
       "payment_orders.list",
@@ -217,4 +217,70 @@ describe("independent Simulator administration transport", () => {
       vi.unstubAllGlobals();
     }
   });
+});
+
+it("imports a synthetic file and runs it using current WS identity without opening Processing", async () => {
+  const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async () => Response.json({}));
+  const client = createSimulationAdminClient(new SimulationAdminHttpTransport({ baseUrl, authentication, fetch }));
+  const workspace = {
+    resource_type: "simulation_workspace",
+    resource_id: "00000000-0000-4000-8000-000000000001",
+    resource_version: "1",
+    revision_id: "00000000-0000-4000-8000-000000000002",
+  };
+  const artifact = {
+    artifact_reference: { ...workspace, resource_type: "artifact" },
+    file_exchange_occurrence_reference: { ...workspace, resource_type: "file_exchange_occurrence" },
+    role: "input" as const,
+    media_type: "application/xml",
+    profile_id: "synthetic",
+    profile_version: "1",
+  };
+  await client.simulationFiles.import(
+    {
+      workspace_revision_reference: workspace,
+      data_admission_mode: "synthetic",
+      source: { source_type: "uploaded_file", content_base64: "PHN5bnRoZXRpYy8+" },
+    },
+    { idempotencyKey: "input-attempt" },
+  );
+  await client.simulationRuns.start(
+    {
+      workspace_revision_reference: workspace,
+      scenario_revision_reference: { ...workspace, resource_type: "simulation_scenario" },
+      data_admission_mode: "synthetic",
+      input: { input_type: "exact_artifact", artifact },
+    },
+    { idempotencyKey: "run-attempt" },
+  );
+  await client.simulationFiles.read({ workspace_reference: workspace, artifact });
+  expect(fetch.mock.calls.map(([url]) => (url as URL).pathname)).toEqual([
+    "/v1/simulation-files:import",
+    "/v1/simulation-runs:start",
+    "/v1/simulation-files:read",
+  ]);
+  expect(
+    fetch.mock.calls.map(([, request]) => (request?.headers as Record<string, string>)["Idempotency-Key"]),
+  ).toEqual(["input-attempt", "run-attempt", undefined]);
+  for (const [, request] of fetch.mock.calls)
+    expect(request?.headers).toMatchObject({ Authorization: "Bearer synthetic-token", "x-api-key": "synthetic-key" });
+  expect(client).not.toHaveProperty("paymentBatches");
+});
+
+it("preserves a server retry delay without automatically retrying", async () => {
+  const fetch = vi
+    .fn<typeof globalThis.fetch>()
+    .mockResolvedValue(Response.json({ issues: [] }, { status: 429, headers: { "retry-after": "3" } }));
+  const client = createSimulationAdminClient(
+    new SimulationAdminHttpTransport({
+      baseUrl: "https://simulator-admin-api.test.isecure.fi",
+      authentication: () => ({ idToken: "synthetic-token", apiKey: "synthetic-key" }),
+      fetch,
+    }),
+  );
+  await expect(client.simulationCapabilities.list({ page: {} })).rejects.toMatchObject({
+    status: 429,
+    retryAfterMs: 3000,
+  });
+  expect(fetch).toHaveBeenCalledOnce();
 });

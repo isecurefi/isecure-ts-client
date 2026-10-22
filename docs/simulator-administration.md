@@ -2,8 +2,8 @@
 
 [Back to the README](../README.md)
 
-`createSimulationAdminClient` and `SimulationAdminHttpTransport` expose twelve configuration
-operations using your existing WS login. They require no Processing session or SSE stream.
+`createSimulationAdminClient` and `SimulationAdminHttpTransport` expose configuration and bounded synthetic execution
+using your existing WS login. They require no Processing session or SSE stream.
 File Exchange access to the `simulator` bank uses the `bank-simulator` subscription.
 Administration requires a separate `bank-simulation` subscription with the requested capabilities
 and an explicit manager grant. Neither enrollment grants the other. Both use the existing WS login;
@@ -25,11 +25,26 @@ const workspaces = await simulatorAdmin.simulationWorkspaces.list({ page: { page
 loginLifetime.abort();
 ```
 
-The client exposes capabilities, workspace list/get/create/revise/activate/suspend/close, and
-scenario list/get/create/revise. Activation changes configuration only. Run execution, reset,
-clocks, checkpoints, branches and output retrieval are unavailable through this transport. Existing
-customer Bank Simulator file exchange remains separate and unchanged. SDK support does not by itself
-establish that the independent service is deployed or that execution is qualified.
+The client exposes capabilities, workspace and scenario configuration, file import/read, run start/list/get,
+and run artifact/event lists. Always discover capabilities first: older deployments can manage configuration
+while reporting `runtime_availability: "contract_only"`. SDK support does not itself establish deployment
+or qualification. Clock, checkpoint, branch and reset controls remain unavailable through this transport.
+
+To run without Processing:
+
+1. Select an active workspace and scenario, using their exact resource references.
+2. Call `simulationFiles.import` with `data_admission_mode: "synthetic"` and either:
+   - `source_type: "sample_payment"`, two distinct workspace account keys and an exact decimal amount/currency; or
+   - `source_type: "uploaded_file"` and base64-encoded synthetic pain.001.001.09 XML (at most 128 KiB).
+3. Pass the returned artifact to `simulationRuns.start` as `input: { input_type: "exact_artifact", artifact }`.
+4. Read the run's input/output artifacts through `simulationFiles.read` with its workspace reference.
+
+Give import and start separate idempotency keys. Retain both inputs and keys until confirmed;
+if start needs a retry, reuse the imported artifact. A successfully completed run can intentionally
+produce a rejected payment: inspect its scenario, events and pain.002 evidence.
+The initial runtime allows at most 16 runs per workspace revision and retains bounded exact files.
+These management files do not appear automatically in the customer File Exchange Simulator bank.
+Generating payments with Processing is optional and requires a separately available Processing service.
 
 The transport resolves identity on every request, refuses redirects and browser caching, limits
 command bodies to 256 KiB and bounds response size and elapsed time. `SimulationAdminHttpError`

@@ -82,7 +82,7 @@ CLI prompts and session renewal. Registration alone grants neither Simulator enr
 
 ## Bank Simulator administration
 
-Manage workspace and scenario configuration with `createSimulationAdminClient` and
+Manage workspaces, scenarios and synthetic runs with `createSimulationAdminClient` and
 `SimulationAdminHttpTransport`. They use the existing WS login directly, without a Processing session.
 
 **The two Simulator enrollments are separate:**

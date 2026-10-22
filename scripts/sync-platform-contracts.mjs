@@ -93,6 +93,8 @@ const operationIds = [
   "simulation_checkpoints.create",
   "simulation_clocks.control",
   "simulation_events.list",
+  "simulation_files.import",
+  "simulation_files.read",
   "simulation_runs.get",
   "simulation_runs.list",
   "simulation_runs.start",

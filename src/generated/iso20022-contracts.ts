@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@cc18a3c21b2a740771d0cae652c94484c8695b56
-// model: Bankfiles@0.138.0
-// source-digest: sha256:3d39314377a7d91e49d48034bb9a647ee65e68c16ab9e2e3024393ce9ba30fc9
+// source: isecurefi/bankfiles-platform@fdd36b60ae2f5122bbfe46140146736776ce161f
+// model: Bankfiles@0.139.0
+// source-digest: sha256:8a615ba9857d791ba7786af9525dceed2d06d27c4bcd79b6513e09680de0e378
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = 'approve' | 'reject';
@@ -276,7 +276,7 @@ export type PluginCatalogueEntryIssueReason = 'invalid_entry' | 'duplicate_relea
 
 export type PluginCatalogueQualificationState = 'qualified' | 'unavailable';
 
-export type SimulationArtifactAccessMode = 'file_exchange';
+export type SimulationArtifactAccessMode = 'file_exchange' | 'administration';
 
 export type SimulationArtifactRole =
     'input' | 'status_report' | 'debit_credit_notification' | 'statement' | 'validation_report';
@@ -360,6 +360,12 @@ export type SimulationWorkspaceResetScope =
     'runtime_state' | 'runtime_state_and_balances' | 'runtime_state_balances_and_active_scenarios';
 
 export type SimulationWorkspaceState = 'draft' | 'active' | 'suspended' | 'closed';
+
+export interface CausalAutomationPolicyReference {
+    readonly policy_id: string;
+    readonly policy_revision: string;
+    readonly exact_policy_digest: string;
+}
 
 export interface ConnectorSetupChallengeOption {
     readonly option_id: string;
@@ -561,6 +567,18 @@ export interface IntegrationActiveConnectorResult {
     readonly resolved_at: string;
 }
 
+export interface IntegrationCausalAutomationBinding {
+    readonly routes: readonly IntegrationCausalAutomationRoute[];
+}
+
+export interface IntegrationCausalAutomationRoute {
+    readonly graph_id: string;
+    readonly graph_revision: string;
+    readonly exact_graph_digest: string;
+    readonly policy_reference: CausalAutomationPolicyReference;
+    readonly event_node_id: string;
+}
+
 export interface IntegrationCodeMapEntry {
     readonly source_code: string;
     readonly target_code: string;
@@ -593,6 +611,7 @@ export interface IntegrationDefinition {
     readonly adapter_kinds: readonly IntegrationAdapterKind[];
     readonly direction: ConnectorDirection;
     readonly acknowledged_limitation_codes: readonly string[];
+    readonly causal_automation?: IntegrationCausalAutomationBinding;
 }
 
 export interface IntegrationDraftInput {
@@ -2177,6 +2196,17 @@ export interface CreateSimulationWorkspaceInput {
     readonly service_setup: SimulationServiceSetup;
 }
 
+export interface ImportSimulationFileInput {
+    readonly workspace_revision_reference: ResourceReference;
+    readonly data_admission_mode: SimulationDataAdmissionMode;
+    readonly source: SimulationFileSource;
+}
+
+export interface ReadSimulationFileInput {
+    readonly workspace_reference: ResourceReference;
+    readonly artifact: SimulationArtifactReference;
+}
+
 export interface ResetSimulationWorkspaceInput {
     readonly workspace_reference: ResourceReference;
     readonly branch_reference?: ResourceReference;
@@ -2323,6 +2353,17 @@ export interface SimulationExactArtifactInput {
     readonly artifact: SimulationArtifactReference;
 }
 
+export interface SimulationFileContentResult {
+    readonly context: OperationContext;
+    readonly artifact: SimulationArtifactReference;
+    readonly content_base64: string;
+}
+
+export interface SimulationFileImportResult {
+    readonly context: OperationContext;
+    readonly artifact: SimulationArtifactReference;
+}
+
 export interface SimulationFileServicePermission {
     readonly permission_key: string;
     readonly connection_key: string;
@@ -2466,6 +2507,12 @@ export interface SimulationRuntimeUnsupportedFxPair {
     readonly reason_code: string;
 }
 
+export interface SimulationSamplePayment {
+    readonly debtor_account_key: string;
+    readonly creditor_account_key: string;
+    readonly money: ExactMoney;
+}
+
 export interface SimulationScenarioDirective {
     readonly directive_ordinal: number;
     readonly outcome: SimulationScenarioOutcome;
@@ -2551,6 +2598,10 @@ export interface SimulationTopology {
 export interface SimulationTopologyReference {
     readonly subject_kind: SimulationTopologySubjectKind;
     readonly subject_key: string;
+}
+
+export interface SimulationUploadedFile {
+    readonly content_base64: string;
 }
 
 export interface SimulationWorkspaceGetResult {
@@ -2760,6 +2811,10 @@ export type PaymentTransferOption =
     | (PaymentPriorityOption & { readonly option_type: "priority" })
     | (PaymentAdviceOption & { readonly option_type: "advice" })
     | (PaymentRegulatoryReportingOption & { readonly option_type: "regulatory_reporting" });
+
+export type SimulationFileSource =
+    (SimulationUploadedFile & { readonly source_type: "uploaded_file" })
+    | (SimulationSamplePayment & { readonly source_type: "sample_payment" });
 
 export type SimulationRunInput =
     (SimulationPaymentOrderInput & { readonly input_type: "payment_order_revision" })
@@ -5622,7 +5677,7 @@ export const iso20022Operations = {
     "method": "GET",
     "path": "/v1/simulation-artifacts",
     "version": 3,
-    "contractDigest": "sha256:d1812e62ef688b7c85570774600e775d9ba8bc9522fd43e1299c98ca42aadce3",
+    "contractDigest": "sha256:a48497f02a70e029c6cd122c2806f9368b64ac2d87989a55475d453ce83a10f9",
     "permission": "manage_simulation",
     "audiences": [
       "admin",
@@ -5903,6 +5958,65 @@ export const iso20022Operations = {
         ]
       }
     ]
+  },
+  "simulation_files.import": {
+    "method": "POST",
+    "path": "/v1/simulation-files:import",
+    "version": 1,
+    "contractDigest": "sha256:d3492b097fe8c51e0533005234aebb14bede74a64bd35e2c82850d530d05e414",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.simulation.ImportSimulationFileInput",
+    "result": "isecure.bankfiles.simulation.SimulationFileImportResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "required",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[!-~]+(?![\\s\\S])"
+    },
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
+  },
+  "simulation_files.read": {
+    "method": "POST",
+    "path": "/v1/simulation-files:read",
+    "version": 1,
+    "contractDigest": "sha256:e4b40c960f550c19e0d0c75982f7e1f96fd178ce33a3b5904740ef60d89a7299",
+    "permission": "manage_simulation",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.simulation.ReadSimulationFileInput",
+    "result": "isecure.bankfiles.simulation.SimulationFileContentResult",
+    "issues": "isecure.bankfiles.operations.PlatformIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": true,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": []
   },
   "simulation_runs.get": {
     "method": "GET",

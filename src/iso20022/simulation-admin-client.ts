@@ -1,4 +1,17 @@
 import type {
+  ImportSimulationFileInput,
+  ReadSimulationFileInput,
+  SimulationFileImportResult,
+  SimulationFileContentResult,
+  SimulationRunGetResult,
+  SimulationRunListInput,
+  SimulationRunListResult,
+  StartSimulationRunInput,
+  SimulationRunMutationResult,
+  SimulationArtifactListInput,
+  SimulationArtifactListResult,
+  SimulationEventListInput,
+  SimulationEventListResult,
   CreateSimulationScenarioInput,
   CreateSimulationWorkspaceInput,
   ProcessingCommandOptions,
@@ -21,7 +34,7 @@ import type {
 import type { Iso20022Transport } from "./transport.js";
 import { invoke } from "./operation.js";
 
-/** Configuration only; execution and customer file exchange are separate capabilities. */
+/** Independent administration; discover runtime availability before offering execution. */
 export function createSimulationAdminClient(transport: Pick<Iso20022Transport, "invoke">) {
   const simulationWorkspaceTransition = (
     operationId: "simulation_workspaces.activate" | "simulation_workspaces.close" | "simulation_workspaces.suspend",
@@ -36,6 +49,42 @@ export function createSimulationAdminClient(transport: Pick<Iso20022Transport, "
     );
 
   return {
+    simulationFiles: {
+      import: (input: ImportSimulationFileInput, options: ProcessingCommandOptions) =>
+        invoke<ImportSimulationFileInput, SimulationFileImportResult>(
+          transport,
+          "simulation_files.import",
+          input,
+          options,
+        ),
+      read: (input: ReadSimulationFileInput) =>
+        invoke<ReadSimulationFileInput, SimulationFileContentResult>(transport, "simulation_files.read", input),
+    },
+    simulationRuns: {
+      get: (input: SimulationResourceGetInput) =>
+        invoke<SimulationResourceGetInput, SimulationRunGetResult>(transport, "simulation_runs.get", input),
+      list: (input: SimulationRunListInput) =>
+        invoke<SimulationRunListInput, SimulationRunListResult>(transport, "simulation_runs.list", input),
+      start: (input: StartSimulationRunInput, options: ProcessingCommandOptions) =>
+        invoke<StartSimulationRunInput, SimulationRunMutationResult>(
+          transport,
+          "simulation_runs.start",
+          input,
+          options,
+        ),
+    },
+    simulationArtifacts: {
+      list: (input: SimulationArtifactListInput) =>
+        invoke<SimulationArtifactListInput, SimulationArtifactListResult>(
+          transport,
+          "simulation_artifacts.list",
+          input,
+        ),
+    },
+    simulationEvents: {
+      list: (input: SimulationEventListInput) =>
+        invoke<SimulationEventListInput, SimulationEventListResult>(transport, "simulation_events.list", input),
+    },
     simulationCapabilities: {
       list: (input: SimulationCapabilityListInput) =>
         invoke<SimulationCapabilityListInput, SimulationCapabilityListResult>(
@@ -102,3 +151,8 @@ export function createSimulationAdminClient(transport: Pick<Iso20022Transport, "
 }
 
 export type SimulationAdminClient = ReturnType<typeof createSimulationAdminClient>;
+
+export type SimulationConfigurationClient = Pick<
+  SimulationAdminClient,
+  "simulationCapabilities" | "simulationScenarios" | "simulationWorkspaces"
+>;

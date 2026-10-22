@@ -28,14 +28,29 @@ export interface SimulationAdminHttpTransportOptions {
 }
 
 export class SimulationAdminHttpError extends Iso20022HttpError {
-  constructor(status: number, body: unknown) {
+  readonly retryAfterMs: number | undefined;
+  constructor(status: number, body: unknown, retryAfter?: string | null) {
     super(status, body);
+    const milliseconds =
+      retryAfter == null
+        ? Number.NaN
+        : /^\d+$/u.test(retryAfter)
+          ? Number(retryAfter) * 1000
+          : Date.parse(retryAfter) - Date.now();
+    this.retryAfterMs = Number.isFinite(milliseconds) ? Math.max(0, milliseconds) : undefined;
     this.name = "SimulationAdminHttpError";
     this.message = `ISECure Simulator administration request failed with HTTP ${String(status)}`;
   }
 }
 
-const configurationOperations: ReadonlySet<Iso20022OperationId> = new Set([
+const administrationOperations: ReadonlySet<Iso20022OperationId> = new Set([
+  "simulation_files.import",
+  "simulation_files.read",
+  "simulation_runs.start",
+  "simulation_runs.list",
+  "simulation_runs.get",
+  "simulation_artifacts.list",
+  "simulation_events.list",
   "simulation_capabilities.list",
   "simulation_workspaces.list",
   "simulation_workspaces.get",
@@ -81,10 +96,10 @@ export class SimulationAdminHttpTransport implements Pick<Iso20022Transport, "in
     input: Input,
     metadata: ProcessingRequestMetadata,
   ): Promise<Result> {
-    if (!configurationOperations.has(operationId)) {
+    if (!administrationOperations.has(operationId)) {
       throw new Iso20022TransportError(
         "unsupported_operation",
-        "The Simulator administration API exposes configuration operations only",
+        "This operation is not exposed by the Simulator administration transport",
       );
     }
     const operation = lookupOperation(operationId);
@@ -125,7 +140,8 @@ export class SimulationAdminHttpTransport implements Pick<Iso20022Transport, "in
       controller.signal.throwIfAborted();
       const result = await parseResponse(response, this.maxResponseBytes);
       controller.signal.throwIfAborted();
-      if (!response.ok) throw new SimulationAdminHttpError(response.status, result);
+      if (!response.ok)
+        throw new SimulationAdminHttpError(response.status, result, response.headers.get("retry-after"));
       return result as Result;
     };
     try {

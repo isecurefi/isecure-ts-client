@@ -293,6 +293,10 @@ function invoke(
       return client.simulationClocks.control(input as never, revisionOptions(operationId));
     case "simulation_events.list":
       return client.simulationEvents.list(input as never);
+    case "simulation_files.import":
+      return client.simulationFiles.import(input as never, commandOptions(operationId));
+    case "simulation_files.read":
+      return client.simulationFiles.read(input as never);
     case "simulation_runs.get":
       return client.simulationRuns.get(input as never);
     case "simulation_runs.list":

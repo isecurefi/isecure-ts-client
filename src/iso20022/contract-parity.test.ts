@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { iso20022Operations } from "../generated/iso20022-contracts.js";
 
-const PLATFORM_REVISION = "cc18a3c21b2a740771d0cae652c94484c8695b56";
+const PLATFORM_REVISION = "fdd36b60ae2f5122bbfe46140146736776ce161f";
 const SIMULATION_OPERATION_IDS = [
   "simulation_artifacts.list",
   "simulation_branches.create",
@@ -12,6 +12,8 @@ const SIMULATION_OPERATION_IDS = [
   "simulation_checkpoints.create",
   "simulation_clocks.control",
   "simulation_events.list",
+  "simulation_files.import",
+  "simulation_files.read",
   "simulation_runs.get",
   "simulation_runs.list",
   "simulation_runs.start",
@@ -35,6 +37,8 @@ const SIMULATION_OPERATION_VERSIONS: Record<(typeof SIMULATION_OPERATION_IDS)[nu
   "simulation_checkpoints.create": 4,
   "simulation_clocks.control": 4,
   "simulation_events.list": 3,
+  "simulation_files.import": 1,
+  "simulation_files.read": 1,
   "simulation_runs.get": 4,
   "simulation_runs.list": 4,
   "simulation_runs.start": 4,
@@ -156,7 +160,9 @@ describe("generated platform contract parity", () => {
       expect(operation.audiences).toEqual(["admin", "cli", "rest", "typescript"]);
       expect(operation.successResponse).toMatchObject({ kind: "json" });
       expect(operation.contractDigest).toMatch(/^sha256:[0-9a-f]{64}$/u);
-      expect(operation.idempotency).toBe(operation.method === "POST" ? "required" : "none");
+      expect(operation.idempotency).toBe(
+        operation.method === "POST" && operationId !== "simulation_files.read" ? "required" : "none",
+      );
       expect(mock?.version).toBe(SIMULATION_OPERATION_VERSIONS[operationId]);
       expect(mock?.bindings.map(({ adapter }) => adapter)).toEqual(["rest", "typescript", "cli", "admin"]);
     }
