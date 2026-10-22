@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "fdd36b60ae2f5122bbfe46140146736776ce161f",
-    "processingClientSha256": "d66c3215e386082cf310bdbd9f156e7aabab06d19fca6b7b7fdda00189d6dbb9",
-    "processingOpenApiSha256": "7d33c31acafd6df091ab2e6b2758b97e573a92e7f0cb372a362f265a1c2d372b",
-    "processingMockSha256": "c76c1935c1f288f3508668dae317f3dd856957bc0e815fdf77dac82bc845cf54"
+    "revision": "059fb0e477058971c6408f6a2876057c1b0454c8",
+    "processingClientSha256": "290c87e22b8fa3779bacf3503dbba5be369b06684dcd8f6c5a9777ecf6880ebb",
+    "processingOpenApiSha256": "c5e4a0e51c8d3ac178d1a4f6c3c72ce4612ab8d97422c2fba18169305615586b",
+    "processingMockSha256": "2eb7f8325d1e5ac93452039a0181f5fe89bf6424b119cb506d8097cec5972c18"
   },
   "generated": {
     "path": "src/generated/iso20022-contracts.ts",
-    "sha256": "659c8debe37f17b2c6c26f8cd41fbe3e338fe09d4b911206b541acac3ba9a80c",
+    "sha256": "1290148a0bcf6134dd807d95dde69d60eceb2e5d6baea0d33dd67aba7051367c",
     "operationIds": [
       "balances.explain",
       "balances.get",
@@ -116,6 +116,6 @@
   },
   "generatedMock": {
     "path": "test-data/generated/iso20022-scenarios.json",
-    "sha256": "98df1dab39e3b246f96cbacf2d345b235541fffd578ef5435f2aac5d53d71ca2"
+    "sha256": "12971c76d6bdfd2418250a350158c6d30f9b8dce7ac4edde399cbcd00af0934b"
   }
 }
