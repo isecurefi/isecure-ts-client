@@ -35,6 +35,10 @@ const SENSITIVE_FIELDS = new Set(
     "encprivatekey",
     "encryptedprivatekey",
     "pgpkey",
+    // bank request and response payloads, including short inline results
+    "content",
+    "filecontents",
+    "signature",
     // personally identifiable information
     "email",
     "extemail",

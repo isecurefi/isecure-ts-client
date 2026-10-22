@@ -54,6 +54,7 @@ import {
   type ShareCertsResponse,
   type UnshareCertsResponse,
   type UploadFileRequest,
+  type UploadFileResponse,
   type UploadKeyRequest,
   type VerifyEmailRequest,
   type VerifyPhoneRequest,
@@ -429,14 +430,19 @@ export class WSChannel {
     return this.call<DeleteKeyResponse, DeleteKeyRequest>("DELETE", this.urls.pgp(), { body: request, auth: true });
   }
 
-  async uploadFile(request: UploadFileRequest): Promise<ApiResponse>;
-  async uploadFile(FileContents: string, FileName: string, FileType: string, Signature: string): Promise<ApiResponse>;
+  async uploadFile(request: UploadFileRequest): Promise<UploadFileResponse>;
+  async uploadFile(
+    FileContents: string,
+    FileName: string,
+    FileType: string,
+    Signature: string,
+  ): Promise<UploadFileResponse>;
   async uploadFile(
     requestOrContents: UploadFileRequest | string,
     FileName?: string,
     FileType?: string,
     Signature?: string,
-  ): Promise<ApiResponse> {
+  ): Promise<UploadFileResponse> {
     const request: UploadFileRequest =
       typeof requestOrContents === "string"
         ? {
@@ -447,7 +453,7 @@ export class WSChannel {
           }
         : requestOrContents;
 
-    return this.call<ApiResponse, UploadFileRequest>("PUT", this.urls.files(), { body: request, auth: true });
+    return this.call<UploadFileResponse, UploadFileRequest>("PUT", this.urls.files(), { body: request, auth: true });
   }
 
   async listFiles(query?: ListFilesQuery): Promise<ListFilesResponse>;

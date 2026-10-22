@@ -4,6 +4,7 @@ import {
   SUPPORTED_OPERATIONS,
   UNSUPPORTED_OPERATIONS,
   type SessionAccount,
+  type UploadFileResponse,
   type ListAccountUsageResponse,
   type ListAuditEventsQuery,
   type ListAuditEventsResponse,
@@ -41,6 +42,45 @@ function match(method: string, suffix: string) {
 }
 
 describe("WSChannel", () => {
+  it("preserves inline upload content and acknowledgement-only responses in both calling forms", async () => {
+    const transport = new FakeTransport();
+    const logs: unknown[] = [];
+    let payload: UploadFileResponse = { ResponseCode: "00", ResponseText: "OK", Content: "AAEC//6A" };
+    transport.respond((request) => {
+      if (request.method === "GET" && request.url.includes("/session/")) return response({ Challenge: challenge });
+      if (request.method === "POST" && request.url.includes("/session/"))
+        return response({ IdToken: "id-token", ApiKey: "tenant-api-key", ResponseCode: "00", ResponseText: "OK" });
+      if (match("PUT", "/files/osuuspankki")(request)) return response(payload, 201);
+      return undefined;
+    });
+    const logger: Logger = { debug: (_message, data) => logs.push(data), info() {}, warn() {}, error() {} };
+    const client = new WSChannel(props({ Bank: "osuuspankki" }), { transport, logger });
+    await client.login();
+    const request = {
+      FileContents: "cXVlcnk=",
+      FileName: "balance.xml",
+      FileType: "camt.060.001.02",
+      Signature: "signed-request",
+    };
+    const inline: UploadFileResponse = await client.uploadFile(request);
+    const content: string | undefined = inline.Content;
+    expect(content).toBe("AAEC//6A");
+    expect(transport.requests.at(-1)).toMatchObject({
+      method: "PUT",
+      body: request,
+      headers: { Authorization: "id-token", "x-api-key": "tenant-api-key" },
+    });
+    payload = { ResponseCode: "00", ResponseText: "Accepted" };
+    const acknowledgement = await client.uploadFile("cXVlcnk=", "file.xml", "bank-specific", "signed-request");
+    expect(acknowledgement).toEqual(payload);
+    expect(Object.hasOwn(acknowledgement, "Content")).toBe(false);
+    payload = { ResponseCode: "12", ResponseText: "Rejected" };
+    expect(await client.uploadFile(request)).toEqual(payload);
+    expect(transport.requests.filter((request) => request.url.includes("/files/"))).toHaveLength(3);
+    expect(JSON.stringify(logs)).not.toContain("AAEC//6A");
+    expect(JSON.stringify(logs)).not.toContain("signed-request");
+  });
+
   it("preserves unparsed account public keys and unavailable entries while redacting their material", async () => {
     const transport = new FakeTransport();
     const logs: unknown[] = [];

@@ -100,6 +100,7 @@ export {
   type SupportedOperation,
   type UnshareCertsResponse,
   type UploadFileRequest,
+  type UploadFileResponse,
   type UploadKeyRequest,
   type VerifyEmailRequest,
   type VerifyPhoneRequest,

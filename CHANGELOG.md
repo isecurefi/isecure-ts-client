@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Type `uploadFile()` responses as `UploadFileResponse`, including optional Base64 `Content` returned inline by banks for realtime queries. Both calling forms preserve acknowledgement-only responses.
+- Redact inline Content, upload FileContents and Signature in debug logs even for short values.
 - Add typed optional account public-key armor and purpose to `listAccounts()` for local application inspection. Qualified on the test API and deployed to production. Existing listing methods and transport behavior are unchanged.
 
 ## [4.5.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.5.0...isecure-ts-client-v4.5.1) (2026-10-22)

@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 import { redactUrl, redactValue, REDACTED } from "./redact.js";
 
 describe("redactValue (balanced)", () => {
+  it("redacts bank payloads and signatures regardless of length or encoding", () => {
+    expect(
+      redactValue({ Content: "AAE=", FileContents: "tiny", Signature: "short", nested: [{ content: "x" }] }),
+    ).toEqual({ Content: REDACTED, FileContents: REDACTED, Signature: REDACTED, nested: [{ content: REDACTED }] });
+  });
   it("redacts signed authority even when malformed or returned as an object", () => {
     expect(redactValue({ Assertion: { arbitrary: "private-membership" }, Challenge: "short-invalid" })).toEqual({
       Assertion: REDACTED,

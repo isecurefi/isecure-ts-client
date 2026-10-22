@@ -89,6 +89,11 @@ export type VerifyEmailRequest = JsonRequest<"VerifyEmail">;
 export type VerifyPhoneRequest = JsonRequest<"VerifyPhone">;
 export type UploadKeyRequest = JsonRequest<"UploadKey">;
 export type UploadFileRequest = JsonRequest<"UploadFile">;
+/** Bank acknowledgement with optional Base64 inline result, such as a realtime balance report. */
+export type UploadFileResponse = JsonResponse<"UploadFile", 201> & {
+  /** Optional immediate bank result, preserved as Base64 without decoding. */
+  Content?: string;
+};
 export type BankConnectionCertificateDescriptor = components["schemas"]["BankConnectionCertificateDescriptor"];
 export type BankConnectionDescriptor = components["schemas"]["BankConnectionDescriptor"];
 export type ListCertsResponse = JsonResponse<"ListCerts", 200>;

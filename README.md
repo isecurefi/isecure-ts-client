@@ -132,3 +132,24 @@ Release Please publishing workflow. Examples and guides live in this repository;
 contains the SDK, README, changelog, stability policy and license.
 
 [MIT license](LICENSE)
+
+### Immediate UploadFile results
+
+`uploadFile()` returns `UploadFileResponse`. Some bank services return a result in
+its optional Base64 `Content` field during the upload itself. For example, OP's
+XML realtime balance query uploads `camt.060.001.02` with reporting request ID
+`SALDOKYSELY` and returns `camt.052.001.02` inline. Sign and submit the exact request
+bytes through the existing upload interface, then check `ResponseCode` before
+reading `Content`. An inline result need not appear in `listFiles()`.
+
+```ts
+const result = await client.uploadFile(signedRequest);
+if (result.ResponseCode === "00" && result.Content !== undefined) {
+  // Decode Base64 using your application's byte decoder; interpret by bank/service.
+  const encodedBankResult: string = result.Content;
+}
+```
+
+The SDK preserves the response as received. It does not infer balance values,
+automatically download another file, or assume every bank uses the same query flow.
+Acknowledgement-only uploads continue to work without `Content`.
