@@ -319,9 +319,9 @@ describe("OpenAPI contract honesty", () => {
     };
     const bytes = readFileSync(new URL("../../wsapi_v2.json", import.meta.url));
     expect(source.commit).toMatch(/^[a-f0-9]{40}$/);
-    expect(source.repository).toBe("https://github.com/isecurefi/aws");
-    expect(source.path).toBe("ws-channel-api/wsapi_v2.json");
-    expect(source.source).toBe(`https://raw.githubusercontent.com/isecurefi/aws/${source.commit}/${source.path}`);
+    expect(source.repository).toBe("https://github.com/isecurefi/wsapi-v2");
+    expect(source.path).toBe("wsapi_v2.json");
+    expect(source.source).toBe(`https://raw.githubusercontent.com/isecurefi/wsapi-v2/${source.commit}/${source.path}`);
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(source.sha256);
   });
 

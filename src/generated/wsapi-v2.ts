@@ -423,7 +423,7 @@ export interface paths {
          * ListAccounts
          * @description List accounts registered under the authenticated integrator API key. This is an API key owner/admin operation intended for integrators managing their own customer accounts.
          *
-         *     PgpKeys contains read-only public-key armor and registered purpose for each visible account. Integrator owners see accounts in their tenant; customers see their own account. Decode key metadata in the application. Preserve missing information, malformed entries and duplicates; no key changes are performed. This additive 2.17.0 field is initially qualified on gpgtest, not yet production.
+         *     PgpKeys contains read-only public-key armor and registered purpose for each visible account. Integrator owners see accounts in their tenant; customers see their own account. Decode key metadata in the application. Preserve missing information, malformed entries and duplicates; no key changes are performed. This additive 2.17.0 field is initially qualified on the test API, not yet production.
          */
         get: operations["ListAccounts"];
         put?: never;
@@ -707,7 +707,7 @@ export interface components {
             LinkedTo?: string;
             /** @description Full name of registrant */
             Name: string;
-            /** @description Read-only public keys directly owned by this account, in stored order, including duplicates. An empty array means no stored entries; an absent field means unavailable information or an older deployment. Introduced in 2.17.0 for gpgtest qualification; production availability is not yet established. Decode the returned public armor in the application. */
+            /** @description Read-only public keys directly owned by this account, in stored order, including duplicates. An empty array means no stored entries; an absent field means unavailable information or an older deployment. Introduced in 2.17.0 for test API qualification; production availability is not yet established. Decode the returned public armor in the application. */
             PgpKeys?: components["schemas"]["AccountPgpKeyDescriptor"][];
             /** @description Phone number with country code and `+` in front */
             Phone: string;
@@ -2363,7 +2363,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `omasp`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
                 Bank: string;
             };
             cookie?: never;
@@ -2432,7 +2432,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `omasp`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
                 Bank: string;
             };
             cookie?: never;
@@ -2506,7 +2506,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `omasp`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
             };
             cookie?: never;
@@ -2583,7 +2583,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* whose active certificate is retired, e.g. `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
+                /** @description *Bank* whose active certificate is retired, e.g. `nordea`, `osuuspankki`, `danskebank`, `aktia`, `omasp`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
                 Bank: string;
             };
             cookie?: never;
@@ -2733,7 +2733,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `omasp`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
             };
             cookie?: never;
@@ -2802,7 +2802,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `omasp`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
             };
             cookie?: never;
@@ -2876,7 +2876,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `omasp`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
                 /** @description File type from list files */
                 FileType: string;
@@ -2949,7 +2949,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `omasp`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
                 /** @description File reference *id* from list files */
                 FileType: string;

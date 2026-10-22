@@ -21,7 +21,7 @@ await client.deleteAccount("customer@example.com", "customer@example.com");
 
 `listAccounts()` returns the accounts visible to the current session: integrator owners see
 accounts in their tenant, and customers see their own account. API 2.17.0 adds optional
-`Accounts[].PgpKeys`, initially qualified on **gpgtest only**; production availability is not
+`Accounts[].PgpKeys`, initially qualified on **the test API only**; production availability is not
 established by this SDK update. No new method or request parameter is required.
 
 Each entry carries optional `PgpKey` (original ASCII-armored public-key text) and
