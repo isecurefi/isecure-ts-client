@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.5.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.4.0...isecure-ts-client-v4.5.0) (2026-10-22)
+
+
+### Features
+
+* run synthetic scenarios through Simulator administration ([34f4300](https://github.com/isecurefi/isecure-ts-client/commit/34f43001a3ebd9c9939980bed03ea95c2875ef8c))
+
+
+### Bug Fixes
+
+* preserve existing Simulator artifact contract compatibility ([c696206](https://github.com/isecurefi/isecure-ts-client/commit/c696206c4af93e323382fd98ec793c418fcaa3ae))
+* update vulnerable transport and test dependencies ([9738a8e](https://github.com/isecurefi/isecure-ts-client/commit/9738a8e90a6c682e7c388e60594838533ca63436))
+
 ## [4.4.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.3.0...isecure-ts-client-v4.4.0) (2026-10-19)
 
 
