@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@059fb0e477058971c6408f6a2876057c1b0454c8
+// source: isecurefi/bankfiles-platform@3cdc3791833cc9a22b9577ced4bc4cd3995c0095
 // model: Bankfiles@0.139.0
-// source-digest: sha256:5b6aecb895cbad66646f8bd470836cfa88521a2d58757a093a6beef5b3a1e067
+// source-digest: sha256:7f980e488f827a1e68ec8d12af07cdf4f77fbb877f091748f87973fb756f4de2
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = 'approve' | 'reject';
@@ -5676,8 +5676,8 @@ export const iso20022Operations = {
   "simulation_artifacts.list": {
     "method": "GET",
     "path": "/v1/simulation-artifacts",
-    "version": 3,
-    "contractDigest": "sha256:a48497f02a70e029c6cd122c2806f9368b64ac2d87989a55475d453ce83a10f9",
+    "version": 4,
+    "contractDigest": "sha256:919b8b6eab68d7dc8a6259588d8cfaae7e24daed4ea7975d540d677703f7f456",
     "permission": "manage_simulation",
     "audiences": [
       "admin",

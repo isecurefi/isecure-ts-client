@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "059fb0e477058971c6408f6a2876057c1b0454c8",
+    "revision": "3cdc3791833cc9a22b9577ced4bc4cd3995c0095",
     "model": "Bankfiles@0.139.0",
-    "sourceDigest": "sha256:5b6aecb895cbad66646f8bd470836cfa88521a2d58757a093a6beef5b3a1e067",
+    "sourceDigest": "sha256:7f980e488f827a1e68ec8d12af07cdf4f77fbb877f091748f87973fb756f4de2",
     "fixedClock": "2040-01-02T03:04:05.000Z",
     "safety": {
       "syntheticOnly": true,
@@ -24104,9 +24104,9 @@
     },
     {
       "operationId": "simulation_artifacts.list",
-      "version": 3,
-      "contractDigest": "sha256:a48497f02a70e029c6cd122c2806f9368b64ac2d87989a55475d453ce83a10f9",
-      "eventClosureDigest": "sha256:2dee8bbd5448cb22fe4898c65348a19b5ddfee55069f56dd9bc03eaf3817a350",
+      "version": 4,
+      "contractDigest": "sha256:919b8b6eab68d7dc8a6259588d8cfaae7e24daed4ea7975d540d677703f7f456",
+      "eventClosureDigest": "sha256:db9b79db4137a787ba0b16a0a28203f01c89cb18f8596381824f96e70a625037",
       "inputContract": "isecure.bankfiles.simulation.SimulationArtifactListInput",
       "resultContract": "isecure.bankfiles.simulation.SimulationArtifactListResult",
       "issueContract": "isecure.bankfiles.operations.PlatformIssues",
@@ -24161,7 +24161,7 @@
               "context": {
                 "request_id": "d620eae0-8358-4079-b17e-da116ef2ff96",
                 "operation_id": "simulation_artifacts.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "ee73497e-a4ad-412a-a95c-847dfcb755b7",
@@ -24210,7 +24210,7 @@
               "context": {
                 "request_id": "d620eae0-8358-4079-b17e-da116ef2ff96",
                 "operation_id": "simulation_artifacts.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "ee73497e-a4ad-412a-a95c-847dfcb755b7",
@@ -24244,7 +24244,7 @@
               "context": {
                 "request_id": "d620eae0-8358-4079-b17e-da116ef2ff96",
                 "operation_id": "simulation_artifacts.list",
-                "contract_version": "3",
+                "contract_version": "4",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "ee73497e-a4ad-412a-a95c-847dfcb755b7",
