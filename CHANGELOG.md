@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Add typed optional account public-key armor and purpose to `listAccounts()` for local application inspection. Qualified on the test API first; production rollout is separate. Existing listing methods and transport behavior are unchanged.
+- Add typed optional account public-key armor and purpose to `listAccounts()` for local application inspection. Qualified on the test API and deployed to production. Existing listing methods and transport behavior are unchanged.
 
 ## [4.5.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.5.0...isecure-ts-client-v4.5.1) (2026-10-22)
 

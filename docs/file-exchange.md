@@ -21,8 +21,7 @@ await client.deleteAccount("customer@example.com", "customer@example.com");
 
 `listAccounts()` returns the accounts visible to the current session: integrator owners see
 accounts in their tenant, and customers see their own account. API 2.17.0 adds optional
-`Accounts[].PgpKeys`, initially qualified on **the test API only**; production availability is not
-established by this SDK update. No new method or request parameter is required.
+`Accounts[].PgpKeys`, available in production and the test API. No new method or request parameter is required.
 
 Each entry carries optional `PgpKey` (original ASCII-armored public-key text) and
 `PgpKeyPurpose` (`authorize` or `export`). Decode the public armor locally to display key IDs,
@@ -37,6 +36,11 @@ This read does not alter key storage, register keys or enable deletion.
 
 `listKeys()` remains the signed-in account's short-ID/purpose listing and does not return armor.
 `deleteKey()` remains a reserved operation that the backend rejects as unsupported.
+
+`listCerts().Connections` also discovers enabled Maventa and MobilePay enrollments owned by
+the signed-in account. They have `Access: "direct"` and `Certificates: []` because they use
+provider credentials rather than bank certificates. They are never inherited from a linked
+account. Discovery alone does not establish provider-operation availability or grant access.
 
 ## Audit history
 

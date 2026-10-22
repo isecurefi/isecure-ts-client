@@ -421,9 +421,9 @@ export interface paths {
         };
         /**
          * ListAccounts
-         * @description List accounts registered under the authenticated integrator API key. This is an API key owner/admin operation intended for integrators managing their own customer accounts.
+         * @description List accounts visible to the authenticated session. Integrator API key owners can list their customer accounts; customers can read only their own account.
          *
-         *     PgpKeys contains read-only public-key armor and registered purpose for each visible account. Integrator owners see accounts in their tenant; customers see their own account. Decode key metadata in the application. Preserve missing information, malformed entries and duplicates; no key changes are performed. This additive 2.17.0 field is initially qualified on the test API, not yet production.
+         *     PgpKeys contains read-only public-key armor and registered purpose for each visible account. Integrator owners see accounts in their tenant; customers see their own account. Decode key metadata in the application. Preserve missing information, malformed entries and duplicates; no key changes are performed. This additive 2.17.0 field is available in production and the test API.
          */
         get: operations["ListAccounts"];
         put?: never;
@@ -707,7 +707,7 @@ export interface components {
             LinkedTo?: string;
             /** @description Full name of registrant */
             Name: string;
-            /** @description Read-only public keys directly owned by this account, in stored order, including duplicates. An empty array means no stored entries; an absent field means unavailable information or an older deployment. Introduced in 2.17.0 for test API qualification; production availability is not yet established. Decode the returned public armor in the application. */
+            /** @description Read-only public keys directly owned by this account, in stored order, including duplicates. An empty array means no stored entries; an absent field means unavailable information or an older deployment. Introduced in 2.17.0 and available in production and the test API. Decode the returned public armor in the application. */
             PgpKeys?: components["schemas"]["AccountPgpKeyDescriptor"][];
             /** @description Phone number with country code and `+` in front */
             Phone: string;
@@ -850,16 +850,16 @@ export interface components {
              */
             Purpose: "signing" | "encryption";
         };
-        /** @description A bank connection the authenticated account can use */
+        /** @description An enrolled bank or credential-provider connection visible to the authenticated account. Discovery does not grant permission or establish operation availability. */
         BankConnectionDescriptor: {
             /**
-             * @description Whether this account owns the bank certificates or uses certificates shared by its linked account
+             * @description Whether this account owns the enrollment or uses bank certificates shared by its linked account. Credential-provider enrollments are direct and never inherited.
              * @enum {string}
              */
             Access: "direct" | "shared";
             /** @description Public File Exchange API bank identifier */
             Bank: string;
-            /** @description Minimal certificate status needed for connection discovery; certificate material and owner identity are omitted */
+            /** @description Minimal bank certificate status; certificate material and owner identity are omitted. Enabled own-account Maventa and MobilePay enrollments have an empty array because they use provider credentials rather than bank certificates. */
             Certificates: components["schemas"]["BankConnectionCertificateDescriptor"][];
         };
         /**
