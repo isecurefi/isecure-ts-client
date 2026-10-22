@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.5.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.5.0...isecure-ts-client-v4.5.1) (2026-10-22)
+
+
+### Bug Fixes
+
+* **simulator:** align artifact listing with its versioned contract ([51959f0](https://github.com/isecurefi/isecure-ts-client/commit/51959f03e3274bb43f2dcc26c08cd198af0d6211))
+
 ## [4.5.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.4.0...isecure-ts-client-v4.5.0) (2026-10-22)
 
 
