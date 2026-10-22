@@ -53,7 +53,7 @@ The npm package must also be configured with a trusted publisher:
 
 ## Generated contracts
 
-The checked-in OpenAPI contract is [`wsapi_v2.json`](../wsapi_v2.json), pinned to the upstream revision in [`wsapi_v2.source.json`](../wsapi_v2.source.json). It describes API `v2.16.0`, copied exactly from the committed owning WS API repository. The source metadata identifies that repository, path, revision and digest. The [live REST API reference](https://www.isecure.fi/wsapi_v2/) documents the same version; its published examples include website sanitization and SDK samples.
+The checked-in OpenAPI contract is [`wsapi_v2.json`](../wsapi_v2.json), pinned to the upstream revision in [`wsapi_v2.source.json`](../wsapi_v2.source.json). It describes API `v2.17.0`, copied exactly from the committed owning WS API repository. The source metadata identifies that repository, path, revision and digest. The additive account public-key field is qualified on gpgtest first; production deployment is separate. The [live REST API reference](https://www.isecure.fi/wsapi_v2/) may retain the preceding production contract until its explicit publication. Published examples include website sanitization and SDK samples.
 
 ## Supported Operations
 

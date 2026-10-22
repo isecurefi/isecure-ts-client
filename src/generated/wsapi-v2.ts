@@ -189,7 +189,7 @@ export interface paths {
         };
         /**
          * ListAuditEvents
-         * @description Read sanitized account-management and automatic certificate-renewal audit history through the authenticated API. Integrator API key owners can read their entire tenant or select Account; customer accounts can read only their own account. Verified superadmins may select Tenant explicitly. With Account alone, a superadmin reads the account's current tenant resolved by an exact server-side lookup. Deleted accounts require explicit Tenant for superadmins; integrator owners retain deleted history in their own tenant without a lookup. Omitting both selectors reads the caller's own tenant, never all tenants. API-key ownership and server-owned operator authority are verified before any log access. Both admin and data modes can read their permitted history.
+         * @description Read sanitized account-management and automatic certificate-renewal audit history through the authenticated API. Integrator API key owners can read their tenant or select Account; customers can read only their own account. Tenant selection remains subject to verified account scope. Omitting both selectors reads the caller's own permitted scope. Both admin and data modes can read their permitted history. Login events are not currently included.
          *
          *     Events include the actor, action, affected account, timestamp, outcome and operation/request correlation. Automatic certificate renewal uses action certificate.renew and actorType system. A request event records the attempt time, step events record bank contact and persistence, and a result records rejected, failed, completed or skipped. completed means credentials were stored; a bank acceptance alone is insufficient. Bank rejections include bankResponseCode and, when safe to expose, bankResponseText. A timeout or malformed response has no invented bank code. A request without a result is incomplete; do not infer rejection or success. No bank files, SOAP messages, credentials, private keys or raw internal diagnostics are returned. Delivery is asynchronous; deduplicate by eventId across pages because publication retries may repeat an event. Streams survive account deletion and events have ten-year retention. Integrator owners can query deleted-account history without the deleted users-table row.
          *
@@ -327,7 +327,7 @@ export interface paths {
         put?: never;
         /**
          * ReadWorkspaceAuthority
-         * @description Read short-lived signed company workspace authority for the current verified Admin session and explicit company enrollment. The only input is a native one-use challenge. Tenant selection, operator status and feature flags do not grant company membership or roles. No bank or provider request is performed. The native application must verify the signature, supported contract, session/challenge binding and expiry before use; decoding this string is not authorization. Requires the separately configured workspace authority service and enrollment. Do not log, cache or persist the assertion in browser storage.
+         * @description Read short-lived signed company workspace authority for the current verified Admin session and explicit company enrollment. The only input is a native one-use challenge. Tenant selection and feature flags do not grant company membership or roles. No bank or provider request is performed. The native application must verify the signature, supported contract, session/challenge binding and expiry before use; decoding this string is not authorization. Requires the separately configured workspace authority service and enrollment. Do not log, cache or persist the assertion in browser storage.
          */
         post: operations["ReadWorkspaceAuthority"];
         delete?: never;
@@ -422,6 +422,8 @@ export interface paths {
         /**
          * ListAccounts
          * @description List accounts registered under the authenticated integrator API key. This is an API key owner/admin operation intended for integrators managing their own customer accounts.
+         *
+         *     PgpKeys contains read-only public-key armor and registered purpose for each visible account. Integrator owners see accounts in their tenant; customers see their own account. Decode key metadata in the application. Preserve missing information, malformed entries and duplicates; no key changes are performed. This additive 2.17.0 field is initially qualified on gpgtest, not yet production.
          */
         get: operations["ListAccounts"];
         put?: never;
@@ -641,7 +643,7 @@ export interface paths {
         };
         /**
          * ListAccountUsage
-         * @description Read daily and monthly distinct accounts observed in supported CAMT bank files. Monthly and tenant totals are set unions, never sums of daily or user counts. Missing days, partial captures and unreadable payloads remain explicit. These are observed-usage figures, not a complete inventory of contracted or idle accounts and not an issued invoice. Payment rows are outside this basis. Authentication and API-key ownership are checked before reading. Integrator owners see their tenant and its users; customer accounts see only themselves; the ISECure operator may select another tenant. No bank account numbers, account tokens, bank messages or keys are returned.
+         * @description Read daily and monthly distinct accounts observed in supported CAMT bank files. Monthly and tenant totals are set unions, never sums of daily or user counts. Missing days, partial captures and unreadable payloads remain explicit. These are observed-usage figures, not a complete inventory of contracted or idle accounts and not an issued invoice. Payment rows are outside this basis. Authentication and API-key ownership are checked before reading. Integrator owners see their tenant and its users; customer accounts see only themselves. No bank account numbers, account tokens, bank messages or keys are returned.
          */
         get: operations["ListAccountUsage"];
         put?: never;
@@ -705,10 +707,27 @@ export interface components {
             LinkedTo?: string;
             /** @description Full name of registrant */
             Name: string;
+            /** @description Read-only public keys directly owned by this account, in stored order, including duplicates. An empty array means no stored entries; an absent field means unavailable information or an older deployment. Introduced in 2.17.0 for gpgtest qualification; production availability is not yet established. Decode the returned public armor in the application. */
+            PgpKeys?: components["schemas"]["AccountPgpKeyDescriptor"][];
             /** @description Phone number with country code and `+` in front */
             Phone: string;
             /** @description Certificates retired with RetireCert or set aside by ISECure */
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
+        };
+        /**
+         * @description One stored account public-key entry. Decode OpenPGP packets locally to inspect identity, fingerprints, dates and subkeys; the API does not decode or establish trust. Duplicate entries remain separate. An unreadable entry remains present with unavailable fields omitted.
+         * @example {
+         *       "PgpKeyPurpose": "authorize"
+         *     }
+         */
+        AccountPgpKeyDescriptor: {
+            /** @description Original ASCII-armored PGP public-key text, at most 256 KiB in UTF-8. Omitted for missing, non-public, mixed-armored or oversized stored material. Public armor is not a guarantee that packets are valid; handle local decoding errors per entry. Never log key material or decoded personal identities. */
+            PgpKey?: string;
+            /**
+             * @description Registered service purpose: authorize verifies file-upload signatures; export encrypts exported certificate private keys. This is separate from embedded OpenPGP key flags. Omitted if the stored purpose is unavailable or unrecognized.
+             * @enum {string}
+             */
+            PgpKeyPurpose?: "authorize" | "export";
         };
         /** @description Persistent status of collection for yesterday in Europe/Helsinki. Reading this status never starts a job. */
         AccountUsageCollectionDescriptor: {
@@ -761,7 +780,7 @@ export interface components {
             /** @description Retained users with retired bank material and no remaining direct or authorized linked bank certificate. */
             RetiredUsers?: number;
             /**
-             * @description Customers receive only user scope. Authorized owners/operators may receive tenant scope.
+             * @description Customers receive only user scope. Authorized integrator owners may receive tenant scope.
              * @enum {string}
              */
             Scope: "tenant" | "user";
@@ -781,7 +800,7 @@ export interface components {
             actorId?: string;
             /** @description Actor login mode, when known. */
             actorMode?: string;
-            /** @description operator, integrator, customer, authenticated, unauthenticated or system. Automatic renewal uses system; registration has no authenticated actor. */
+            /** @description Server-assigned actor classification. Automatic renewal uses system; registration has no authenticated actor. */
             actorType?: string;
             /** @description Public bank identifier. */
             bank?: string;
@@ -1423,7 +1442,7 @@ export interface components {
             /** @description Per-user preview feature ids enabled by ISECure for this account; empty by default */
             Features: string[];
             /**
-             * @description `operator` for the ISECure owner account, `integrator` for an API key owner account, `customer` for an account registered under an API key
+             * @description Server-assigned account classification. This value does not replace server-side authorization.
              * @enum {string}
              */
             Type: "operator" | "integrator" | "customer";
@@ -1976,9 +1995,9 @@ export interface operations {
     ListAuditEvents: {
         parameters: {
             query?: {
-                /** @description Optional exact tenant API-key identifier. Verified superadmins may select another tenant, including retained history after account deletion. Other callers may only specify their own tenant. Keep Tenant and Account unchanged while following NextToken. With Account alone a superadmin resolves its current tenant; a missing target requires Tenant. */
+                /** @description Optional exact tenant API-key identifier within the caller's authorized scope. Selecting a tenant does not grant access. Keep Tenant and Account unchanged when following pagination tokens. */
                 Tenant?: string;
-                /** @description Optional customer email. Integrator owners may select any account history in their tenant, including deleted accounts. Other users may select only their own email; omitted means their own account. For an integrator, omitted means the entire tenant. Superadmins can select an account in another tenant; specify Tenant for deleted accounts. */
+                /** @description Optional account email. Integrator owners may select account history within their tenant, including deleted accounts; customers may select only themselves. Omission selects the caller's permitted default scope. */
                 Account?: string;
                 /** @description Inclusive UTC start time on or after 2024-01-01, e.g. 2026-09-19T00:00:00.000Z. Defaults to seven days ago. Maximum range: 31 days. */
                 From?: string;
@@ -2344,7 +2363,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `omasp`, or `alandsbanken`. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
                 Bank: string;
             };
             cookie?: never;
@@ -2413,7 +2432,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `omasp`, or `alandsbanken`. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
                 Bank: string;
             };
             cookie?: never;
@@ -2487,7 +2506,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `omasp`, or `alandsbanken`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
             };
             cookie?: never;
@@ -2564,7 +2583,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* whose active certificate is retired, e.g. `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `omasp`, or `alandsbanken`. */
+                /** @description *Bank* whose active certificate is retired, e.g. `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, or `alandsbanken`. */
                 Bank: string;
             };
             cookie?: never;
@@ -2714,7 +2733,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `omasp`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
             };
             cookie?: never;
@@ -2783,7 +2802,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `omasp`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
             };
             cookie?: never;
@@ -2857,7 +2876,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `omasp`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
                 /** @description File type from list files */
                 FileType: string;
@@ -2930,7 +2949,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `omasp`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
+                /** @description *Bank* used for this operation, can have values of `nordea`, `osuuspankki`, `danskebank`, `aktia`, `sp`, `shb`, `pop`, `spankki`, `alandsbanken` or `SEB`. The additional bank identifier `simulator` is available only at `https://ws-api.test.isecure.fi/v2` and requires Bank Simulator access to be enabled separately for your API-key tenant. It is not available in production. */
                 Bank: string;
                 /** @description File reference *id* from list files */
                 FileType: string;
@@ -3597,7 +3616,7 @@ export interface operations {
             query?: {
                 /** @description Calendar month YYYY-MM in Europe/Helsinki; defaults to the current month. */
                 Month?: string;
-                /** @description Only the authenticated ISECure operator may select another tenant. Other callers are restricted to their verified API key. */
+                /** @description Optional exact tenant API-key identifier within the caller's authorized scope. Selecting a tenant does not grant access. Keep Tenant and Account unchanged when following pagination tokens. */
                 Tenant?: string;
                 /** @description Optional account email. Tenant owners may select a user in their tenant; other users see only themselves. */
                 Account?: string;

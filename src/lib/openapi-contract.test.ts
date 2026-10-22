@@ -296,6 +296,19 @@ const contract = {
 } satisfies Record<OperationId, OperationContract>;
 
 describe("OpenAPI contract honesty", () => {
+  it("describes optional stored account public armor without changing ListKeys", () => {
+    expect(spec.definitions.AccountDescriptor?.required).not.toContain("PgpKeys");
+    expect(spec.definitions.AccountDescriptor?.properties?.PgpKeys).toMatchObject({
+      type: "array",
+      items: { $ref: "#/definitions/AccountPgpKeyDescriptor" },
+    });
+    expect(spec.definitions.AccountPgpKeyDescriptor?.properties?.PgpKey).toMatchObject({
+      type: "string",
+      maxLength: 262144,
+    });
+    expect(spec.definitions.PgpKeyDescriptor?.properties).not.toHaveProperty("PgpKey");
+  });
+
   it("retains the exact upstream contract pinned in its source metadata", () => {
     const source = JSON.parse(readFileSync(new URL("../../wsapi_v2.source.json", import.meta.url), "utf8")) as {
       repository: string;

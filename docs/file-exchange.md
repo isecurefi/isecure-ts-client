@@ -17,6 +17,27 @@ await client.retireCert({ Account: "customer@example.com" });
 await client.deleteAccount("customer@example.com", "customer@example.com");
 ```
 
+## Read-only account public keys
+
+`listAccounts()` returns the accounts visible to the current session: integrator owners see
+accounts in their tenant, and customers see their own account. API 2.17.0 adds optional
+`Accounts[].PgpKeys`, initially qualified on **gpgtest only**; production availability is not
+established by this SDK update. No new method or request parameter is required.
+
+Each entry carries optional `PgpKey` (original ASCII-armored public-key text) and
+`PgpKeyPurpose` (`authorize` or `export`). Decode the public armor locally to display key IDs,
+fingerprints, user identities, algorithms, dates and subkeys. The API and SDK do not decode
+packets or establish key trust. The registered service purpose is separate from embedded key flags.
+
+An absent `PgpKeys` means unavailable information or an older server; `[]` means no stored entries.
+Unreadable entries remain in the list with unavailable fields omitted. Missing, non-public,
+mixed-armored or oversized material is withheld; public armor is bounded to 256 KiB in UTF-8.
+Handle decoding failures per entry and preserve duplicates. Do not log the material or identities.
+This read does not alter key storage, register keys or enable deletion.
+
+`listKeys()` remains the signed-in account's short-ID/purpose listing and does not return armor.
+`deleteKey()` remains a reserved operation that the backend rejects as unsupported.
+
 ## Audit history
 
 `listAuditEvents()` reads one page of sanitized account-management and certificate renewal evidence, newest first.
@@ -24,10 +45,9 @@ An authenticated integrator API-key owner sees its tenant; a customer sees only 
 account. Both admin and data modes can read. The server checks the session and API-key
 ownership on every request; the SDK does not grant access based on client-side roles.
 
-WS API 2.15 adds optional `Tenant` for verified superadmins. With `Account` alone, the server
-resolves the account's current tenant; deleted accounts require explicit `Tenant`. Integrators
-keep access to their own deleted-account history without a lookup. Keep Tenant and Account
-unchanged while following NextToken. The server decides operator authority, not the SDK.
+Optional `Tenant` selects within the caller's authorized scope; it never grants access.
+Integrators retain their own deleted-account history. Keep Tenant and Account unchanged
+while following NextToken. Login events are not currently included in this audit history.
 
 Available since WS API 2.11.0 and deployed to production and test as of 2026-09-20.
 Use `BaseUrl: "https://ws-api.isecure.fi/v2"` for production or
@@ -52,7 +72,7 @@ if (first.NextToken) {
 }
 ```
 
-Filters are `Account`, `From`, `To`, `Action`, `Outcome`, `Limit`, and `NextToken`.
+Filters are `Tenant`, `Account`, `From`, `To`, `Action`, `Outcome`, `Limit`, and `NextToken`.
 `From` and `To` are UTC timestamps. The default window is seven days; the maximum
 is 31 days per query, with `From` on or after 2024-01-01. `Limit` is 1–100 (default
 100), and a page may contain fewer events. Tokens expire after 24 hours and bind
@@ -84,7 +104,7 @@ Raw bank SOAP, credentials and internal exceptions are never audit fields.
 
 `client.listAccountUsage({ Month: "2026-09" })` reads observed bank-account usage through
 the authenticated API. Tenant owners see their tenant and its users; customer accounts
-see only themselves. The ISECure operator may pass `Tenant` to select another tenant.
+see only themselves. An optional `Tenant` selector remains subject to the same authorized scope.
 `Account` narrows the result to one permitted user.
 
 The server calculates monthly distinct accounts as the union of daily observations.

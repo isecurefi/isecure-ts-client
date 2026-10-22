@@ -41,6 +41,47 @@ function match(method: string, suffix: string) {
 }
 
 describe("WSChannel", () => {
+  it("preserves unparsed account public keys and unavailable entries while redacting their material", async () => {
+    const transport = new FakeTransport();
+    const logs: unknown[] = [];
+    const armor = "-----BEGIN PGP PUBLIC KEY BLOCK-----\nSYNTHETIC-UNPARSED-KEY\n-----END PGP PUBLIC KEY BLOCK-----\n";
+    const keys = [{ PgpKey: armor, PgpKeyPurpose: "authorize" as const }, { PgpKey: armor }, {}];
+    const payload = {
+      ResponseCode: "00",
+      ResponseText: "Accounts",
+      Accounts: [
+        {
+          Email: "customer@example.test",
+          Name: "Synthetic",
+          Phone: "+358401234567",
+          Export: "allowed",
+          Certs: [],
+          PgpKeys: keys,
+        },
+      ],
+    };
+    transport.respond((request) => {
+      if (request.method === "GET" && request.url.includes("/session/")) return response({ Challenge: challenge });
+      if (request.method === "POST" && request.url.includes("/session/"))
+        return response({ IdToken: "id-token", ApiKey: "tenant-api-key", ResponseCode: "00", ResponseText: "OK" });
+      if (request.url.endsWith("/integrator/accounts")) return response(payload);
+      return undefined;
+    });
+    const logger: Logger = { debug: (_message, data) => logs.push(data), info() {}, warn() {}, error() {} };
+    const client = new WSChannel(props(), { transport, logger });
+    await client.login();
+    const result = await client.listAccounts();
+    expect(result.Accounts[0]?.PgpKeys).toEqual(keys);
+    const publicKey: string | undefined = result.Accounts[0]?.PgpKeys?.[0]?.PgpKey;
+    expect(publicKey).toBe(armor);
+    expect(transport.requests.at(-1)).toMatchObject({ method: "GET", headers: { Authorization: "id-token" } });
+    expect(JSON.stringify(logs)).not.toContain("SYNTHETIC-UNPARSED-KEY");
+    expect(JSON.stringify(logs)).not.toContain("customer@example.test");
+    // Older servers omit PgpKeys; the transport must not manufacture an empty list.
+    for (const account of payload.Accounts) Reflect.deleteProperty(account, "PgpKeys");
+    expect((await client.listAccounts()).Accounts[0]?.PgpKeys).toBeUndefined();
+  });
+
   it("transports native workspace challenges with the current session and no selected tenant", async () => {
     const transport = new FakeTransport();
     const entries: unknown[] = [];
