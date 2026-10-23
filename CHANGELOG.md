@@ -6,6 +6,19 @@
 - Redact inline Content, upload FileContents and Signature in debug logs even for short values.
 - Add typed optional account public-key armor and purpose to `listAccounts()` for local application inspection. Qualified on the test API and deployed to production. Existing listing methods and transport behavior are unchanged.
 
+## [4.5.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.5.1...isecure-ts-client-v4.5.2) (2026-10-23)
+
+
+### Features
+
+* expose typed account public keys for local inspection ([276cf12](https://github.com/isecurefi/isecure-ts-client/commit/276cf1242b965f2f51d9963342ce10a12a3533d0))
+* **file-exchange:** support immediate UploadFile response content ([88a5435](https://github.com/isecurefi/isecure-ts-client/commit/88a54355770fcd9346ebbe09990520630fecc1ed))
+
+
+### Bug Fixes
+
+* release inline UploadFile response support ([bddc7af](https://github.com/isecurefi/isecure-ts-client/commit/bddc7af20adece34745ff87571e4536d1173df95))
+
 ## [4.5.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.5.0...isecure-ts-client-v4.5.1) (2026-10-22)
 
 
