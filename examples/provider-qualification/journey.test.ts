@@ -40,7 +40,12 @@ async function fixture(provider: CredentialProvider, brokenDownload = false, con
         value =
           request.method === "GET"
             ? { Challenge: "challenge|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e" }
-            : { ...ok, IdToken: "synthetic", ApiKey: identity === "foreign" ? "other-tenant" : "own-tenant" };
+            : {
+                ...ok,
+                IdToken: "synthetic",
+                ApiKey:
+                  identity === "foreign" ? "other-tenant" : identity === "denied" ? "denied-tenant" : "own-tenant",
+              };
       else if (request.url.endsWith("/connection")) {
         if (request.method !== "GET") {
           mutations.push(request);
@@ -64,7 +69,8 @@ async function fixture(provider: CredentialProvider, brokenDownload = false, con
           Connections: enrolled && identity === "owner" ? [{ Bank: provider, Access: "direct", Certificates: [] }] : [],
         };
       else {
-        if (identity !== "owner" || !enrolled) forbidden();
+        if (identity === "denied") forbidden();
+        if (identity === "foreign" || !enrolled) forbidden(404);
         if (request.url.endsWith("/check")) value = { ...ok, Ready: true, Environment: "production" };
         else if (request.url.endsWith(`/files/${provider}`)) {
           const requested = request.query?.FileType;
@@ -142,6 +148,15 @@ describe("provider qualification through the SDK", () => {
       expect(f.mutations.filter((r) => r.method !== "POST").every((r) => r.retry === false)).toBe(true);
     },
   );
+  it("rejects a subscription-denial fixture in the subscribed tenant before mutation", async () => {
+    const f = await fixture("maventa");
+    const sameTenantDenied = f.denied;
+    Object.defineProperty(sameTenantDenied.session, "apiKey", { value: f.data.session.apiKey });
+    await expect(
+      qualifyLifecycle(f.admin, f.data, f.foreign, sameTenantDenied, "maventa", maventa, maventa),
+    ).rejects.toThrow("fixture account isolation");
+    expect(f.mutations).toHaveLength(0);
+  });
   it("cleans up only this invocation's connection after a download failure", async () => {
     const f = await fixture("maventa", true);
     await expect(qualifyLifecycle(f.admin, f.data, f.foreign, f.denied, "maventa", maventa, maventa)).rejects.toThrow(

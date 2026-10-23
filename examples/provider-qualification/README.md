@@ -30,8 +30,10 @@ JSON, matching ledger dates and a complete terminal page. It selects from seven 
 ledger dates. This is bounded workflow evidence, not exhaustive historical reconciliation.
 
 Lifecycle mode additionally requires `allowFixtureMutation: true`, `admin` for the same
-account as data, `foreignData` in a different tenant with no enrolled provider connection,
-and `deniedData` without the provider subscription. Use separately authorized synthetic
+account as data, `foreignData` in a different tenant with an active provider read subscription and no enrolled connection,
+and `deniedData` in a third tenant without the provider subscription. Confirm both grants
+through guarded operator readback before running; denial fixtures are tenant-scoped.
+Foreign-file isolation requires 404 after subscription access, not an earlier 403 denial. Use separately authorized synthetic
 accounts, never a customer's existing connection. Both initial and replacement credentials
 must be authorized for the selected fixture. Supply `credentialsFile` and
 `rotatedCredentialsFile`, each containing the typed connection request documented in

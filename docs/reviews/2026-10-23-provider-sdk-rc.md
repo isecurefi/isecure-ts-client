@@ -53,3 +53,12 @@ Production RC qualification still requires explicitly authorized account/credent
 a Maventa received invoice and real MobilePay funds/fees results. The test doubles establish
 SDK/harness behavior, not server tenancy or upstream success. SDK publication, live promotion
 and Production app publication remain on hold. The owning backend task stays unchecked.
+
+Follow-up security review: subscription denial must use a third tenant, because product
+grants belong to tenants rather than users. A regression first reproduced acceptance of
+a same-tenant denial fixture; the harness now rejects it before enrollment. Foreign-file
+isolation requires 404 from a distinct tenant with an active provider read grant, so an
+earlier missing-subscription 403 cannot masquerade as tenant-isolation evidence. Operator
+grant readbacks remain required before the real run. Updated release checks pass all
+399 tests; runtime package bytes are unchanged because this correction is confined to the
+maintained qualification example and its documentation/tests.

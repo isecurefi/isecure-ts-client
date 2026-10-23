@@ -127,6 +127,8 @@ export async function qualifyLifecycle<P extends CredentialProvider>(
     admin.session.apiKey !== data.session.apiKey ||
     !foreign.session.apiKey ||
     foreign.session.apiKey === data.session.apiKey ||
+    !denied.session.apiKey ||
+    new Set([data.session.apiKey, foreign.session.apiKey, denied.session.apiKey]).size !== 3 ||
     denied.props.Email === data.props.Email
   )
     throw new Error("Provider fixture account isolation is invalid");
@@ -152,7 +154,7 @@ export async function qualifyLifecycle<P extends CredentialProvider>(
     ).FileDescriptors;
     const file = files?.[0];
     if (!file) throw new Error("Provider isolation needs an enrolled file");
-    await expectDenied(() => foreign.downloadFile(file.FileType, file.FileReference), [403, 404]);
+    await expectDenied(() => foreign.downloadFile(file.FileType, file.FileReference), [404]);
     await expectDenied(() => denied.downloadFile(file.FileType, file.FileReference), [403]);
     const foreignConnections = success(await foreign.listCerts()).Connections ?? [];
     if (foreignConnections.some((c) => c.Bank === provider))
