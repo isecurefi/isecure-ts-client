@@ -18,7 +18,7 @@ export interface paths {
          * DeleteAccount
          * @description Soft-delete one customer account under the caller's API key. Both Admin and Data sign-in identities are revoked; the retained account, certificates and keys become unusable and stop contributing to the customer license total. ListAccounts keeps the row visible with Lifecycle `deleted`, DeletedAt, DeletedBy and PurgeAfter. DynamoDB TTL makes the retained row eligible for automatic removal 30 days after deletion; physical removal is asynchronous and may take additional days. Audit evidence is retained separately for ten years. This operation does not provide account restoration.
          *
-         *     Admin mode and the integrator owner account are required. Complete a fresh MFA login for each deletion or certificate retirement: auth_time must be at most 10 minutes old, and each authentication is accepted for only one lifecycle action. Repeat the exact target email in Confirm. Integrator owner accounts are protected. Accounts still sharing certificates with other accounts must be unshared first. An interrupted operation can be retried after a new MFA login; already revoked sign-in identities are tolerated. Repeating a completed deletion is rejected and never extends its retention period.
+         *     Admin mode and the integrator owner account are required. Complete a fresh MFA login for each deletion or certificate retirement: auth_time must be at most 10 minutes old, and each authentication is accepted for only one lifecycle action. Repeat the exact target email in ConfirmSoftDelete. The distinct confirmation field prevents an older immediate-deletion backend from accepting this request; clients must not send the legacy Confirm field. Integrator owner accounts are protected. Accounts still sharing certificates with other accounts must be unshared first. An interrupted operation can be retried after a new MFA login; already revoked sign-in identities are tolerated. Repeating a completed deletion is rejected and never extends its retention period.
          */
         delete: operations["DeleteAccount"];
         options?: never;
@@ -922,12 +922,12 @@ export interface components {
         };
         /**
          * @example {
-         *       "Confirm": "user@example.com"
+         *       "ConfirmSoftDelete": "user@example.com"
          *     }
          */
         DeleteAccountReq: {
             /** @description Must equal the `Email` path value exactly */
-            Confirm: string;
+            ConfirmSoftDelete: string;
         };
         /**
          * @example {

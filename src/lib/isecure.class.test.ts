@@ -977,7 +977,8 @@ describe("WSChannel", () => {
     const deleteAccountRequest = transport.requests.find(
       (request) => request.method === "DELETE" && request.url.endsWith("/account/customer%40example.test"),
     );
-    expect(deleteAccountRequest?.body).toEqual({ Confirm: "customer@example.test" });
+    expect(deleteAccountRequest?.body).toEqual({ ConfirmSoftDelete: "customer@example.test" });
+    expect(deleteAccountRequest?.body).not.toHaveProperty("Confirm");
     expect(deleteAccountRequest?.query).toBeUndefined();
     expect(
       transport.requests.find((request) => request.method === "DELETE" && request.url.endsWith("/pgp"))?.body,

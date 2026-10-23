@@ -627,7 +627,7 @@ export class WSChannel {
     if (Confirm !== Email) {
       throw new ISecureError("deleteAccount confirmation must equal the account email exactly");
     }
-    const request: DeleteAccountRequest = { Confirm };
+    const request: DeleteAccountRequest = { ConfirmSoftDelete: Confirm };
     return this.call<DeleteAccountResponse, DeleteAccountRequest>("DELETE", this.urls.customerAccount(Email), {
       body: request,
       auth: true,

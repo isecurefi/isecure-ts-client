@@ -17,6 +17,8 @@ Complete a fresh Admin MFA login before every deletion or certificate retirement
 accepts an authentication at most ten minutes old for only one lifecycle action. The SDK does
 not prompt for MFA or bypass authorization; applications must run the normal login/MFA flow.
 This lifecycle update is unreleased and requires the matching backend deployment.
+The method sends only `ConfirmSoftDelete` on the wire. An older immediate-deletion backend
+rejects it before mutation; never add the legacy `Confirm` field as a fallback.
 
 ```ts
 await client.retireCert({ Account: "customer@example.com" });
