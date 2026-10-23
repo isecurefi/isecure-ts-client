@@ -715,3 +715,12 @@ function fillPath(path: string): string {
     .replace("{FileReference}", "123")
     .replace("{ExtEmail}", "other%40example.test");
 }
+
+it("describes soft-deleted accounts and retention metadata", () => {
+  const account = spec.definitions.AccountDescriptor;
+  expect(account?.properties).toHaveProperty("Lifecycle");
+  for (const field of ["DeletedAt", "DeletedBy", "PurgeAfter"]) {
+    expect(account?.properties).toHaveProperty(field);
+    expect(spec.definitions.DeleteAccountResp?.properties).toHaveProperty(field);
+  }
+});

@@ -16,11 +16,9 @@ export interface paths {
         post?: never;
         /**
          * DeleteAccount
-         * @description Permanently delete one customer account under the caller's API key: both Cognito users (*admin* and *data*), the account record, every active and retired certificate and private key on it, and its link to a certificate-sharing owner. Customer account and certificate material are removed. Audit evidence is retained separately for ten years; audit log streams are never deleted by account deletion. The operation is not reversible.
+         * @description Soft-delete one customer account under the caller's API key. Both Admin and Data sign-in identities are revoked; the retained account, certificates and keys become unusable and stop contributing to the customer license total. ListAccounts keeps the row visible with Lifecycle `deleted`, DeletedAt, DeletedBy and PurgeAfter. DynamoDB TTL makes the retained row eligible for automatic removal 30 days after deletion; physical removal is asynchronous and may take additional days. Audit evidence is retained separately for ten years. This operation does not provide account restoration.
          *
-         *     *Admin* mode only, and only the integrator API key owner account may call it. The admin login (which always includes MFA) must be fresh: a token whose `auth_time` is older than 10 minutes is rejected with `Re-authenticate to delete accounts`, so clients should sign in again with MFA and retry. The caller must repeat the exact account email in the body `Confirm` field; a missing or different value is rejected before any change.
-         *
-         *     Integrator API key owner accounts can never be deleted through the API, not even by themselves. An account that still shares its certificates with other accounts (see `ShareCerts`) is rejected until those accounts are unshared or deleted. An interrupted deletion can be repeated safely: already removed Cognito users are tolerated and the account record is removed last.
+         *     Admin mode and the integrator owner account are required. Complete a fresh MFA login for each deletion or certificate retirement: auth_time must be at most 10 minutes old, and each authentication is accepted for only one lifecycle action. Repeat the exact target email in Confirm. Integrator owner accounts are protected. Accounts still sharing certificates with other accounts must be unshared first. An interrupted operation can be retried after a new MFA login; already revoked sign-in identities are tolerated. Repeating a completed deletion is rejected and never extends its retention period.
          */
         delete: operations["DeleteAccount"];
         options?: never;
@@ -309,6 +307,8 @@ export interface paths {
          *     *Admin* mode only. Without the `Account` query parameter the caller's own certificate is retired. The integrator API key owner account may pass `Account` to retire a certificate on one of its customer accounts under the same API key. Any other account combination is rejected.
          *
          *     Retiring a bank that has no active certificate fails, so a repeated call is a clean error rather than a second rename.
+         *
+         *     Complete a fresh Admin MFA login before each retirement. Authentication must be at most 10 minutes old and can authorize only one account deletion or certificate retirement. Deleted accounts cannot be modified.
          */
         delete: operations["RetireCert"];
         options?: never;
@@ -379,6 +379,8 @@ export interface paths {
          *            -d @request-example.json \
          *            https://ws-api.isecure.fi/v2/files/danskebank
          *     ```
+         *
+         *     A bank may return an immediate result in the optional `Content` field (Base64 encoded), for example an OP realtime balance query. Read this response directly; an inline result does not imply a separately downloadable file. Ordinary uploads may return only an acknowledgement. The SDK preserves the bank response without decoding or interpreting its contents.
          */
         put: operations["UploadFile"];
         post?: never;
@@ -658,9 +660,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description Which resources DeleteAccount removed; `false` means the resource was already absent */
+        /** @description Sign-in identities removed by DeleteAccount; Account is false because the account row is retained for 30 days */
         AccountDeletionDescriptor: {
-            /** @description The account record with all certificates was deleted by this call */
+            /** @description False for soft deletion. The retained account record is removed asynchronously by TTL after 30 days. */
             Account: boolean;
             /** @description The *admin* mode Cognito user was deleted by this call */
             AdminUser: boolean;
@@ -696,6 +698,13 @@ export interface components {
              * @enum {string}
              */
             DataMode?: "registered" | "unregistered";
+            /**
+             * Format: date-time
+             * @description Time the account was soft deleted.
+             */
+            DeletedAt?: string;
+            /** @description Authenticated administrator who soft deleted the account. */
+            DeletedBy?: string;
             /** @description Email address as the account username */
             Email: string;
             /**
@@ -703,6 +712,11 @@ export interface components {
              * @enum {string}
              */
             Export: "disabled" | "allowed";
+            /**
+             * @description Deleted accounts are retained for 30 days, cannot be used and are excluded from customer license totals.
+             * @enum {string}
+             */
+            Lifecycle?: "active" | "deleted";
             /** @description Email of the account whose certificates this account uses through ShareCerts, or empty */
             LinkedTo?: string;
             /** @description Full name of registrant */
@@ -711,6 +725,11 @@ export interface components {
             PgpKeys?: components["schemas"]["AccountPgpKeyDescriptor"][];
             /** @description Phone number with country code and `+` in front */
             Phone: string;
+            /**
+             * Format: date-time
+             * @description Earliest automatic removal time; TTL removal is asynchronous.
+             */
+            PurgeAfter?: string;
             /** @description Certificates retired with RetireCert or set aside by ISECure */
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
         };
@@ -764,7 +783,7 @@ export interface components {
             /** @description Distinct observed accounts across all available days in the selected scope; absent when no results exist. */
             UniqueAccounts?: number;
         };
-        /** @description Current user-license estimate for the requested tenant or user. Each non-retired user contributes max(1, monthly distinct own bank accounts); Admin/Data modes count together and retired users contribute zero. Tenant figures sum users. Provisional estimates use current membership, not a final invoice. Historical eligibility is unavailable until snapshots exist. */
+        /** @description Current user-license estimate for the requested tenant or user. Each non-retired user contributes max(1, monthly distinct own bank accounts); Admin/Data modes count together; retired and soft-deleted users contribute zero. Tenant figures sum users. Provisional estimates use current membership, not a final invoice. Historical eligibility is unavailable until snapshots exist. */
         AccountUsageLicensesDescriptor: {
             /**
              * Format: date-time
@@ -773,7 +792,7 @@ export interface components {
             AsOf?: string;
             /** @enum {string} */
             Basis: "non-retired-user-own-accounts@1";
-            /** @description Current non-retired user identities, independent of registered sign-in modes. */
+            /** @description Current non-retired, non-deleted user identities, independent of registered sign-in modes. */
             BillableUsers?: number;
             /** @description Present only for provisional estimates. A known zero remains distinct from an unavailable estimate. */
             Count?: number;
@@ -913,19 +932,31 @@ export interface components {
         /**
          * @example {
          *       "Deleted": {
-         *         "Account": true,
+         *         "Account": false,
          *         "AdminUser": true,
          *         "DataUser": true
          *       },
+         *       "DeletedAt": "2026-10-23T12:00:00.000Z",
+         *       "DeletedBy": "admin@example.com",
          *       "Email": "user@example.com",
+         *       "Lifecycle": "deleted",
+         *       "PurgeAfter": "2026-11-22T12:00:00.000Z",
          *       "ResponseCode": "..",
          *       "ResponseText": ".."
          *     }
          */
         DeleteAccountResp: {
             Deleted: components["schemas"]["AccountDeletionDescriptor"];
+            /** @description Deletion time in UTC (ISO 8601) */
+            DeletedAt: string;
+            /** @description Authenticated administrator who deleted the account */
+            DeletedBy: string;
             /** @description Deleted account email */
             Email: string;
+            /** @description Account lifecycle after the operation */
+            Lifecycle: string;
+            /** @description Eligible for asynchronous automatic removal at this UTC time */
+            PurgeAfter: string;
             /** @description Two digit response code in string format */
             ResponseCode: string;
             /** @description Human readable response text */
@@ -1503,6 +1534,21 @@ export interface components {
         };
         /**
          * @example {
+         *       "Content": "string",
+         *       "ResponseCode": "..",
+         *       "ResponseText": ".."
+         *     }
+         */
+        UploadFileResp: {
+            /** @description Optional immediate bank response content, Base64 encoded. Absent when the bank returns only an acknowledgement. */
+            Content?: string;
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+        };
+        /**
+         * @example {
          *       "PgpKey": "...",
          *       "PgpKeyPurpose": "authorize"
          *     }
@@ -1630,7 +1676,7 @@ export interface operations {
                 "x-api-key": string;
             };
             path: {
-                /** @description Email address of the customer account to delete permanently */
+                /** @description Email address of the customer account to soft-delete */
                 Email: string;
             };
             cookie?: never;
@@ -2821,7 +2867,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Response"];
+                    "application/json": components["schemas"]["UploadFileResp"];
                 };
             };
             /** @description Request validation error */

@@ -7,13 +7,24 @@
 The integrator API key owner manages its customer accounts from an `admin` mode session.
 `retireCert` renames the active certificate of the client's `Bank` so a new enrollment or
 import can follow; pass `Account` to act on a customer account under the same API key.
-`deleteAccount` is permanent and removes both Cognito users, the account record and every
-certificate on it. Audit evidence is retained separately for ten years. The API requires the admin login (with MFA) to be at most 10 minutes old
-and rejects older sessions with `Re-authenticate to delete accounts`; the SDK refuses a
-confirmation that does not repeat the email exactly before sending anything.
+`deleteAccount` soft-deletes a customer account and revokes both sign-ins. The retained row
+appears in `listAccounts()` with `Lifecycle: "deleted"`, `DeletedAt`, `DeletedBy` and `PurgeAfter`.
+It contributes no customer licenses. Automatic removal becomes eligible after 30 days;
+physical removal may take additional days. Audit history is retained separately for ten years.
+Integrator-owner accounts cannot be deleted.
+
+Complete a fresh Admin MFA login before every deletion or certificate retirement. The backend
+accepts an authentication at most ten minutes old for only one lifecycle action. The SDK does
+not prompt for MFA or bypass authorization; applications must run the normal login/MFA flow.
+This lifecycle update is unreleased and requires the matching backend deployment.
 
 ```ts
 await client.retireCert({ Account: "customer@example.com" });
+```
+
+After completing another fresh Admin MFA login, deletion is a separate action:
+
+```ts
 await client.deleteAccount("customer@example.com", "customer@example.com");
 ```
 

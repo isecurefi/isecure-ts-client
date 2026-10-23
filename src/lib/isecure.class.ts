@@ -558,6 +558,7 @@ export class WSChannel {
   }
 
   /**
+   * Requires a fresh Admin MFA login for this single lifecycle action.
    * Retires the active certificate of the configured `Bank` so a fresh enrollment
    * or import becomes possible; the record stays on the account, unusable, until
    * the account is deleted. Admin mode only. The integrator API key owner may pass
@@ -615,13 +616,12 @@ export class WSChannel {
   }
 
   /**
-   * Permanently deletes one customer account under the caller's API key: both
-   * Cognito users, the account record, and every certificate on it. Audit evidence
-   * is retained separately for ten years. Admin mode
-   * only, integrator API key owner only, and the admin login (which includes MFA)
-   * must be at most 10 minutes old or the API answers "Re-authenticate to delete
-   * accounts". `Confirm` must repeat `Email` exactly; a mismatch is refused here
-   * so a typo never reaches the API.
+   * Soft-deletes one customer account under the caller's API key, revokes both
+   * sign-ins and excludes the account from customer licenses. The account remains
+   * visible until automatic removal after 30 days; audit history is retained.
+   * Requires the integrator owner in Admin mode and a fresh MFA login for each
+   * lifecycle action (at most ten minutes old and accepted only once by the API).
+   * `Confirm` must equal `Email` exactly. This method never prompts for MFA.
    */
   async deleteAccount(Email: string, Confirm: string): Promise<DeleteAccountResponse> {
     if (Confirm !== Email) {

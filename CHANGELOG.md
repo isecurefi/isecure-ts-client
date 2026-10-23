@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Generate soft-deleted account lifecycle and retention metadata; document fresh single-use MFA for account deletion and certificate retirement.
+
 - Add generated Maventa/MobilePay credential types and readiness, metadata, versioned update and disable methods; retain compatible enrollment and existing file methods.
 - Add separate SDK read/lifecycle provider qualification with certificate-free discovery, complete downloads and authenticated denial checks.
 - Redact provider credential fields and suppress raw transport error messages in debug logging.
