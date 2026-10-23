@@ -84,3 +84,36 @@ API deployment changed. All three reviews pass for this test read evidence. The 
 connection is unsuitable for the never-enrolled lifecycle harness; lifecycle and RC acceptance
 remain separate. Sanitized evidence: `.private/provider-sdk-rc-20261023/` in this checkout,
 especially `mobilepay-gpgtest-sdk-read-result.json`. The SDK remains unpublished.
+
+## MobilePay production RC enrollment and read evidence
+
+Functional review: the owner-selected Admin profile authenticated through the unpublished
+SDK with owner-attended MFA. Fresh Admin/Data tenant equality and never-enrolled metadata
+were checked before one conditional enrollment. Metadata readback matched the command
+revision. The maintained SDK read qualifier passed readiness, direct discovery with
+`Certificates: []`, funds/fees listing and two complete downloads (two terminal pages,
+275 aggregate bytes). An independent fresh Data session repeated discovery and both
+downloads successfully, then logged out. This proves the bounded RC enrollment/read
+workflow; it does not establish nonempty transactions or exhaustive historical coverage.
+
+Security/privacy/evidence review: only the already-authorized MobilePay credentials were
+enrolled into the selected production account through the exact RC endpoint. Profiles and
+provider secrets remain in owner-only private files; the MFA code was submitted from the
+hidden native dialog. The one-time enrollment command is retained privately for reconciliation
+and prevents blind replay. SDK output contains statuses and aggregate counts, with report
+contents held in memory. Both enrollment sessions and the independent read session completed
+cleanup. No live API deployment, subscription widening or credential rotation was performed.
+
+Simplicity/scope review: the private adapter reuses SDK authentication, enrollment, metadata
+and the maintained read qualifier. Only the selected Admin profile path and use of its own
+saved Admin password required adaptation; six synthetic execution checks pass after the
+selected-path regression failed first. No SDK runtime, generated contract or application
+change was necessary. All three reviews pass for enrollment/read evidence. Real isolated
+lifecycle and cross-tenant qualification, owner RC app acceptance and live promotion remain
+separate and incomplete. The enrolled connection is retained for owner app testing.
+
+The owner has no production Maventa credentials. Maventa remains unenrolled and its latest
+readiness response is subscription denial (403); no Stage credentials were used. It is not
+production-qualified. The SDK stays unpublished. Sanitized receipts are retained in the
+SDK candidate's `.private/provider-sdk-rc-20261023/enroll-mobilepay-result.json` and
+`profile-probe-result.json`; secret-bearing command/profile files must not enter Git.
