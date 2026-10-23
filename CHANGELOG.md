@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Add generated Maventa/MobilePay credential types and readiness, metadata, versioned update and disable methods; retain compatible enrollment and existing file methods.
+- Add separate SDK read/lifecycle provider qualification with certificate-free discovery, complete downloads and authenticated denial checks.
+- Redact provider credential fields and suppress raw transport error messages in debug logging.
+- Keep provider availability limited to the test API and separately admitted production RC until live promotion.
+
+
 ## [4.5.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.5.1...isecure-ts-client-v4.5.2) (2026-10-23)
 
 

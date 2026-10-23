@@ -53,6 +53,14 @@ export class UrlBuilder {
     return this.url("files", this.parts().Bank, fileType, fileReference);
   }
 
+  providerConnection(provider: string): string {
+    return this.url("providers", provider, "connection");
+  }
+
+  providerCheck(provider: string): string {
+    return this.url("providers", provider, "check");
+  }
+
   certs(): string {
     return this.url("certs");
   }

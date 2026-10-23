@@ -41,6 +41,7 @@ This read does not alter key storage, register keys or enable deletion.
 the signed-in account. They have `Access: "direct"` and `Certificates: []` because they use
 provider credentials rather than bank certificates. They are never inherited from a linked
 account. Discovery alone does not establish provider-operation availability or grant access.
+See [provider connections](providers.md) for readiness, enrollment, rotation, disabling and file profiles.
 
 ## Audit history
 

@@ -108,3 +108,15 @@ export {
   type VerifyTotpResponse,
 } from "./lib/api-types.js";
 export type { components, operations, paths } from "./generated/wsapi-v2.js";
+
+export {
+  ABSENT_PROVIDER_VERSION,
+  createProviderEnrollment,
+  type CredentialProvider,
+  type MaventaCredentials,
+  type MobilePayCredentials,
+  type ProviderCredentials,
+  type ProviderChange,
+  type ProviderConnectionMetadata,
+  type ProviderReadiness,
+} from "./lib/providers.js";

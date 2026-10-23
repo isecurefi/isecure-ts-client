@@ -153,3 +153,7 @@ Release Please publishing workflow. Examples and guides live in this repository;
 contains the SDK, README, changelog, stability policy and license.
 
 [MIT license](LICENSE)
+
+Maventa and MobilePay credential connections use the existing File Exchange methods plus
+typed readiness and configuration operations. See [provider connections](docs/providers.md)
+for test/RC availability, certificate-free discovery and revision/retry rules.

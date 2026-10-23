@@ -1,0 +1,55 @@
+# Unpublished provider SDK candidate — 23 October 2026
+
+Source baseline: SDK 6b3ab3d (the separate 4.5.2 release). Candidate: 4.6.0-rc.0,
+not published. Backend companion SHA-256:
+`a662369342cdc0e36cf1c959123c0bfdabc5d7774953117786781ac415170a80`.
+
+## Review 1: functional correctness
+
+Traced both native handlers and their compatibility enrollment decoder through generated
+schemas, SDK methods and the maintained qualification harness. Fixed the source Maventa
+environment enum and omitted readiness fields before generation. Connection methods keep
+Bank unchanged, use exact request bodies and revision/idempotency headers, and disable
+all automatic mutation retries. Existing enrollment/list/download methods remain intact.
+Tests exercise both providers through SDK authentication and transport, certificate-free
+discovery, complete downloads, revision replacement/replay/conflicts and disable. Empty
+Maventa mailboxes fail qualification. MobilePay requires both funds and fees and a complete
+terminal page. Source/synthetic review passes; real-provider RC acceptance is pending.
+
+## Review 2: security, privacy and evidence
+
+Short provider credentials now redact by field name. RED reproduced raw exception-message
+leakage in LoggingTransport; GREEN verifies a fixed logged message while typed errors remain
+available to the caller. The private live harness admits exact test/RC targets, selected
+account authentication and provider routes only, rejects redirects, uses owner-only files,
+and prints aggregate results instead of customer identifiers, secrets or reports. Read and
+credential-mutation modes are separate. Lifecycle requires an unused isolated fixture,
+different authenticated tenant and subscription-denied account. Cleanup disables only a
+revision owned by that invocation; a concurrent change is preserved. HTTP 401/network errors
+do not count as authenticated denial. No real account, credential or subscription was changed
+by these source tests. No privileged-access exception appears in public docs/contracts.
+
+## Review 3: simplicity, generated drift and scope
+
+The backend config/template remain the contract authority. One exported companion and its
+byte digest drive generated SDK types; existing File Exchange contracts/methods are reused.
+The MobilePay type narrows explicit fixed/all-ledger alternatives without choosing authority.
+The harness reuses SDK authentication and methods, with no AWS access, account provisioning,
+provider simulator, provider credential store, financial conversion or automatic fallback.
+Generated files are regenerated, not edited. Backend formatting owns the vendored JSON,
+matching the existing wsapi contract convention; digest tests and source comparison enforce
+it. Candidate work is isolated from the concurrent 4.5.2 release. Review passes.
+
+## Evidence and limits
+
+Initial API/method/redaction and harness-boundary tests failed before implementation.
+`yarn prepublishOnly` passes formatting, type-aware lint, strict source/example types,
+398 tests and coverage (94.78% statements, 91.36% branches, 96.27% functions, 95.29% lines),
+browser build and package checks. Source contract comparison passes. `yarn audit --summary`
+reports zero vulnerabilities across 276 packages. Private logs are retained in the candidate
+worktree's `.private/provider-sdk-rc-20261023/`.
+
+Production RC qualification still requires explicitly authorized account/credential files,
+a Maventa received invoice and real MobilePay funds/fees results. The test doubles establish
+SDK/harness behavior, not server tenancy or upstream success. SDK publication, live promotion
+and Production app publication remain on hold. The owning backend task stays unchecked.

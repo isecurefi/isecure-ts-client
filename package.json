@@ -1,6 +1,6 @@
 {
   "name": "isecure-ts-client",
-  "version": "4.5.2",
+  "version": "4.6.0-rc.0",
   "description": "TypeScript SDK for the ISECure WS Channel API",
   "license": "MIT",
   "packageManager": "yarn@1.22.22",
@@ -63,7 +63,7 @@
   "scripts": {
     "clean": "rm -rf dist dist-examples coverage .generated .browser-check docs-api",
     "docs": "yarn generate:types && npx -y typedoc",
-    "generate:types": "mkdir -p .generated src/generated && swagger2openapi wsapi_v2.json -o .generated/wsapi_v2.openapi.json && openapi-typescript .generated/wsapi_v2.openapi.json -o src/generated/wsapi-v2.ts",
+    "generate:types": "mkdir -p .generated src/generated && swagger2openapi wsapi_v2.json -o .generated/wsapi_v2.openapi.json && openapi-typescript .generated/wsapi_v2.openapi.json -o src/generated/wsapi-v2.ts && swagger2openapi provider-api.json -o .generated/provider-api.openapi.json && openapi-typescript .generated/provider-api.openapi.json -o src/generated/provider-api.ts",
     "sync:platform-contracts": "node scripts/sync-platform-contracts.mjs --write",
     "check:platform-contracts": "node scripts/sync-platform-contracts.mjs --check",
     "build": "rm -rf dist && yarn generate:types && tsc -p tsconfig.json",
@@ -81,7 +81,11 @@
     "example:processing-upload": "yarn build:examples && node dist-examples/examples/processing-manual-upload/processing-manual-upload.js",
     "example:processing-simulator": "yarn build:examples && node dist-examples/examples/processing-simulator-journey/processing-simulator-journey.js",
     "example:simulator": "yarn build:examples && node dist-examples/examples/bank-simulator/bank-simulator.js",
-    "test:live": "yarn build:examples && node dist-examples/examples/live-suite/cli.js"
+    "test:live": "yarn build:examples && node dist-examples/examples/live-suite/cli.js",
+    "sync:provider-contract": "node scripts/sync-provider-contract.mjs --write",
+    "check:provider-contract": "node scripts/sync-provider-contract.mjs",
+    "test:providers:read": "yarn build:examples && node dist-examples/examples/provider-qualification/cli.js read",
+    "test:providers:lifecycle": "yarn build:examples && node dist-examples/examples/provider-qualification/cli.js lifecycle"
   },
   "dependencies": {
     "axios": "^1.20.0"

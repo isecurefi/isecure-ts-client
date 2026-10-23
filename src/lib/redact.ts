@@ -35,6 +35,13 @@ const SENSITIVE_FIELDS = new Set(
     "encprivatekey",
     "encryptedprivatekey",
     "pgpkey",
+    "userapikey",
+    "vendorapikey",
+    "clientid",
+    "clientsecret",
+    "recipienthandle",
+    "ledgerid",
+    "companyuuid",
     // bank request and response payloads, including short inline results
     "content",
     "filecontents",

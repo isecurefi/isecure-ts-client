@@ -1,4 +1,13 @@
 import {
+  providerChangeHeaders,
+  requireProvider,
+  type CredentialProvider,
+  type ProviderChange,
+  type ProviderCredentials,
+  type ProviderConnectionMetadata,
+  type ProviderReadiness,
+} from "./providers.js";
+import {
   classifyAuthResponse,
   classifyVerificationResponse,
   mergeTokens,
@@ -479,6 +488,44 @@ export class WSChannel {
     return this.call<DeleteFileResponse>("DELETE", this.urls.file(FileType, FileReference), { auth: true });
   }
 
+  /** Check provider readiness for the authenticated Data account. */
+  async checkProviderConnection(provider: CredentialProvider): Promise<ProviderReadiness> {
+    return this.call<ProviderReadiness>("GET", this.urls.providerCheck(requireProvider(provider)), { auth: true });
+  }
+
+  /** Admin-only metadata; never returns credential values. */
+  async getProviderConnection(provider: CredentialProvider): Promise<ProviderConnectionMetadata> {
+    return this.call<ProviderConnectionMetadata>("GET", this.urls.providerConnection(requireProvider(provider)), {
+      auth: true,
+    });
+  }
+
+  /** Validate and replace credentials with explicit revision/retry controls. No automatic replay. */
+  async updateProviderConnection<P extends CredentialProvider>(
+    provider: P,
+    credentials: ProviderCredentials[NoInfer<P>],
+    change: ProviderChange,
+  ): Promise<ProviderConnectionMetadata> {
+    return this.call<ProviderConnectionMetadata>("PUT", this.urls.providerConnection(requireProvider(provider)), {
+      auth: true,
+      body: credentials,
+      headers: providerChangeHeaders(change),
+      retry: false,
+    });
+  }
+
+  /** Remove active credentials and retain the connection revision. No automatic replay. */
+  async disableProviderConnection(
+    provider: CredentialProvider,
+    change: ProviderChange,
+  ): Promise<ProviderConnectionMetadata> {
+    return this.call<ProviderConnectionMetadata>("DELETE", this.urls.providerConnection(requireProvider(provider)), {
+      auth: true,
+      headers: providerChangeHeaders(change),
+      retry: false,
+    });
+  }
+
   async listCerts(): Promise<ListCertsResponse> {
     return this.call<ListCertsResponse>("GET", this.urls.certs(), { auth: true });
   }
@@ -611,6 +658,7 @@ export class WSChannel {
       skipFreshness?: boolean;
       signal?: AbortSignal;
       retry?: false;
+      headers?: HttpHeaders;
     } = {},
   ): Promise<Res> {
     if (options.auth && !options.skipFreshness) {
@@ -620,7 +668,7 @@ export class WSChannel {
     const request: TransportRequest<Req> = {
       method,
       url,
-      headers: options.auth ? this.authHeaders() : this.jsonHeaders(),
+      headers: { ...(options.auth ? this.authHeaders() : this.jsonHeaders()), ...options.headers },
     };
     if (options.body !== undefined) request.body = options.body;
     if (options.query) request.query = options.query;

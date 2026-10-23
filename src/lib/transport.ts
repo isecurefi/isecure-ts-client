@@ -295,7 +295,9 @@ export class LoggingTransport implements Transport {
     } catch (error) {
       if (enabled) {
         this.options.logger.debug(`error ${request.method} ${url}`, {
-          message: error instanceof Error ? error.message : String(error),
+          // Upstream error text can echo credentials or file contents. Callers retain
+          // the original typed error; debug output contains only a static category.
+          message: "ISECure request failed",
         });
       }
       throw error;
