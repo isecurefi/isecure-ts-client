@@ -724,3 +724,9 @@ it("describes soft-deleted accounts and retention metadata", () => {
     expect(spec.definitions.DeleteAccountResp?.properties).toHaveProperty(field);
   }
 });
+
+it("describes the optional original account registration timestamp", () => {
+  const account = spec.definitions.AccountDescriptor;
+  expect(account?.properties?.CreatedAt).toMatchObject({ type: "string", format: "date-time" });
+  expect(account?.required ?? []).not.toContain("CreatedAt");
+});

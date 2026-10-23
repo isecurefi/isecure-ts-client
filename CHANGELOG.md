@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Account discovery includes optional original registration timestamp `CreatedAt`.
+
 - Generate soft-deleted account lifecycle and retention metadata; document fresh single-use MFA for account deletion and certificate retirement.
 
 - Add generated Maventa/MobilePay credential types and readiness, metadata, versioned update and disable methods; retain compatible enrollment and existing file methods.

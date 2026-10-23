@@ -157,3 +157,7 @@ contains the SDK, README, changelog, stability policy and license.
 Maventa and MobilePay credential connections use the existing File Exchange methods plus
 typed readiness and configuration operations. See [provider connections](docs/providers.md)
 for test/RC availability, certificate-free discovery and revision/retry rules.
+
+`listAccounts()` exposes optional `CreatedAt` with the original registration instant in UTC.
+Adding Admin or Data sign-in preserves it. Legacy accounts without recorded creation time omit
+this field; display an unknown date instead of inferring one from login or deletion metadata.

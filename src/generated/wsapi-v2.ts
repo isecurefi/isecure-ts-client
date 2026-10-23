@@ -694,6 +694,11 @@ export interface components {
             /** @description Certificates directly owned by the account */
             Certs: components["schemas"]["CertDescriptor"][];
             /**
+             * Format: date-time
+             * @description Server-recorded initial account registration time in UTC. Adding a sign-in mode does not change it. Omitted for legacy records without a reliable creation timestamp.
+             */
+            CreatedAt?: string;
+            /**
              * @description `data` mode status
              * @enum {string}
              */
