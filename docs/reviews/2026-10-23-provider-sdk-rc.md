@@ -62,3 +62,25 @@ earlier missing-subscription 403 cannot masquerade as tenant-isolation evidence.
 grant readbacks remain required before the real run. Updated release checks pass all
 399 tests; runtime package bytes are unchanged because this correction is confined to the
 maintained qualification example and its documentation/tests.
+
+Actual MobilePay test read evidence: the maintained read CLI passed against the already
+authorized retained gpgtest connection using SDK authentication and methods. Functional
+review verifies readiness, direct discovery with an empty certificate array, both canonical
+file-type listings and two complete downloads with two terminal pages. This does not assert
+nonempty transactions or exhaustive history. It does not qualify Maventa or production RC.
+
+Security/privacy/evidence review confirms the test subscription began suspended, was enabled
+through the guarded operator writer with its expected revision and a ten-minute expiry,
+then was suspended again at revision 19. Exact account/connection readback is unchanged;
+no provider credential was enrolled, replaced or disabled. Reports remain in memory and
+receipts contain only statuses and aggregate counts. Initial private-wrapper attempts were
+refused by the writer's strict JSON input parser before any grant change or SDK read; compact
+serialization has explicit refused/accepted evidence, and the unchanged baseline was verified
+before the successful attempt. Authentication and session cleanup also passed independently.
+
+Simplicity/scope review reuses the maintained SDK read CLI, existing stored connection and
+guarded subscription writer. No SDK code, fixture account, simulator, production grant or
+API deployment changed. All three reviews pass for this test read evidence. The existing
+connection is unsuitable for the never-enrolled lifecycle harness; lifecycle and RC acceptance
+remain separate. Sanitized evidence: `.private/provider-sdk-rc-20261023/` in this checkout,
+especially `mobilepay-gpgtest-sdk-read-result.json`. The SDK remains unpublished.
