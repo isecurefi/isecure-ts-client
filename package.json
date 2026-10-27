@@ -79,6 +79,7 @@
     "prepublishOnly": "yarn format:check && yarn lint && yarn typecheck && yarn test && yarn browser:check && yarn pack:check",
     "example:workflow": "yarn build:examples && node dist-examples/examples/full-workflow/full-workflow.js",
     "example:processing-upload": "yarn build:examples && node dist-examples/examples/processing-manual-upload/processing-manual-upload.js",
+    "example:processing-generate-file": "yarn build:examples && node dist-examples/examples/processing-generate-file/generate-file.js",
     "example:processing-simulator": "yarn build:examples && node dist-examples/examples/processing-simulator-journey/processing-simulator-journey.js",
     "example:simulator": "yarn build:examples && node dist-examples/examples/bank-simulator/bank-simulator.js",
     "test:live": "yarn build:examples && node dist-examples/examples/live-suite/cli.js",
