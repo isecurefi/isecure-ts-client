@@ -656,6 +656,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/pgp/policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * ConfigurePgpPolicy
+         * @description Candidate-only Admin operation. Replace the authenticated account's bank signature requirements while unlocked. ExpectedRevision must match the reviewed policy, or be zero for an absent policy. Counts use distinct registered authorization keys; missing banks deny uploads once configured. Refresh Account.PgpAuthorization after success. Not available until the Rust registration and audit-reader deployment is qualified.
+         */
+        put: operations["ConfigurePgpPolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pgp/policy/lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * LockPgpPolicy
+         * @description Candidate-only Admin operation. Irreversibly freeze the authenticated account's configured bank signature requirements and all registered PGP keys, including export keys. Requires the exact reviewed policy revision and a fresh code from an established allowed factor. There is no API unlock or administrator override. Do not automatically replay an uncertain result; refresh Account.PgpAuthorization. Not available until Rust registration, audit-reader and candidate routing are qualified.
+         */
+        post: operations["LockPgpPolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pgp/keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * DeletePgpKey
+         * @description Candidate-only Admin operation. Delete every duplicate row of one full primary PGP fingerprint from the authenticated account while unlocked. ExpectedRevision must exactly match the reviewed policy, or be zero if none exists. Cannot reduce distinct eligible keys below configured requirements. The legacy short-ID DeleteKey operation remains reserved. Not available until Rust registration deployment is qualified.
+         */
+        delete: operations["DeletePgpKey"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/session/action-mfa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * RequestActionMfa
+         * @description Candidate-only Admin operation. Request an SMS code for a protected action using the opaque AccessToken returned by completed Rust Admin login. Requires an already established, enabled SMS factor. This does not verify a code, change a phone or authenticator, or authorize or perform a protected mutation. TOTP-only accounts cannot request SMS. An acknowledged request is not proof of SMS delivery; do not automatically replay an uncertain request.
+         */
+        post: operations["RequestActionMfa"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -737,6 +817,18 @@ export interface components {
             PurgeAfter?: string;
             /** @description Certificates retired with RetireCert or set aside by ISECure */
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
+            /** @description Candidate Rust API policy metadata. Absent means no stored policy; unavailable means malformed data and must never be displayed as unlocked. This descriptive view does not grant file exchange or count distinct cryptographic keys. Times are Unix seconds. */
+            PgpAuthorization?: {
+                /** @enum {string} */
+                State: "configured" | "unavailable";
+                Revision?: number;
+                Locked?: boolean;
+                UpdatedAt?: number;
+                LockedAt?: number;
+                RequiredSignatures?: {
+                    [key: string]: number;
+                };
+            };
         };
         /**
          * @description One stored account public-key entry. Decode OpenPGP packets locally to inspect identity, fingerprints, dates and subkeys; the API does not decode or establish trust. Duplicate entries remain separate. An unreadable entry remains present with unavailable fields omitted.
@@ -927,12 +1019,24 @@ export interface components {
         };
         /**
          * @example {
-         *       "ConfirmSoftDelete": "user@example.com"
+         *       "ConfirmSoftDelete": "string",
+         *       "AccessToken": "string",
+         *       "MfaType": "string",
+         *       "Code": "string"
          *     }
          */
         DeleteAccountReq: {
-            /** @description Must equal the `Email` path value exactly */
+            /** @description Must equal the decoded Email path value exactly. */
             ConfirmSoftDelete: string;
+            /** @description Opaque Admin action credential from completed login. */
+            AccessToken: string;
+            /**
+             * @description Established allowed factor used for this action.
+             * @enum {string}
+             */
+            MfaType: "SMS_MFA" | "SOFTWARE_TOKEN_MFA";
+            /** @description Fresh verification code. Never log this request body. */
+            Code: string;
         };
         /**
          * @example {
@@ -1555,7 +1659,8 @@ export interface components {
         /**
          * @example {
          *       "PgpKey": "...",
-         *       "PgpKeyPurpose": "authorize"
+         *       "PgpKeyPurpose": "authorize",
+         *       "ExpectedRevision": 0
          *     }
          */
         UploadKeyReq: {
@@ -1566,6 +1671,8 @@ export interface components {
              * @enum {string}
              */
             PgpKeyPurpose: "export" | "authorize";
+            /** @description Reviewed PGP authorization policy revision. Omit or use zero only for an account without a policy. Requires a deployment with policy-aware registration support. */
+            ExpectedRevision?: number;
         };
         /**
          * @example {
@@ -1661,6 +1768,88 @@ export interface components {
             legalEntityId: components["schemas"]["WorkspaceAuthorityUuid"];
             membershipRevision: components["schemas"]["WorkspaceAuthorityRevision"];
             platformTenantId: components["schemas"]["WorkspaceAuthorityUuid"];
+        };
+        /**
+         * @example {
+         *       "RequiredSignatures": {
+         *         "osuuspankki": 1
+         *       },
+         *       "ExpectedRevision": 0
+         *     }
+         */
+        ConfigurePgpPolicyReq: {
+            /** @description Bank route to required signature count. Aliases are canonicalized; repeated aliases and counts exceeding distinct eligible keys are rejected by the Lambda. */
+            RequiredSignatures: {
+                [key: string]: number;
+            };
+            /** @description Exact reviewed revision; zero only for a previously absent policy. */
+            ExpectedRevision: number;
+        };
+        /**
+         * @example {
+         *       "ExpectedRevision": 1,
+         *       "AccessToken": "string",
+         *       "MfaType": "string",
+         *       "Code": "string"
+         *     }
+         */
+        LockPgpPolicyReq: {
+            /** @description Exact reviewed revision of an existing configured policy. */
+            ExpectedRevision: number;
+            /** @description Opaque Admin action credential returned by completed Rust Admin login; never a raw provider token. */
+            AccessToken: string;
+            /**
+             * @description Established allowed factor to verify for this lock operation.
+             * @enum {string}
+             */
+            MfaType: "SMS_MFA" | "SOFTWARE_TOKEN_MFA";
+            /** @description Fresh six-digit code from the selected factor. */
+            Code: string;
+        };
+        /**
+         * @example {
+         *       "Fingerprint": "767eb41e692e5e38ee2a3cdfed07d4fd5aac69ce",
+         *       "ExpectedRevision": 0
+         *     }
+         */
+        DeletePgpKeyReq: {
+            /** @description Full primary-key fingerprint (40 or 64 hexadecimal characters), never a short key ID or subkey fingerprint. */
+            Fingerprint: string;
+            /** @description Exact reviewed revision; zero only for a previously absent policy. */
+            ExpectedRevision: number;
+        };
+        /**
+         * @example {
+         *       "AccessToken": "string",
+         *       "MfaType": "string"
+         *     }
+         */
+        RequestActionMfaReq: {
+            /** @description Opaque Admin action credential; never a raw provider access token. */
+            AccessToken: string;
+            /**
+             * @description SMS_MFA only. TOTP codes are generated by the existing authenticator.
+             * @enum {string}
+             */
+            MfaType: "SMS_MFA";
+        };
+        /**
+         * @example {
+         *       "AccessToken": "string",
+         *       "MfaType": "string",
+         *       "Code": "string"
+         *     }
+         */
+        RetireCertReq: {
+            /** @description Opaque Admin action credential from completed login. */
+            AccessToken: string;
+            /**
+             * @description Established allowed factor used for this action.
+             * @enum {string}
+             */
+            MfaType: "SMS_MFA" | "SOFTWARE_TOKEN_MFA";
+            /** @description Fresh verification code. Never log this request body. */
+            Code: string;
         };
     };
     responses: never;
@@ -2639,7 +2828,12 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        /** @description Certs parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetireCertReq"];
+            };
+        };
         responses: {
             /** @description Operation successfully processed. See response. */
             200: {
@@ -3691,6 +3885,290 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListAccountUsageResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ConfigurePgpPolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Pgp parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigurePgpPolicyReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    LockPgpPolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Pgp parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LockPgpPolicyReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    DeletePgpKey: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Pgp parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeletePgpKeyReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    RequestActionMfa: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Session parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestActionMfaReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
                 };
             };
             /** @description Request validation error */

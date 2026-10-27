@@ -88,6 +88,17 @@ export type VerifyTotpResponse = JsonResponse<"VerifyTOTP", 200>;
 export type VerifyEmailRequest = JsonRequest<"VerifyEmail">;
 export type VerifyPhoneRequest = JsonRequest<"VerifyPhone">;
 export type UploadKeyRequest = JsonRequest<"UploadKey">;
+/** Candidate API: submit the fresh factor with each protected operation; never cache a code. */
+export type FreshActionFactor = Pick<JsonRequest<"LockPgpPolicy">, "AccessToken" | "MfaType" | "Code">;
+export type ConfigurePgpPolicyRequest = JsonRequest<"ConfigurePgpPolicy">;
+export type LockPgpPolicyRequest = JsonRequest<"LockPgpPolicy">;
+export type DeletePgpKeyRequest = JsonRequest<"DeletePgpKey">;
+export type RequestActionMfaRequest = JsonRequest<"RequestActionMfa">;
+export type ConfigurePgpPolicyResponse = JsonResponse<"ConfigurePgpPolicy", 200>;
+export type LockPgpPolicyResponse = JsonResponse<"LockPgpPolicy", 200>;
+export type DeletePgpKeyResponse = JsonResponse<"DeletePgpKey", 200>;
+export type RequestActionMfaResponse = JsonResponse<"RequestActionMfa", 200>;
+
 export type UploadFileRequest = JsonRequest<"UploadFile">;
 /** Bank acknowledgement with optional Base64 inline result, such as a realtime balance report. */
 export type UploadFileResponse = JsonResponse<"UploadFile", 201> & {
@@ -124,7 +135,8 @@ export type RetireCertResponse = JsonResponse<"RetireCert", 200>;
 export interface RetireCertQuery {
   Account?: string;
 }
-export type DeleteAccountRequest = JsonRequest<"DeleteAccount">;
+export type DeleteAccountRequest = Omit<JsonRequest<"DeleteAccount">, keyof FreshActionFactor> &
+  Partial<FreshActionFactor>;
 export type DeleteAccountResponse = JsonResponse<"DeleteAccount", 200>;
 export type ListKeysResponse = JsonResponse<"ListKeys", 200>;
 export type DeleteKeyRequest = JsonRequest<"DeleteKey">;
@@ -158,6 +170,10 @@ export const SUPPORTED_OPERATIONS = [
   "EnrollCert",
   "RetireCert",
   "UploadKey",
+  "ConfigurePgpPolicy",
+  "LockPgpPolicy",
+  "DeletePgpKey",
+  "RequestActionMfa",
   "UploadFile",
   "ListFiles",
   "DownloadFile",

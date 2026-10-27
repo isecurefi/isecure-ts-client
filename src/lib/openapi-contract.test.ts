@@ -46,7 +46,36 @@ const publicKey = readFileSync(new URL("../../examples/gpg-encryption-test/test.
 const spec = JSON.parse(readFileSync(new URL("../../wsapi_v2.json", import.meta.url), "utf8")) as SwaggerSpec;
 const challenge = "challenge-bytes|1475429754114|4017bda8-0a15-4154-a8b7-88069b05cb4e";
 
+const freshFactor = { AccessToken: "synthetic-action-token", MfaType: "SOFTWARE_TOKEN_MFA" as const, Code: "123456" };
 const contract = {
+  ConfigurePgpPolicy: {
+    sdkMethod: "configurePgpPolicy",
+    method: "PUT",
+    path: "/pgp/policy",
+    setup: authenticate,
+    invoke: (client) => client.configurePgpPolicy({ RequiredSignatures: { simulator: 2 }, ExpectedRevision: 0 }),
+  },
+  LockPgpPolicy: {
+    sdkMethod: "lockPgpPolicy",
+    method: "POST",
+    path: "/pgp/policy/lock",
+    setup: authenticate,
+    invoke: (client) => client.lockPgpPolicy({ ExpectedRevision: 1, ...freshFactor }),
+  },
+  DeletePgpKey: {
+    sdkMethod: "deletePgpKey",
+    method: "DELETE",
+    path: "/pgp/keys",
+    setup: authenticate,
+    invoke: (client) => client.deletePgpKey({ Fingerprint: "a".repeat(40), ExpectedRevision: 1 }),
+  },
+  RequestActionMfa: {
+    sdkMethod: "requestActionMfa",
+    method: "POST",
+    path: "/session/action-mfa",
+    setup: authenticate,
+    invoke: (client) => client.requestActionMfa("synthetic-action-token"),
+  },
   InitRegister: {
     sdkMethod: "register",
     method: "GET",
@@ -189,7 +218,7 @@ const contract = {
     method: "DELETE",
     path: "/certs/{Bank}",
     setup: authenticate,
-    invoke: (client) => client.retireCert({ Account: "customer@example.test" }),
+    invoke: (client) => client.retireCert({ Account: "customer@example.test" }, freshFactor),
   },
   ListFiles: {
     sdkMethod: "listFiles",
@@ -263,7 +292,7 @@ const contract = {
     method: "DELETE",
     path: "/account/{Email}",
     setup: authenticate,
-    invoke: (client) => client.deleteAccount("user@example.test", "user@example.test"),
+    invoke: (client) => client.deleteAccount("user@example.test", "user@example.test", freshFactor),
   },
   ListKeys: {
     sdkMethod: "listKeys",
@@ -309,13 +338,15 @@ describe("OpenAPI contract honesty", () => {
     expect(spec.definitions.PgpKeyDescriptor?.properties).not.toHaveProperty("PgpKey");
   });
 
-  it("retains the exact upstream contract pinned in its source metadata", () => {
+  it("records the pinned public upstream and explicit unpublished candidate overlay", () => {
     const source = JSON.parse(readFileSync(new URL("../../wsapi_v2.source.json", import.meta.url), "utf8")) as {
       repository: string;
       path: string;
       commit: string;
       source: string;
       sha256: string;
+      upstreamSha256: string;
+      candidateOverlay: { repository: string; commit: string; stage: string; operations: string[] };
     };
     const bytes = readFileSync(new URL("../../wsapi_v2.json", import.meta.url));
     expect(source.commit).toMatch(/^[a-f0-9]{40}$/);
@@ -323,6 +354,16 @@ describe("OpenAPI contract honesty", () => {
     expect(source.path).toBe("wsapi_v2.json");
     expect(source.source).toBe(`https://raw.githubusercontent.com/isecurefi/wsapi-v2/${source.commit}/${source.path}`);
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(source.sha256);
+    expect(source.upstreamSha256).toMatch(/^[a-f0-9]{64}$/);
+    expect(source.candidateOverlay.repository).toBe("https://github.com/isecurefi/aws");
+    expect(source.candidateOverlay.commit).toMatch(/^[a-f0-9]{40}$/);
+    expect(source.candidateOverlay.stage).toBe("gpgtest-rust");
+    expect(source.candidateOverlay.operations).toEqual([
+      "ConfigurePgpPolicy",
+      "LockPgpPolicy",
+      "DeletePgpKey",
+      "RequestActionMfa",
+    ]);
   });
 
   it("requires a stable full-enrollment digest alongside current assignments", () => {
@@ -653,6 +694,14 @@ function contractResponse(request: TransportRequest, transport: FakeTransport): 
   }
   if (request.method === "GET" && path === "/integrator/accounts") {
     return response({ Accounts: [], ResponseCode: "00", ResponseText: "accounts" });
+  }
+  if (
+    (request.method === "PUT" && path === "/pgp/policy") ||
+    (request.method === "POST" && path === "/pgp/policy/lock") ||
+    (request.method === "DELETE" && path === "/pgp/keys") ||
+    (request.method === "POST" && path === "/session/action-mfa")
+  ) {
+    return response({ ResponseCode: "00", ResponseText: "OK" });
   }
   if (request.method === "GET" && path === "/pgp") {
     return response({ PgpKeys: [], ResponseCode: "00", ResponseText: "keys" });

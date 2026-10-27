@@ -58,6 +58,15 @@ import {
   type PasswordResetRequest,
   type PasswordResetResponse,
   type PgpKeyPurpose,
+  type FreshActionFactor,
+  type ConfigurePgpPolicyRequest,
+  type ConfigurePgpPolicyResponse,
+  type LockPgpPolicyRequest,
+  type LockPgpPolicyResponse,
+  type DeletePgpKeyRequest,
+  type DeletePgpKeyResponse,
+  type RequestActionMfaRequest,
+  type RequestActionMfaResponse,
   type RegisterRequest,
   type RegisterResponse,
   type ShareCertsResponse,
@@ -425,9 +434,38 @@ export class WSChannel {
     return { status: "stalled", mode: this.props.Mode, step, transitions: maxTransitions, response: state.response };
   }
 
-  async uploadPgpKey(armoredKey: string, purpose: PgpKeyPurpose): Promise<ApiResponse> {
-    const request: UploadKeyRequest = { PgpKey: armoredKey, PgpKeyPurpose: purpose };
-    return this.call<ApiResponse, UploadKeyRequest>("PUT", this.urls.pgp(), { body: request, auth: true });
+  async uploadPgpKey(armoredKey: string, purpose: PgpKeyPurpose, expectedRevision?: number): Promise<ApiResponse> {
+    const request: UploadKeyRequest = {
+      PgpKey: armoredKey,
+      PgpKeyPurpose: purpose,
+      ...(expectedRevision === undefined ? {} : { ExpectedRevision: expectedRevision }),
+    };
+    return this.call<ApiResponse, UploadKeyRequest>("PUT", this.urls.pgp(), {
+      body: request,
+      auth: true,
+      retry: false,
+    });
+  }
+
+  /** Candidate API: replace requirements at the exact revision reviewed by the caller. */
+  async configurePgpPolicy(request: ConfigurePgpPolicyRequest): Promise<ConfigurePgpPolicyResponse> {
+    return this.call("PUT", this.urls.pgpPolicy(), { body: request, auth: true, retry: false });
+  }
+
+  /** Candidate API: irreversible lock; there is no unlock operation. */
+  async lockPgpPolicy(request: LockPgpPolicyRequest): Promise<LockPgpPolicyResponse> {
+    return this.call("POST", this.urls.pgpPolicyLock(), { body: request, auth: true, retry: false });
+  }
+
+  /** Candidate API: full primary fingerprint deletion, distinct from legacy short-ID deleteKey. */
+  async deletePgpKey(request: DeletePgpKeyRequest): Promise<DeletePgpKeyResponse> {
+    return this.call("DELETE", this.urls.pgpKeys(), { body: request, auth: true, retry: false });
+  }
+
+  /** Candidate API: request SMS for an established factor; this grants no mutation authority. */
+  async requestActionMfa(accessToken: string): Promise<RequestActionMfaResponse> {
+    const request: RequestActionMfaRequest = { AccessToken: accessToken, MfaType: "SMS_MFA" };
+    return this.call("POST", this.urls.actionMfa(), { body: request, auth: true, retry: false });
   }
 
   async listKeys(): Promise<ListKeysResponse> {
@@ -558,14 +596,18 @@ export class WSChannel {
   }
 
   /**
-   * Requires a fresh Admin MFA login for this single lifecycle action.
+   * Candidate deployments require an explicit fresh factor for this action.
    * Retires the active certificate of the configured `Bank` so a fresh enrollment
    * or import becomes possible; the record stays on the account, unusable, until
    * the account is deleted. Admin mode only. The integrator API key owner may pass
    * `Account` to retire a customer account's certificate instead of its own.
    */
-  async retireCert(query: RetireCertQuery = {}): Promise<RetireCertResponse> {
-    const options: { auth: true; query?: QueryParams } = { auth: true };
+  async retireCert(query: RetireCertQuery = {}, factor?: FreshActionFactor): Promise<RetireCertResponse> {
+    const options: { auth: true; query?: QueryParams; body?: FreshActionFactor; retry: false } = {
+      auth: true,
+      retry: false,
+    };
+    if (factor !== undefined) options.body = factor;
     if (query.Account !== undefined) options.query = { Account: query.Account };
     return this.call<RetireCertResponse>("DELETE", this.urls.cert(), options);
   }
@@ -619,18 +661,19 @@ export class WSChannel {
    * Soft-deletes one customer account under the caller's API key, revokes both
    * sign-ins and excludes the account from customer licenses. The account remains
    * visible until automatic removal after 30 days; audit history is retained.
-   * Requires the integrator owner in Admin mode and a fresh MFA login for each
-   * lifecycle action (at most ten minutes old and accepted only once by the API).
+   * Requires the integrator owner in Admin mode. Candidate deployments require
+   * a fresh factor submission; older deployments retain their login-based MFA contract.
    * `Confirm` must equal `Email` exactly. This method never prompts for MFA.
    */
-  async deleteAccount(Email: string, Confirm: string): Promise<DeleteAccountResponse> {
+  async deleteAccount(Email: string, Confirm: string, factor?: FreshActionFactor): Promise<DeleteAccountResponse> {
     if (Confirm !== Email) {
       throw new ISecureError("deleteAccount confirmation must equal the account email exactly");
     }
-    const request: DeleteAccountRequest = { ConfirmSoftDelete: Confirm };
+    const request: DeleteAccountRequest = { ConfirmSoftDelete: Confirm, ...factor };
     return this.call<DeleteAccountResponse, DeleteAccountRequest>("DELETE", this.urls.customerAccount(Email), {
       body: request,
       auth: true,
+      retry: false,
     });
   }
 

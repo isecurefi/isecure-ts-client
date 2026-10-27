@@ -93,6 +93,19 @@ export class UrlBuilder {
     return this.url("account", email);
   }
 
+  pgpPolicy(): string {
+    return this.url("pgp", "policy");
+  }
+  pgpPolicyLock(): string {
+    return this.url("pgp", "policy", "lock");
+  }
+  pgpKeys(): string {
+    return this.url("pgp", "keys");
+  }
+  actionMfa(): string {
+    return this.url("session", "action-mfa");
+  }
+
   pgp(): string {
     return this.url("pgp");
   }

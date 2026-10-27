@@ -161,3 +161,23 @@ for test/RC availability, certificate-free discovery and revision/retry rules.
 `listAccounts()` exposes optional `CreatedAt` with the original registration instant in UTC.
 Adding Admin or Data sign-in preserves it. Legacy accounts without recorded creation time omit
 this field; display an unknown date instead of inferring one from login or deletion metadata.
+
+### Rust candidate account administration (unpublished)
+
+The local candidate contract adds `configurePgpPolicy`, `lockPgpPolicy`,
+`deletePgpKey` (full primary fingerprint), and `requestActionMfa` (SMS dispatch).
+These operations require a supporting deployment such as `gpgtest-rust`; their
+presence in this SDK does not imply production availability. `uploadPgpKey` accepts
+an optional reviewed policy revision. `retireCert(query, factor)` and
+`deleteAccount(email, confirmation, factor)` accept an explicit fresh factor with
+`AccessToken`, `MfaType` and `Code`. Use the opaque action credential returned by
+completed Admin login. TOTP codes come from the established authenticator; SMS
+requires `requestActionMfa` first. These mutations explicitly disable transport
+retries, including opt-in retries. Read back state after an uncertain outcome.
+
+Older method signatures remain available for older deployments. A normal login is
+not a replacement for a fresh factor on the Rust candidate. Locking is irreversible
+through the API. `Account.PgpAuthorization` is descriptive server state, not client
+permission. Missing policy and malformed/unavailable policy are distinct.
+`wsapi_v2.source.json` records the public upstream and the unpublished candidate
+contract overlay; neither SDK nor API documentation has been published by this change.

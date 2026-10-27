@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add unpublished Rust-candidate PGP policy, lock, full-fingerprint deletion, and action-MFA methods; expose policy projections and explicit fresh factors for protected deletions. Disable retries for these mutations.
+
 - Account discovery includes optional original registration timestamp `CreatedAt`.
 
 - Generate soft-deleted account lifecycle and retention metadata; document fresh single-use MFA for account deletion and certificate retirement.
