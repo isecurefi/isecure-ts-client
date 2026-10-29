@@ -1,5 +1,5 @@
 import { expect, it, vi } from "vitest";
-import { readUploadGrant, uploadCiphertext } from "./transfer-s3.js";
+import { readUploadControlResult, readUploadGrant, uploadCiphertext } from "./transfer-s3.js";
 import { sha256TransferBytes } from "./transfer-representation.js";
 
 const origin = "https://synthetic.s3.eu-west-1.amazonaws.com";
@@ -265,4 +265,34 @@ it("does not let response-body cleanup withhold an already verified upload recei
   ]);
   expect(outcome).toMatchObject({ VersionId: "known-version" });
   expect(cancelled).toBe(true);
+});
+it("accepts only an unambiguous, matching version receipt or confirmed-absence grant", () => {
+  const expected = { origin, transferId: id, summary, now: 1000, grantMaxSeconds: 300 };
+  const status = {
+    ResponseCode: "00",
+    ResponseText: "Synthetic",
+    TransferId: id,
+    State: "prepared",
+    ExecuteUntil: 4600,
+    RetentionUntil: 605800,
+  };
+  const Uploaded = { VersionId: "opaque/+version", CiphertextSha256: hash, ObjectBytes: summary.ObjectBytes };
+  expect(readUploadControlResult({ ...status, Uploaded }, expected)).toEqual({ kind: "stored", receipt: Uploaded });
+  expect(readUploadControlResult({ ...status, Upload: fixture() }, expected).kind).toBe("missing");
+  for (const change of [
+    { Uploaded: null },
+    { Uploaded: { ...Uploaded, VersionId: "null" } },
+    { Uploaded: { ...Uploaded, CiphertextSha256: "0".repeat(64) } },
+    { Uploaded: { ...Uploaded, ObjectBytes: summary.ObjectBytes + 1 } },
+    { Uploaded: { ...Uploaded, ObjectBytes: Number.MAX_SAFE_INTEGER + 1 } },
+    { Uploaded: { ...Uploaded, Key: "injected" } },
+    { Upload: fixture() },
+    { TransferId: "d".repeat(64) },
+    { ExecuteUntil: 999 },
+    { State: "executing" },
+    { Artifact: {} },
+  ])
+    expect(() => readUploadControlResult({ ...status, Uploaded, ...change }, expected)).toThrow();
+  expect(() => readUploadControlResult(status, expected)).toThrow();
+  expect(() => readUploadControlResult({ ResponseCode: "01", ResponseText: "Refused" }, expected)).toThrow("refused");
 });

@@ -1,8 +1,9 @@
 import { ISecureTransferError, type FileTransferOptions } from "./file-transfers.js";
-import { isTransferId } from "./transfer-control.js";
+import { isTransferId, readTransferStatus } from "./transfer-control.js";
 import { isTransferS3Origin } from "./encrypted-transfers.js";
 import { sha256TransferBytes } from "./transfer-representation.js";
 import type { PreparedUploadSummary } from "./transfer-upload.js";
+import type { components } from "../generated/transfer-api.js";
 
 const REQUIRED_FIELDS = [
   "key",
@@ -116,25 +117,61 @@ export function readUploadGrant(value: unknown, expected: UploadGrantExpectation
     throw invalid();
   return new UploadGrant(value.Url, Object.freeze({ ...wire }), value.ExpiresAt);
 }
-export interface UploadedCiphertext {
-  readonly VersionId: string;
-  readonly CiphertextSha256: string;
-  readonly ObjectBytes: number;
-}
+export type UploadedCiphertext = Readonly<components["schemas"]["TransferUploadedCiphertext"]>;
 interface StorageEffects extends FileTransferOptions {
   now?: () => number;
   send?: typeof fetch;
   beforeSend?: () => void;
 }
-function objectVersion(value: string | null): value is string {
+function objectVersion(value: unknown): value is string {
   return (
-    value !== null &&
+    typeof value === "string" &&
     value !== "null" &&
     value.length > 0 &&
     value.length <= 1024 &&
     !/[\s\p{Cc}]/u.test(value) &&
     new TextEncoder().encode(value).length <= 1024
   );
+}
+export type UploadControlResult =
+  | { readonly kind: "stored"; readonly receipt: UploadedCiphertext }
+  | { readonly kind: "missing"; readonly grant: UploadGrant };
+/** A control response either identifies the verified existing object or grants
+ * a new upload. Unknown/ambiguous responses cannot authorize a resend. */
+export function readUploadControlResult(
+  value: unknown,
+  expected: Omit<UploadGrantExpectation, "executeUntil">,
+): UploadControlResult {
+  if (!object(value)) throw invalid();
+  const { Upload, Uploaded, ...metadata } = value;
+  const status = readTransferStatus(metadata, expected.transferId);
+  if (Object.hasOwn(value, "Upload") === Object.hasOwn(value, "Uploaded")) throw invalid();
+  if (
+    status.State !== "prepared" ||
+    status.ResponseCode !== "00" ||
+    !Number.isSafeInteger(expected.now) ||
+    expected.now < 0 ||
+    expected.now >= status.ExecuteUntil
+  )
+    throw invalid();
+  if (Object.hasOwn(value, "Upload"))
+    return { kind: "missing", grant: readUploadGrant(Upload, { ...expected, executeUntil: status.ExecuteUntil }) };
+  if (
+    !object(Uploaded) ||
+    Object.keys(Uploaded).length !== 3 ||
+    !objectVersion(Uploaded.VersionId) ||
+    Uploaded.CiphertextSha256 !== expected.summary.CiphertextSha256 ||
+    Uploaded.ObjectBytes !== expected.summary.ObjectBytes
+  )
+    throw invalid();
+  return {
+    kind: "stored",
+    receipt: Object.freeze({
+      VersionId: Uploaded.VersionId,
+      CiphertextSha256: expected.summary.CiphertextSha256,
+      ObjectBytes: expected.summary.ObjectBytes,
+    }),
+  };
 }
 /** Narrow S3 transport. Has no API client, credentials, XML parser or retry loop.
  * Any failure after dispatch is uncertain; reconcile storage before resending. */

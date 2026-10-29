@@ -241,7 +241,8 @@ This remains unpublished and locally qualified; capabilities are not activated.
 ## Uploading the encrypted object
 
 After preparation, `await transfer.uploadPrepared({ signal })` obtains a short-lived
-grant and sends the retained ciphertext to the advertised S3 origin. It returns
+grant and sends the retained ciphertext to the advertised S3 origin, or reuses an
+existing matching object reported by the server. It returns
 `VersionId`, `CiphertextSha256` and `ObjectBytes`. The API call uses the existing
 session; the separate S3 request carries no API credentials, cookies or referrer and
 does not follow redirects. Neither call automatically retries. The SDK validates
@@ -250,8 +251,18 @@ the grant, ciphertext checksum and returned version; it ignores the S3 XML body.
 A repeated successful call on the same handle returns the saved version without
 another upload. If the upload acknowledgement is lost or invalid, the handle reports
 `storage-uncertain` and refuses another POST. Do not create a new handle to work around
-that result. Server-side storage reconciliation and durable resume of an uploaded
-version are still being implemented; this is not yet a complete recovery workflow.
+that result. Call `await transfer.reconcileUpload({ signal })`: it checks the
+stored object and returns a matching version receipt, or `undefined` only when the
+server confirms the object is absent. It never sends file bytes. An error keeps
+the outcome uncertain; it does not permit a resend. After confirmed absence, a
+later explicit `uploadPrepared()` may send the same ciphertext. A POST already
+in flight can still finish after that check, so duplicate identical S3 versions
+remain possible. No bank operation is performed by either method.
+
+Metadata-only resume across process restarts still requires original bytes to
+reconstruct the exact prepared representation. Durable local ciphertext/receipt
+restoration remains in progress. Do not start a new logical transfer to hide an
+uncertain bank outcome.
 Cancellation after dispatch can also leave an object stored. It never authorizes
 bank execution. The storage request has a deadline of at most two minutes, further
 bounded by grant expiry. Current upload feedback is completion only; incremental

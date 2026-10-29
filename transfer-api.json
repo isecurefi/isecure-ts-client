@@ -455,7 +455,7 @@
     },
     "TransferResponse": {
       "additionalProperties": false,
-      "description": "ISECure refusal uses 01; bank codes remain unchanged. Successful control responses include TransferId, State, ExecuteUntil and RetentionUntil. State is admission evidence, not proof of bank exactly-once processing. Status never includes file bytes. All timestamps are Unix seconds.",
+      "description": "ISECure refusal uses 01; bank codes remain unchanged. Successful control responses include TransferId, State, ExecuteUntil and RetentionUntil. State is admission evidence, not proof of bank exactly-once processing. Status never includes file bytes. Upload grant control returns exactly one of Upload (confirmed absent, new signed POST allowed) or Uploaded (reuse this existing version). Storage access errors never mean absence. All timestamps are Unix seconds.",
       "properties": {
         "Artifact": {
           "$ref": "#/definitions/TransferArtifactKeyGrant"
@@ -513,6 +513,9 @@
         },
         "Upload": {
           "$ref": "#/definitions/TransferUploadGrant"
+        },
+        "Uploaded": {
+          "$ref": "#/definitions/TransferUploadedCiphertext"
         }
       },
       "required": [
@@ -624,6 +627,34 @@
         "Encoding",
         "EncodedBytes",
         "EncodedSha256"
+      ],
+      "type": "object"
+    },
+    "TransferUploadedCiphertext": {
+      "additionalProperties": false,
+      "description": "Existing uploaded ciphertext verified by S3 metadata. Reuse this exact version instead of uploading again. Execution still authenticates the actual ciphertext and original bytes before contacting the bank.",
+      "properties": {
+        "CiphertextSha256": {
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "ObjectBytes": {
+          "maximum": 33554468,
+          "minimum": 37,
+          "type": "integer"
+        },
+        "VersionId": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "VersionId",
+        "CiphertextSha256",
+        "ObjectBytes"
       ],
       "type": "object"
     }

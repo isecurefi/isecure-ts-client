@@ -256,7 +256,7 @@ export interface components {
             /** @description UTF-8 text, at most 256 bytes and no control characters; Lambda enforces byte counts. */
             TargetId?: string;
         };
-        /** @description ISECure refusal uses 01; bank codes remain unchanged. Successful control responses include TransferId, State, ExecuteUntil and RetentionUntil. State is admission evidence, not proof of bank exactly-once processing. Status never includes file bytes. All timestamps are Unix seconds. */
+        /** @description ISECure refusal uses 01; bank codes remain unchanged. Successful control responses include TransferId, State, ExecuteUntil and RetentionUntil. State is admission evidence, not proof of bank exactly-once processing. Status never includes file bytes. Upload grant control returns exactly one of Upload (confirmed absent, new signed POST allowed) or Uploaded (reuse this existing version). Storage access errors never mean absence. All timestamps are Unix seconds. */
         TransferResponse: {
             Artifact?: components["schemas"]["TransferArtifactKeyGrant"];
             DeliveryRevokedAt?: number;
@@ -271,6 +271,7 @@ export interface components {
             State?: "prepared" | "executing" | "completed" | "failed" | "uncertain" | "cancelled";
             TransferId?: string;
             Upload?: components["schemas"]["TransferUploadGrant"];
+            Uploaded?: components["schemas"]["TransferUploadedCiphertext"];
         };
         /** @description Short-lived signed POST form. Treat all Fields as bearer secrets and append file bytes last. Never attach API credentials to S3 requests. */
         TransferUploadGrant: {
@@ -298,6 +299,12 @@ export interface components {
             EncodedSha256: string;
             /** @enum {string} */
             Encoding: "identity" | "gzip";
+        };
+        /** @description Existing uploaded ciphertext verified by S3 metadata. Reuse this exact version instead of uploading again. Execution still authenticates the actual ciphertext and original bytes before contacting the bank. */
+        TransferUploadedCiphertext: {
+            CiphertextSha256: string;
+            ObjectBytes: number;
+            VersionId: string;
         };
     };
     responses: never;

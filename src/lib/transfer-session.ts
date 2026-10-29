@@ -1,5 +1,10 @@
 import { PendingUpload, type PreparedUploadSummary } from "./transfer-upload.js";
-import { readUploadGrant, uploadCiphertext, type UploadedCiphertext } from "./transfer-s3.js";
+import {
+  readUploadControlResult,
+  uploadCiphertext,
+  type UploadedCiphertext,
+  type UploadControlResult,
+} from "./transfer-s3.js";
 import type { EncryptedTransferCapability } from "./encrypted-transfers.js";
 import { ISecureTransferError, type FileTransferOptions } from "./file-transfers.js";
 import {
@@ -68,30 +73,18 @@ export class TransferSession {
       if (this.uploaded) return this.uploaded;
       const upload = this.upload;
       const summary = upload?.summary;
-      const id = this.snapshot.transferId;
-      const capability = this.capability;
-      if (!upload || !summary || !id || !capability) throw new ISecureTransferError("invalid-input");
-      const reply = await this.request("grant", id, { CiphertextSha256: summary.CiphertextSha256 }, checked);
-      if (reply === null || typeof reply !== "object" || Array.isArray(reply))
-        throw new ISecureTransferError("invalid-response");
-      const { Upload, ...metadata } = reply as Record<string, unknown>;
-      const status = readTransferStatus(metadata, id);
-      if (status.State !== "prepared" || status.ResponseCode !== "00")
-        throw new ISecureTransferError("invalid-response");
-      const grant = readUploadGrant(Upload, {
-        origin: capability.S3Origin,
-        transferId: id,
-        summary,
-        now: Math.floor(Date.now() / 1000),
-        executeUntil: status.ExecuteUntil,
-        grantMaxSeconds: capability.GrantMaxSeconds,
-      });
+      if (!upload || !summary) throw new ISecureTransferError("invalid-input");
+      const result = await this.inspectUpload(summary, checked);
+      if (result.kind === "stored") {
+        this.uploaded = result.receipt;
+        return result.receipt;
+      }
       this.assertCurrent();
       checked.signal?.throwIfAborted();
       const ciphertext = upload.copyCiphertext();
       try {
         this.uploaded = "uncertain";
-        this.uploaded = await uploadCiphertext(grant, ciphertext, summary, {
+        this.uploaded = await uploadCiphertext(result.grant, ciphertext, summary, {
           ...checked,
           beforeSend: this.assertCurrent,
         });
@@ -99,6 +92,33 @@ export class TransferSession {
       } finally {
         ciphertext.fill(0);
       }
+    });
+  }
+  /** Check storage after a lost acknowledgement; never sends file bytes or
+   * executes a bank request. Undefined means the server confirmed absence. */
+  async reconcileUpload(options: FileTransferOptions = {}): Promise<UploadedCiphertext | undefined> {
+    return this.exclusive(options, async (checked) => {
+      const summary = this.upload?.summary;
+      if (!summary) throw new ISecureTransferError("invalid-input");
+      const result = await this.inspectUpload(summary, checked);
+      this.uploaded = result.kind === "stored" ? result.receipt : undefined;
+      return this.uploaded;
+    });
+  }
+  private async inspectUpload(
+    summary: PreparedUploadSummary,
+    checked: FileTransferOptions,
+  ): Promise<UploadControlResult> {
+    const id = this.snapshot.transferId;
+    const capability = this.capability;
+    if (!id || !capability) throw new ISecureTransferError("invalid-input");
+    const reply = await this.request("grant", id, { CiphertextSha256: summary.CiphertextSha256 }, checked);
+    return readUploadControlResult(reply, {
+      origin: capability.S3Origin,
+      transferId: id,
+      summary,
+      now: Math.floor(Date.now() / 1000),
+      grantMaxSeconds: capability.GrantMaxSeconds,
     });
   }
   /** Release retained local representation/ciphertext. This does not retire the remote transfer. */

@@ -515,7 +515,7 @@ it("refuses destination changes while initial session freshness is awaited befor
   expect(f.transport.requests).toHaveLength(0);
 });
 
-it.each(["success", "lost acknowledgement"])(
+it.each(["success", "lost acknowledgement", "existing object"])(
   "prepares and uploads ciphertext with safe reuse after %s",
   async (outcome) => {
     const { encodeTransferRepresentation } = await import("./transfer-representation.js");
@@ -603,7 +603,18 @@ it.each(["success", "lost acknowledgement"])(
       },
     };
     f.onControl(() => {
-      f.setControl({ ...status, Upload: grant });
+      f.setControl(
+        outcome === "existing object"
+          ? {
+              ...status,
+              Uploaded: {
+                VersionId: "synthetic-version",
+                CiphertextSha256: prepared.CiphertextSha256,
+                ObjectBytes: prepared.ObjectBytes,
+              },
+            }
+          : { ...status, Upload: grant },
+      );
     });
     const storage = vi.fn<typeof fetch>(async (_url, options) => {
       expect(options?.headers).toBeUndefined();
@@ -616,15 +627,35 @@ it.each(["success", "lost acknowledgement"])(
     });
     vi.stubGlobal("fetch", storage);
     try {
-      if (outcome === "success") {
+      if (outcome !== "lost acknowledgement") {
         const uploaded = await transfer.uploadPrepared();
         expect(uploaded.VersionId).toBe("synthetic-version");
         expect(await transfer.uploadPrepared()).toEqual(uploaded);
       } else {
         await expect(transfer.uploadPrepared()).rejects.toMatchObject({ reason: "storage-uncertain" });
         await expect(transfer.uploadPrepared()).rejects.toMatchObject({ reason: "storage-uncertain" });
+        f.setControlFailure(new ISecureNetworkError("Synthetic storage inspection unavailable"));
+        await expect(transfer.reconcileUpload()).rejects.toThrow("Synthetic storage inspection unavailable");
+        f.setControlFailure(undefined);
+        await expect(transfer.uploadPrepared()).rejects.toMatchObject({ reason: "storage-uncertain" });
+        // The mocked grant is a server-confirmed absence, not an inferred HTTP error.
+        expect(await transfer.reconcileUpload()).toBeUndefined();
+        expect(storage).toHaveBeenCalledTimes(1);
+        f.onControl(() => {
+          f.setControl({
+            ...status,
+            Uploaded: {
+              VersionId: "synthetic-recovered",
+              CiphertextSha256: prepared.CiphertextSha256,
+              ObjectBytes: prepared.ObjectBytes,
+            },
+          });
+        });
+        const recovered = await transfer.reconcileUpload();
+        expect(recovered?.VersionId).toBe("synthetic-recovered");
+        expect(await transfer.uploadPrepared()).toEqual(recovered);
       }
-      expect(storage).toHaveBeenCalledTimes(1);
+      expect(storage).toHaveBeenCalledTimes(outcome === "existing object" ? 0 : 1);
       expect(f.transport.requests.at(-1)).toMatchObject({
         method: "POST",
         url: `https://ws-api.test.isecure.fi/v2/file-transfers/${status.TransferId}/upload/grant`,
@@ -632,7 +663,7 @@ it.each(["success", "lost acknowledgement"])(
         retry: false,
         headers: { Authorization: "synthetic-id", "x-api-key": "synthetic-tenant" },
       });
-      expect(storage.mock.calls[0]?.[0]).toBe(grant.Url);
+      if (outcome !== "existing object") expect(storage.mock.calls[0]?.[0]).toBe(grant.Url);
       expect(JSON.stringify(transfer.reference)).not.toContain("synthetic-version");
     } finally {
       vi.unstubAllGlobals();

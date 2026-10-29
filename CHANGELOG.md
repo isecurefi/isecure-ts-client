@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reconcile lost encrypted-upload acknowledgements through the existing authenticated grant control. Reuse matching S3 versions; require confirmed absence before an explicit resend. Storage failures never count as absence. This remains locally tested and unadvertised.
+
 - Add isolated ciphertext upload with strict signed-grant validation, omitted API credentials/cookies, bounded deadlines and retained S3 version receipts. Lost acknowledgements block repeat uploads; storage reconciliation and full bank delivery are still in progress. No hosted activation.
 
 - Add authenticated encrypted upload preparation with a frozen encoded-byte SHA-256, exact context checks and retained ciphertext for explicit retries. No S3 upload or bank execution is activated.
