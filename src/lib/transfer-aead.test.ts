@@ -1,3 +1,4 @@
+import { decodeTransferRepresentation } from "./transfer-representation.js";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
@@ -63,9 +64,16 @@ describe("shared independently verified AEAD vectors", () => {
       expect(hex(await sealEncoded(context, bytes(vector.nonce), bytes(vector.key), bytes(vector.encoded)))).toBe(
         vector.object,
       );
-      expect(hex(await openEncoded(context, bytes(vector.nonce), bytes(vector.key), bytes(vector.object)))).toBe(
-        vector.encoded,
-      );
+      const opened = await openEncoded(context, bytes(vector.nonce), bytes(vector.key), bytes(vector.object));
+      expect(hex(opened)).toBe(vector.encoded);
+      expect(
+        hex(
+          await decodeTransferRepresentation(opened, vector.context.Encoding as "identity" | "gzip", {
+            RawBytes: vector.context.OriginalBytes as number,
+            Sha256: vector.context.OriginalSha256 as string,
+          }),
+        ),
+      ).toBe(vector.original);
     });
     it(`rejects corruption and truncation without returning plaintext: ${vector.id}`, async () => {
       const context = AeadContext.parse(vector.context);

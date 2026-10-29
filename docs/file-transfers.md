@@ -186,3 +186,26 @@ JSON boundaries, binary round trips, malformed advertisements/results, bank
 refusals, session changes and no replay. Actual hosted qualification and public
 SDK/API publication remain separate. Use the unpublished package for integration;
 this document does not claim that the candidate is available from npm.
+
+## Local compression foundation
+
+An internal representation codec now selects gzip only when it makes the file
+smaller, otherwise retaining the original bytes. It checks original size and
+SHA-256 before returning decoded bytes and accepts at most 32 MiB. This is local
+codec evidence, not a new hosted file limit or an activated byte-helper feature.
+
+The decoder accepts exactly one gzip member. Node 24's native gzip decoder accepts
+concatenated members, despite the single-member requirement in the
+[Compression Standard](https://compression.spec.whatwg.org/#gzip). The SDK therefore
+checks the compressed body with native `deflate-raw`, then runs a bounded native
+gzip validation pass for header/data checksums. The second pass retains no output
+buffer. Input chunks and output buffers are bounded; errors and cancellation clear
+owned temporary buffers where JavaScript permits. This does not promise complete
+memory erasure or qualify the full bank-transfer memory budget. Native codecs and
+Web Crypto own compression, checksums and hashing; no new dependency is added.
+
+Local Node, Chromium and WebKit tests cover shared encrypted fixtures through
+original-byte decoding, 32 MiB compressible/incompressible files and extra members.
+Node tests additionally cover corrupt headers/checksums, truncation, expansion and
+cancellation. The actual macOS app WebView, encrypted S3 transport and hosted
+workflow still require qualification.

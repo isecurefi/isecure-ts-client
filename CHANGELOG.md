@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add an internal bounded gzip/original-integrity codec, including strict single-member validation across Node and browsers. Existing byte helpers remain unchanged; full encrypted transport is still in progress.
+
 - Add unpublished session-bound transfer references and explicit create/status/retire controls with stable logical request IDs, closed runtime validation and no automatic replay. Redact encrypted-transfer keys, grants and short payloads. Full encrypted file delivery remains in progress.
 
 - Add unpublished generated encrypted-transfer contract and `getEncryptedFileTransferSupport(environment)` discovery. Preserve version-1 bootstrap and legacy byte helpers; require explicit authenticated s3-aead-v1 details without fallback on errors. No transfer workflow or capability activation implied.

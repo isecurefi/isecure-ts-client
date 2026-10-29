@@ -66,6 +66,16 @@ function text(value: unknown, maximum: number, empty = false): value is string {
 function integer(value: unknown, maximum = Number.MAX_SAFE_INTEGER): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 && value <= maximum;
 }
+export function readTransferIntegrity(value: unknown): Readonly<components["schemas"]["TransferIntegrity"]> {
+  if (
+    !object(value) ||
+    !closed(value, ["RawBytes", "Sha256"]) ||
+    !integer(value.RawBytes, 32 * 1024 * 1024) ||
+    !isTransferId(value.Sha256)
+  )
+    throw new ISecureTransferError("invalid-input");
+  return Object.freeze({ RawBytes: value.RawBytes, Sha256: value.Sha256 });
+}
 /** Validate before copying or sending. No text normalization or unknown field stripping. */
 export function readTransferIntent(value: unknown): TransferIntent {
   const invalid = () => new ISecureTransferError("invalid-input");
@@ -86,11 +96,7 @@ export function readTransferIntent(value: unknown): TransferIntent {
       !closed(value, [...common, "Storage", "Integrity"], ["TargetId", "FileName"]) ||
       (value.Storage !== "s3" && value.Storage !== "inline") ||
       (Object.hasOwn(value, "FileName") && !text(value.FileName, 256)) ||
-      !object(value.Integrity) ||
-      !closed(value.Integrity, ["RawBytes", "Sha256"]) ||
-      !integer(value.Integrity.RawBytes, 32 * 1024 * 1024) ||
-      value.Integrity.RawBytes === 0 ||
-      !isTransferId(value.Integrity.Sha256)
+      readTransferIntegrity(value.Integrity).RawBytes === 0
     )
       throw invalid();
   } else throw invalid();
