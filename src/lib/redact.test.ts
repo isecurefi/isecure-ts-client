@@ -95,3 +95,10 @@ describe("redactUrl", () => {
     );
   });
 });
+
+it("redacts encrypted transfer keys, grants and short payloads without heuristic dependence", () => {
+  const fields = ["Artifact", "Upload", "FilePayload", "Data", "Fields", "Key", "Nonce", "Policy", "Url"];
+  for (const field of fields) {
+    expect(redactValue({ [field]: "tiny" })).toEqual({ [field]: REDACTED });
+  }
+});

@@ -1,3 +1,12 @@
+import { TransferSession, createTransferRequestId } from "./transfer-session.js";
+import {
+  checkTransferBudget,
+  isTransferId,
+  readTransferIntent,
+  readTransferReference,
+  type TransferIntent,
+  type TransferReference,
+} from "./transfer-control.js";
 import {
   readEncryptedCapability,
   type EncryptedTransferSupport,
@@ -536,9 +545,83 @@ export class WSChannel {
     environment: TransferEnvironment,
     options: FileTransferOptions = {},
   ): Promise<EncryptedTransferSupport> {
+    return (await this.discoverEncryptedTransfer(environment, options)).support;
+  }
+
+  /** Prepare a resumable reference without creating or executing anything remotely. */
+  async openFileTransfer(
+    intent: TransferIntent,
+    options: FileTransferOptions & { environment: TransferEnvironment; clientRequestId?: string },
+  ): Promise<TransferSession> {
+    const frozenIntent = readTransferIntent(intent);
+    const clientRequestId = Object.hasOwn(options, "clientRequestId")
+      ? options.clientRequestId
+      : createTransferRequestId();
+    const { BaseUrl, Bank, Mode } = this.props;
+    const environment = options.environment;
+    if (Mode !== "data" || frozenIntent.Bank !== Bank || !isTransferId(clientRequestId))
+      throw new ISecureTransferError("invalid-input");
+    const { support, assertCurrent } = await this.discoverEncryptedTransfer(environment, options);
+    if (support.protocol === "unavailable") throw new ISecureTransferError("unsupported");
+    const bound = readTransferReference({
+      version: 1,
+      environment,
+      baseUrl: BaseUrl,
+      bank: Bank,
+      accountScope: support.capability.AccountScope,
+      clientRequestId,
+      intent: frozenIntent,
+    });
+    checkTransferBudget(bound, support.capability);
+    return this.transferSession(bound, assertCurrent);
+  }
+
+  /** Reauthorize saved metadata in the current session; never resumes bank execution implicitly. */
+  async resumeFileTransfer(reference: TransferReference, options: FileTransferOptions = {}): Promise<TransferSession> {
+    const bound = readTransferReference(reference);
+    if (this.props.Mode !== "data" || bound.baseUrl !== this.props.BaseUrl || bound.bank !== this.props.Bank)
+      throw new ISecureTransferError("session-changed");
+    const { support, assertCurrent } = await this.discoverEncryptedTransfer(bound.environment, options);
+    if (support.protocol === "unavailable") throw new ISecureTransferError("unsupported");
+    if (support.capability.AccountScope !== bound.accountScope) throw new ISecureTransferError("session-changed");
+    checkTransferBudget(bound, support.capability);
+    return this.transferSession(bound, assertCurrent);
+  }
+
+  private transferSession(reference: TransferReference, assertCurrent: () => void): TransferSession {
+    assertCurrent();
+    if (reference.baseUrl !== this.props.BaseUrl || reference.bank !== this.props.Bank || this.props.Mode !== "data")
+      throw new ISecureTransferError("session-changed");
+    return new TransferSession(
+      reference,
+      (operation, id, body, options) => {
+        assertCurrent();
+        return this.call<unknown>(
+          operation === "create" ? "POST" : operation === "status" ? "GET" : "DELETE",
+          this.urls.transfers(id),
+          {
+            ...(body === undefined ? {} : { body }),
+            auth: true,
+            skipFreshness: true,
+            retry: false,
+            ...(options.signal ? { signal: options.signal } : {}),
+          },
+        );
+      },
+      assertCurrent,
+    );
+  }
+
+  private async discoverEncryptedTransfer(
+    environment: TransferEnvironment,
+    options: FileTransferOptions,
+  ): Promise<{
+    support: EncryptedTransferSupport;
+    assertCurrent: () => void;
+  }> {
     if (environment !== "test" && environment !== "production") throw new ISecureTransferError("invalid-input");
     const { transferAdvertised, assertCurrent } = await this.discoverFileTransfer(options);
-    if (!transferAdvertised) return { protocol: "unavailable" };
+    if (!transferAdvertised) return { support: { protocol: "unavailable" }, assertCurrent };
     assertCurrent();
     const capability = await this.call<unknown>("GET", this.urls.transferCapabilities(), {
       auth: true,
@@ -548,8 +631,11 @@ export class WSChannel {
     });
     assertCurrent();
     return {
-      protocol: "s3-aead-v1",
-      capability: readEncryptedCapability(capability, { bank: this.props.Bank, environment }),
+      support: {
+        protocol: "s3-aead-v1",
+        capability: readEncryptedCapability(capability, { bank: this.props.Bank, environment }),
+      },
+      assertCurrent,
     };
   }
 
@@ -605,10 +691,17 @@ export class WSChannel {
   private async discoverFileTransfer(
     options: FileTransferOptions,
   ): Promise<{ support: FileTransferSupport; transferAdvertised: boolean; assertCurrent: () => void }> {
+    const { BaseUrl, Bank, Email, Mode } = this.props;
     await this.ensureFreshSession();
+    if (
+      this.props.BaseUrl !== BaseUrl ||
+      this.props.Bank !== Bank ||
+      this.props.Email !== Email ||
+      this.props.Mode !== Mode
+    )
+      throw new ISecureTransferError("session-changed");
     this.authHeaders();
     const tokens = this.tokens;
-    const { BaseUrl, Bank, Email, Mode } = this.props;
     const { idToken, apiKey } = tokens;
     const assertCurrent = (): void => {
       if (

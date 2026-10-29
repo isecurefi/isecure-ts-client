@@ -46,6 +46,16 @@ const SENSITIVE_FIELDS = new Set(
     "content",
     "filecontents",
     "signature",
+    // encrypted artifact controls, form grants and short payloads
+    "artifact",
+    "upload",
+    "filepayload",
+    "data",
+    "fields",
+    "key",
+    "nonce",
+    "policy",
+    "url",
     // personally identifiable information
     "email",
     "extemail",

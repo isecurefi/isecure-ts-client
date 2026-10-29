@@ -94,7 +94,9 @@ and download now disable automatic retries to avoid repeating an uncertain bank
 operation. The new helpers use authenticated metadata to select legacy or
 advertised identity inline support; compression and S3 remain unavailable.
 `getEncryptedFileTransferSupport("test")` adds strict, authenticated encrypted-protocol
-discovery without probing new routes on legacy servers. The encrypted workflow is
+discovery without probing new routes on legacy servers. Optional `openFileTransfer()` /
+`resumeFileTransfer()` handles add explicit create/status/retire controls and stable
+request IDs; they never dispatch bank operations. The encrypted file workflow is
 still in development and no capability is activated. See
 [supported behavior and limits](docs/file-transfers.md).
 

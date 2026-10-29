@@ -4,15 +4,18 @@ import { ISecureError } from "./errors.js";
 
 /** Generated from the backend-owned additive ListCerts metadata contract. */
 export type FileTransferCapability = components["schemas"]["FileTransferCapability"];
-export type TransferErrorReason = "invalid-input" | "invalid-response" | "unsupported" | "size" | "session-changed";
+export type TransferErrorReason =
+  "invalid-input" | "invalid-response" | "unsupported" | "size" | "session-changed" | "refused" | "in-progress";
 
 /** Static diagnostics only: never attaches file bytes, signatures or response bodies. */
 export class ISecureTransferError extends ISecureError {
   constructor(readonly reason: TransferErrorReason) {
     const messages: Record<TransferErrorReason, string> = {
+      refused: "File transfer request was refused",
+      "in-progress": "A transfer control request is already in progress",
       "invalid-input": "Invalid file transfer input",
       "invalid-response": "Invalid file transfer metadata or response",
-      unsupported: "This SDK and server do not share an available inline transfer protocol",
+      unsupported: "The requested file transfer protocol is not available",
       size: "File or metadata exceeds the available inline transfer budget; large-file delivery is not enabled",
       "session-changed": "Session or transfer destination changed; do not automatically resubmit the operation",
     };

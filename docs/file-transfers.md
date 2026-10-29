@@ -102,6 +102,51 @@ No deployed capability is activated by this SDK change. The Web Crypto codec and
 shared Rust interoperability vectors are local foundations; successful discovery
 alone does not demonstrate an end-to-end large transfer.
 
+## Resumable metadata controls
+
+The unpublished SDK also exposes `openFileTransfer()` and `resumeFileTransfer()`.
+They require an authenticated Data session and explicit encrypted capability
+advertisement. They do not fall back on current Production. Opening a handle
+reads metadata only; creating the transfer is a separate, explicit call:
+
+```ts
+const transfer = await client.openFileTransfer(
+  {
+    Operation: "download",
+    Bank: client.props.Bank,
+    FileType: "pain.002",
+    FileReference: "example-reference",
+    AcceptGzip: false,
+  },
+  { environment: "test" },
+);
+const savedReference = transfer.reference; // Save before attempting create.
+const created = await transfer.create({ signal: abortController.signal });
+const current = await transfer.status(); // Does not contact the bank.
+// Save transfer.reference again to retain the confirmed TransferId.
+```
+
+`create()` reserves the stable random `ClientRequestId` and immutable intent. It
+never downloads or uploads a bank file. If its response is lost, restore the
+saved reference with `await client.resumeFileTransfer(savedReference)` and
+explicitly call `create()` again. The server reconciles the identical logical
+request. Do not generate a new ID for that retry. The SDK never performs this
+repeat automatically. Once the ID is confirmed, use `status()` to check state.
+
+Resuming checks the current authenticated account scope, environment, bank and
+base URL. Each handle also checks its session before and after requests. A changed
+or expired session invalidates that handle; resume explicitly in the new session.
+The reference has no tokens, keys, grants, signatures or file bytes, but its file
+selectors can still contain private information. Store it accordingly, not in logs.
+
+`retire()` cancels a prepared transfer or revokes retained delivery. It cannot undo
+bank processing. Neither status nor retirement contacts the bank. `completed`
+means a retained bank response exists; check `ResponseCode` separately for the
+bank outcome, including bank refusal codes. `uncertain` must never trigger blind
+resubmission. Unexpected keys, URLs or file payloads in metadata-only responses
+are rejected. These controls are locally fixture-tested; prepare/grant/execute,
+encrypted file delivery and hosted qualification remain in progress.
+
 ## Explicit limits and unavailable functionality
 
 The inline SDK budget is 6,225,920 serialized UTF-8 JSON bytes: the six-MiB Lambda

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add unpublished session-bound transfer references and explicit create/status/retire controls with stable logical request IDs, closed runtime validation and no automatic replay. Redact encrypted-transfer keys, grants and short payloads. Full encrypted file delivery remains in progress.
+
 - Add unpublished generated encrypted-transfer contract and `getEncryptedFileTransferSupport(environment)` discovery. Preserve version-1 bootstrap and legacy byte helpers; require explicit authenticated s3-aead-v1 details without fallback on errors. No transfer workflow or capability activation implied.
 
 - Add an internal AES-256-GCM artifact codec with strict binary context and shared NIST/application vectors passing in native ARM64 Rust, Node, Chromium and WebKit. This does not activate encrypted S3 delivery.

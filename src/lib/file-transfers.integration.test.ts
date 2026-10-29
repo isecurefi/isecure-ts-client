@@ -33,6 +33,9 @@ async function setup(base: string, capabilities?: unknown) {
   let detailResult: unknown;
   let detailFailure: Error | undefined;
   let onDetail: (() => void) | undefined;
+  let controlResult: unknown;
+  let controlFailure: Error | undefined;
+  let onControl: (() => void) | undefined;
   transport.respond((request) => {
     if (request.url.includes("/session/"))
       return response(
@@ -49,6 +52,11 @@ async function setup(base: string, capabilities?: unknown) {
       onDetail?.();
       if (detailFailure) throw detailFailure;
       return response(detailResult);
+    }
+    if (request.url.includes("/file-transfers")) {
+      onControl?.();
+      if (controlFailure) throw controlFailure;
+      return response(controlResult);
     }
     if (request.url.includes("/files/")) {
       onFile?.();
@@ -76,6 +84,15 @@ async function setup(base: string, capabilities?: unknown) {
   return {
     client,
     transport,
+    setControl: (value: unknown) => {
+      controlResult = value;
+    },
+    setControlFailure: (error: Error | undefined) => {
+      controlFailure = error;
+    },
+    onControl: (callback: () => void) => {
+      onControl = callback;
+    },
     setDetail: (value: unknown) => {
       detailResult = value;
     },
@@ -348,4 +365,152 @@ describe("encrypted discovery is explicitly advertised and session-bound", () =>
       expect(files(fixture.transport.requests)).toHaveLength(0);
     }
   });
+});
+
+describe("authenticated resumable controls", () => {
+  const advertised = [{ ...caps, Protocols: ["inline-v1", "transfer-v1"] }];
+  const intent = {
+    Operation: "download" as const,
+    Bank: "simulator",
+    FileType: "pain.002",
+    FileReference: "synthetic",
+    AcceptGzip: false,
+  };
+  const status = {
+    ResponseCode: "00",
+    ResponseText: "Synthetic",
+    TransferId: "c".repeat(64),
+    State: "prepared",
+    ExecuteUntil: 4600,
+    RetentionUntil: 605800,
+  };
+  const options = { environment: "test" as const, clientRequestId: "b".repeat(64) };
+  async function fixture() {
+    const f = await setup("https://ws-api.test.isecure.fi/v2", advertised);
+    f.setDetail(detailCapability());
+    f.setControl(status);
+    return f;
+  }
+  it("opens without mutation, binds the authenticated scope and explicitly creates/statuses/retires", async () => {
+    const f = await fixture();
+    const transfer = await f.client.openFileTransfer(intent, options);
+    expect(f.transport.requests.map((r) => r.method)).toEqual(["GET", "GET"]);
+    expect(transfer.reference.accountScope).toBe(detailCapability().AccountScope);
+    const signal = new AbortController().signal;
+    await transfer.create({ signal });
+    await transfer.status();
+    await transfer.retire();
+    const controls = f.transport.requests.slice(2);
+    expect(controls.map((r) => [r.method, r.url, r.body])).toEqual([
+      [
+        "POST",
+        "https://ws-api.test.isecure.fi/v2/file-transfers",
+        { ClientRequestId: options.clientRequestId, Intent: intent },
+      ],
+      ["GET", `https://ws-api.test.isecure.fi/v2/file-transfers/${status.TransferId}`, undefined],
+      ["DELETE", `https://ws-api.test.isecure.fi/v2/file-transfers/${status.TransferId}`, undefined],
+    ]);
+    expect(controls.every((r) => r.retry === false)).toBe(true);
+    expect(controls[0]).toMatchObject({
+      signal,
+      headers: { Authorization: "synthetic-id", "x-api-key": "synthetic-tenant" },
+    });
+    expect(files(f.transport.requests)).toHaveLength(0);
+  });
+  it("does not replay a lost create acknowledgement and resumes with exactly the saved ID and intent", async () => {
+    const f = await fixture();
+    const transfer = await f.client.openFileTransfer(intent, options);
+    const saved = transfer.reference;
+    f.setControlFailure(new ISecureNetworkError("Synthetic timeout"));
+    await expect(transfer.create()).rejects.toThrow("Synthetic timeout");
+    expect(f.transport.requests.filter((r) => r.method === "POST")).toHaveLength(1);
+    f.setControlFailure(undefined);
+    const resumed = await f.client.resumeFileTransfer(saved);
+    await resumed.create();
+    const creates = f.transport.requests.filter((r) => r.method === "POST");
+    expect(creates).toHaveLength(2);
+    expect(creates[0]?.body).toEqual(creates[1]?.body);
+    const confirmed = await f.client.resumeFileTransfer(resumed.reference);
+    await confirmed.status();
+    expect(f.transport.requests.at(-1)?.url).toMatch(new RegExp(status.TransferId + "$"));
+  });
+  it("rejects new and resumed controls when encryption has not been advertised", async () => {
+    const f = await setup("https://ws-api.isecure.fi/v2");
+    await expect(f.client.openFileTransfer(intent, { ...options, environment: "production" })).rejects.toMatchObject({
+      reason: "unsupported",
+    });
+    const candidate = await fixture();
+    const ref = (await candidate.client.openFileTransfer(intent, options)).reference;
+    candidate.setCertificateResult({ ResponseCode: "00", Certs: [] });
+    await expect(candidate.client.resumeFileTransfer(ref)).rejects.toMatchObject({ reason: "unsupported" });
+    expect(f.transport.requests).toHaveLength(1);
+    expect(f.transport.requests[0]?.url).toMatch(/\/certs$/u);
+  });
+  it.each(["base", "bank", "mode", "session"])(
+    "rejects %s changes before controls without sending a mutation",
+    async (change) => {
+      const f = await fixture();
+      const transfer = await f.client.openFileTransfer(intent, options);
+      if (change === "base") f.client.props.BaseUrl = "https://other.test";
+      if (change === "bank") f.client.props.Bank = "other";
+      if (change === "mode") f.client.props.Mode = "admin";
+      if (change === "session") Object.assign(f.client.session, { idToken: "other" });
+      await expect(transfer.create()).rejects.toMatchObject({ reason: "session-changed" });
+      expect(f.transport.requests).toHaveLength(2);
+    },
+  );
+  it("rejects session changes during controls and resume across scopes, destinations or modes", async () => {
+    const f = await fixture();
+    const transfer = await f.client.openFileTransfer(intent, options);
+    f.onControl(() => {
+      Object.assign(f.client.session, { idToken: "other" });
+    });
+    await expect(transfer.create()).rejects.toMatchObject({ reason: "session-changed" });
+    expect(transfer.reference.transferId).toBeUndefined();
+    f.setDetail({ ...detailCapability(), AccountScope: "d".repeat(64) });
+    await expect(f.client.resumeFileTransfer(transfer.reference)).rejects.toMatchObject({ reason: "session-changed" });
+    for (const ref of [
+      { ...transfer.reference, baseUrl: "https://other.test" },
+      { ...transfer.reference, bank: "other", intent: { ...intent, Bank: "other" } },
+    ]) {
+      await expect(f.client.resumeFileTransfer(ref)).rejects.toMatchObject({ reason: "session-changed" });
+    }
+    f.client.props.Mode = "admin";
+    await expect(f.client.openFileTransfer(intent, options)).rejects.toMatchObject({ reason: "invalid-input" });
+    await expect(f.client.resumeFileTransfer(transfer.reference)).rejects.toMatchObject({ reason: "session-changed" });
+  });
+  it("applies negotiated encoding, storage, raw-byte and control-envelope limits", async () => {
+    const f = await fixture();
+    f.setDetail({ ...detailCapability(), Encodings: ["identity"] });
+    await expect(f.client.openFileTransfer({ ...intent, AcceptGzip: true }, options)).rejects.toMatchObject({
+      reason: "unsupported",
+    });
+    const upload = {
+      Operation: "upload" as const,
+      Bank: "simulator",
+      FileType: "pain.001",
+      Storage: "inline" as const,
+      Integrity: { RawBytes: 2, Sha256: "a".repeat(64) },
+      AcceptGzip: false,
+    };
+    f.setDetail({ ...detailCapability(), Delivery: ["s3"] });
+    await expect(f.client.openFileTransfer(upload, options)).rejects.toMatchObject({ reason: "unsupported" });
+    f.setDetail({ ...detailCapability(), MaxRawUploadBytes: 1 });
+    await expect(f.client.openFileTransfer(upload, options)).rejects.toMatchObject({ reason: "size" });
+    f.setDetail({ ...detailCapability(), MaxControlBytes: 1 });
+    await expect(f.client.openFileTransfer(intent, options)).rejects.toMatchObject({ reason: "size" });
+    expect(f.transport.requests.every((r) => r.method === "GET")).toBe(true);
+  });
+});
+
+it("refuses destination changes while initial session freshness is awaited before discovery", async () => {
+  const f = await setup("https://ws-api.test.isecure.fi/v2", [{ ...caps, Protocols: ["inline-v1", "transfer-v1"] }]);
+  f.setDetail(detailCapability());
+  const pending = f.client.openFileTransfer(
+    { Operation: "download", Bank: "simulator", FileType: "pain.002", FileReference: "synthetic", AcceptGzip: false },
+    { environment: "test" },
+  );
+  f.client.props.BaseUrl = "https://other.example/v2";
+  await expect(pending).rejects.toMatchObject({ reason: "session-changed" });
+  expect(f.transport.requests).toHaveLength(0);
 });

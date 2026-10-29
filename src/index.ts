@@ -146,3 +146,6 @@ export type {
   EncryptedTransferSupport,
   TransferEnvironment,
 } from "./lib/encrypted-transfers.js";
+
+export { TransferSession, createTransferRequestId } from "./lib/transfer-session.js";
+export type { TransferIntent, TransferReference, TransferStatus } from "./lib/transfer-control.js";

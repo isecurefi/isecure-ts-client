@@ -61,6 +61,10 @@ export class UrlBuilder {
     return this.url("providers", provider, "check");
   }
 
+  transfers(id?: string): string {
+    return id === undefined ? this.url("file-transfers") : this.url("file-transfers", id);
+  }
+
   transferCapabilities(): string {
     return this.url("file-transfers", "capabilities", this.parts().Bank);
   }
