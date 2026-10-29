@@ -86,6 +86,15 @@ The SDK preserves the response as received. It does not infer balance values,
 automatically download another file, or assume every bank uses the same query flow.
 Acknowledgement-only uploads continue to work without `Content`.
 
+## Optional byte-based file helpers (unpublished)
+
+The 4.6.0-rc.1 candidate adds `getFileTransferSupport()`, `uploadFileBytes()` and
+`downloadFileBytes()`. Existing calls retain their wire format. Both bank upload
+and download now disable automatic retries to avoid repeating an uncertain bank
+operation. The new helpers use authenticated metadata to select legacy or
+advertised identity inline support; compression and S3 remain unavailable.
+See [supported behavior and limits](docs/file-transfers.md).
+
 ## Register and sign in
 
 Register an `admin` account first. Use `ApiKey: "0"` for a new integrator, then retain the returned

@@ -1264,7 +1264,8 @@ export interface components {
          *       "Connections": [],
          *       "ResponseCode": "..",
          *       "ResponseText": "..",
-         *       "Retired": []
+         *       "Retired": [],
+         *       "FileTransferCapabilities": []
          *     }
          */
         ListCertsResp: {
@@ -1278,6 +1279,8 @@ export interface components {
             ResponseText: string;
             /** @description Certificates retired with RetireCert (or set aside by ISECure); no longer usable and removed with the account */
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
+            /** @description Optional per-bank versioned transfer support. Absent on legacy servers. Empty array advertises no supported transfers. Capability discovery does not contact a bank or grant authority. */
+            FileTransferCapabilities?: components["schemas"]["FileTransferCapability"][];
         };
         /**
          * @example {
@@ -1850,6 +1853,18 @@ export interface components {
             MfaType: "SMS_MFA" | "SOFTWARE_TOKEN_MFA";
             /** @description Fresh verification code. Never log this request body. */
             Code: string;
+        };
+        /** @description Optional per-bank transfer advertisement. Omission from a successful ListCerts response means legacy inline support. Advertising is not authorization or evidence of deployment. Version 1 inline-v1 uses unchanged Files operations; transfer-v1 is reserved until qualified. */
+        FileTransferCapability: {
+            /** @enum {integer} */
+            ContractVersion: 1;
+            Bank: string;
+            Protocols: ("inline-v1" | "transfer-v1")[];
+            Encodings: ("identity" | "gzip")[];
+            Delivery: ("inline" | "s3")[];
+            MaxRawUploadBytes: number;
+            MaxRawDownloadBytes: number;
+            MaxInlineRequestBytes: number;
         };
     };
     responses: never;

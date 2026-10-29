@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Prepare unpublished 4.6.0-rc.1: generated optional transfer capabilities and opt-in bounded byte helpers, compatible with existing Production and Test. No compression/S3 activation.
+- Disable automatic replay of bank upload/download operations, including GET downloads; public signatures and wire fields stay unchanged.
+
 - Add unpublished Rust-candidate PGP policy, lock, full-fingerprint deletion, and action-MFA methods; expose policy projections and explicit fresh factors for protected deletions. Disable retries for these mutations.
 
 - Account discovery includes optional original registration timestamp `CreatedAt`.

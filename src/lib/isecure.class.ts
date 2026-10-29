@@ -1,4 +1,17 @@
 import {
+  ISecureTransferError,
+  LEGACY_INLINE_SUPPORT,
+  readTransferSupport,
+  requireInlineSupport,
+  prepareInlineUpload,
+  assertInlineUploadBudget,
+  decodeInlineResult,
+  type FileTransferSupport,
+  type FileTransferOptions,
+  type FileBytesResult,
+  type UploadFileBytesRequest,
+} from "./file-transfers.js";
+import {
   providerChangeHeaders,
   requireProvider,
   type CredentialProvider,
@@ -500,7 +513,96 @@ export class WSChannel {
           }
         : requestOrContents;
 
-    return this.call<UploadFileResponse, UploadFileRequest>("PUT", this.urls.files(), { body: request, auth: true });
+    return this.call<UploadFileResponse, UploadFileRequest>("PUT", this.urls.files(), {
+      body: request,
+      auth: true,
+      retry: false,
+    });
+  }
+
+  /** Authenticated metadata read only. No bank call and no capability cache across sessions. */
+  async getFileTransferSupport(options: FileTransferOptions = {}): Promise<FileTransferSupport> {
+    return (await this.discoverFileTransfer(options)).support;
+  }
+
+  /** Optional bytes helper. Only identity inline is implemented; bank operations are never replayed. */
+  async uploadFileBytes(
+    input: UploadFileBytesRequest,
+    options: FileTransferOptions = {},
+  ): Promise<FileBytesResult<UploadFileResponse>> {
+    // Freeze the exact signed bytes/metadata before any await, and reject oversized legacy uploads locally.
+    const body = prepareInlineUpload(input, LEGACY_INLINE_SUPPORT);
+    const rawBytes = input.bytes.byteLength;
+    const { support, assertCurrent } = await this.discoverFileTransfer(options);
+    const limits = requireInlineSupport(support);
+    assertInlineUploadBudget(rawBytes, body, limits);
+    assertCurrent();
+    const response = await this.call<UploadFileResponse>("PUT", this.urls.files(), {
+      body,
+      auth: true,
+      skipFreshness: true,
+      retry: false,
+      ...(options.signal ? { signal: options.signal } : {}),
+    });
+    assertCurrent();
+    const bytes = decodeInlineResult(response, limits, false);
+    return { response, protocol: limits.protocol, ...(bytes === undefined ? {} : { bytes }) };
+  }
+
+  /** Optional bounded bytes helper. A failed/uncertain retrieval never falls back or downloads again. */
+  async downloadFileBytes(
+    FileType: string,
+    FileReference: string,
+    options: FileTransferOptions = {},
+  ): Promise<FileBytesResult<DownloadFileResponse>> {
+    if (
+      ![FileType, FileReference].every((value) => typeof value === "string" && value.length > 0 && value.length <= 1024)
+    ) {
+      throw new ISecureTransferError("invalid-input");
+    }
+    const { support, assertCurrent } = await this.discoverFileTransfer(options);
+    const limits = requireInlineSupport(support);
+    assertCurrent();
+    const response = await this.call<DownloadFileResponse>("GET", this.urls.file(FileType, FileReference), {
+      auth: true,
+      skipFreshness: true,
+      retry: false,
+      ...(options.signal ? { signal: options.signal } : {}),
+    });
+    assertCurrent();
+    const bytes = decodeInlineResult(response, limits, true);
+    return { response, protocol: limits.protocol, ...(bytes === undefined ? {} : { bytes }) };
+  }
+
+  private async discoverFileTransfer(
+    options: FileTransferOptions,
+  ): Promise<{ support: FileTransferSupport; assertCurrent: () => void }> {
+    await this.ensureFreshSession();
+    this.authHeaders();
+    const tokens = this.tokens;
+    const { BaseUrl, Bank, Email, Mode } = this.props;
+    const { idToken, apiKey } = tokens;
+    const assertCurrent = (): void => {
+      if (
+        this.tokens !== tokens ||
+        this.tokens.idToken !== idToken ||
+        this.tokens.apiKey !== apiKey ||
+        this.props.BaseUrl !== BaseUrl ||
+        this.props.Bank !== Bank ||
+        this.props.Email !== Email ||
+        this.props.Mode !== Mode ||
+        this.isSessionExpired()
+      ) {
+        throw new ISecureTransferError("session-changed");
+      }
+    };
+    const metadata = await this.call<unknown>("GET", this.urls.certs(), {
+      auth: true,
+      skipFreshness: true,
+      ...(options.signal ? { signal: options.signal } : {}),
+    });
+    assertCurrent();
+    return { support: readTransferSupport(metadata, Bank), assertCurrent };
   }
 
   async listFiles(query?: ListFilesQuery): Promise<ListFilesResponse>;
@@ -519,7 +621,10 @@ export class WSChannel {
   }
 
   async downloadFile(FileType: string, FileReference: string): Promise<DownloadFileResponse> {
-    return this.call<DownloadFileResponse>("GET", this.urls.file(FileType, FileReference), { auth: true });
+    return this.call<DownloadFileResponse>("GET", this.urls.file(FileType, FileReference), {
+      auth: true,
+      retry: false,
+    });
   }
 
   async deleteFile(FileType: string, FileReference: string): Promise<DeleteFileResponse> {

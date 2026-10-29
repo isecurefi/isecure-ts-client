@@ -1,6 +1,6 @@
 {
   "name": "isecure-ts-client",
-  "version": "4.6.0-rc.0",
+  "version": "4.6.0-rc.1",
   "description": "TypeScript SDK for the ISECure WS Channel API",
   "license": "MIT",
   "packageManager": "yarn@1.22.22",
@@ -86,7 +86,9 @@
     "sync:provider-contract": "node scripts/sync-provider-contract.mjs --write",
     "check:provider-contract": "node scripts/sync-provider-contract.mjs",
     "test:providers:read": "yarn build:examples && node dist-examples/examples/provider-qualification/cli.js read",
-    "test:providers:lifecycle": "yarn build:examples && node dist-examples/examples/provider-qualification/cli.js lifecycle"
+    "test:providers:lifecycle": "yarn build:examples && node dist-examples/examples/provider-qualification/cli.js lifecycle",
+    "sync:transfer-contract": "node scripts/sync-transfer-contract.mjs --write",
+    "check:transfer-contract": "node scripts/sync-transfer-contract.mjs"
   },
   "dependencies": {
     "axios": "^1.20.0"

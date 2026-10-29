@@ -129,3 +129,14 @@ export {
   type ProviderConnectionMetadata,
   type ProviderReadiness,
 } from "./lib/providers.js";
+
+export {
+  ISecureTransferError,
+  type TransferErrorReason,
+  type FileTransferCapability,
+  type FileTransferSupport,
+  type InlineTransferSupport,
+  type UploadFileBytesRequest,
+  type FileTransferOptions,
+  type FileBytesResult,
+} from "./lib/file-transfers.js";

@@ -1099,7 +1099,8 @@
         "Connections": [],
         "ResponseCode": "..",
         "ResponseText": "..",
-        "Retired": []
+        "Retired": [],
+        "FileTransferCapabilities": []
       },
       "properties": {
         "Certs": {
@@ -1130,6 +1131,14 @@
             "$ref": "#/definitions/RetiredCertDescriptor"
           },
           "type": "array"
+        },
+        "FileTransferCapabilities": {
+          "description": "Optional per-bank versioned transfer support. Absent on legacy servers. Empty array advertises no supported transfers. Capability discovery does not contact a bank or grant authority.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FileTransferCapability"
+          },
+          "maxItems": 32
         }
       },
       "required": [
@@ -2406,6 +2415,89 @@
         "AccessToken": "string",
         "MfaType": "string",
         "Code": "string"
+      }
+    },
+    "FileTransferCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional per-bank transfer advertisement. Omission from a successful ListCerts response means legacy inline support. Advertising is not authorization or evidence of deployment. Version 1 inline-v1 uses unchanged Files operations; transfer-v1 is reserved until qualified.",
+      "required": [
+        "ContractVersion",
+        "Bank",
+        "Protocols",
+        "Encodings",
+        "Delivery",
+        "MaxRawUploadBytes",
+        "MaxRawDownloadBytes",
+        "MaxInlineRequestBytes"
+      ],
+      "properties": {
+        "ContractVersion": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        },
+        "Bank": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z0-9_-]+$"
+        },
+        "Protocols": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "inline-v1",
+              "transfer-v1"
+            ]
+          }
+        },
+        "Encodings": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "identity",
+              "gzip"
+            ]
+          }
+        },
+        "Delivery": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "inline",
+              "s3"
+            ]
+          }
+        },
+        "MaxRawUploadBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 33554432
+        },
+        "MaxRawDownloadBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 33554432
+        },
+        "MaxInlineRequestBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6225920
+        }
       }
     }
   },
