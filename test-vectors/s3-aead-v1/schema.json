@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "primitiveVectors", "artifactVectors"],
+  "properties": {
+    "format": {
+      "const": "s3-aead-v1"
+    },
+    "primitiveVectors": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "key", "nonce", "plaintext", "aad", "ciphertext", "tag"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "nonce": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "minLength": 24,
+            "maxLength": 24
+          },
+          "plaintext": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-f]{2})*$",
+            "not": {
+              "pattern": "[^0-9a-f]"
+            }
+          },
+          "aad": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-f]{2})*$",
+            "not": {
+              "pattern": "[^0-9a-f]"
+            }
+          },
+          "ciphertext": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-f]{2})*$",
+            "not": {
+              "pattern": "[^0-9a-f]"
+            }
+          },
+          "tag": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "minLength": 32,
+            "maxLength": 32
+          }
+        }
+      }
+    },
+    "artifactVectors": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "context", "key", "nonce", "original", "encoded", "aad", "object", "objectSha256"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "context": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "Environment",
+              "AccountScope",
+              "TransferId",
+              "ArtifactId",
+              "Purpose",
+              "Encoding",
+              "OriginalBytes",
+              "EncodedBytes",
+              "OriginalSha256"
+            ],
+            "properties": {
+              "Environment": {
+                "enum": ["test", "production"]
+              },
+              "AccountScope": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "TransferId": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "ArtifactId": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "minLength": 64,
+                "maxLength": 64
+              },
+              "Purpose": {
+                "enum": ["upload", "download"]
+              },
+              "Encoding": {
+                "enum": ["identity", "gzip"]
+              },
+              "OriginalBytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 33554432
+              },
+              "EncodedBytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 33554432
+              },
+              "OriginalSha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$",
+                "minLength": 64,
+                "maxLength": 64
+              }
+            }
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "nonce": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "minLength": 24,
+            "maxLength": 24
+          },
+          "original": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-f]{2})*$",
+            "not": {
+              "pattern": "[^0-9a-f]"
+            }
+          },
+          "encoded": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-f]{2})*$",
+            "not": {
+              "pattern": "[^0-9a-f]"
+            }
+          },
+          "aad": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{372}$",
+            "minLength": 372,
+            "maxLength": 372
+          },
+          "object": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-f]{2})*$",
+            "not": {
+              "pattern": "[^0-9a-f]"
+            }
+          },
+          "objectSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          }
+        }
+      }
+    }
+  }
+}

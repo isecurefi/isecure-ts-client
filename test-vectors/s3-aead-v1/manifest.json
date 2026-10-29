@@ -1,0 +1,10 @@
+{
+  "fixtureSha256": "3e3c5c0fce1eadd76a5d426328277d4bb6fd83eb6ac3defb412b690390d01af4",
+  "nistSource": "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmtestvectors.zip",
+  "nistArchiveSha256": "f9fc479e134cde2980b3bb7cddbcb567b2cd96fd753835243ed067699f26a023",
+  "nistMember": "gcmEncryptExtIV256.rsp",
+  "nistMemberSha256": "4448b4998c3f58cd9f5542ddf7c573189a721ff3d3ac24cd5177bb4910a787f8",
+  "primitiveSelection": "Count=0, key=256, IV=96, tag=128; six plaintext/AAD length pairs named in vectors",
+  "applicationOracle": "Independent Python cryptography 49.0.0 AESGCM with separately assembled binary context; synthetic data only",
+  "qualification": "Known-answer checks are not NIST CAVP certification. Rust/SDK/native/browser execution is recorded separately in TASKS.md."
+}

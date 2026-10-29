@@ -72,3 +72,26 @@ mixed malformed transport members. It checks exact response preservation, format
 the explicit legacy refusal/fallback. This is transport qualification; caller/native admission owns
 malformed-entry isolation, signatures, compatibility and authorization. It does not certify a live
 deployment or native plugin execution.
+
+## Encrypted transfer qualification (local, unpublished)
+
+The internal `s3-aead-v1` codec uses AES-256-GCM and a fixed binary context. It has
+no context-based key derivation: the planned API supplies a random key per artifact.
+This foundation does not enable encrypted S3 transfers on any API stage.
+
+`test-vectors/s3-aead-v1/` contains the exact backend-owned synthetic vectors,
+schema and provenance. The same known answers run on native ARM64 Rust, Node,
+Chromium and WebKit. This is interoperability evidence, not NIST certification.
+The actual admin-app WebView and hosted transfer path still need qualification.
+
+For example, when changing context encoding, run `yarn check:transfer-vectors`
+and the SDK tests: field ordering must still produce the committed 186-byte AAD.
+When changing crypto adapters, ciphertext must match the golden bytes, and a
+changed account, nonce or tag must be rejected before returning plaintext.
+Do not regenerate expected values merely to make a failing test pass.
+
+`yarn sync:transfer-vectors` imports a reviewed fixture update from the sibling
+`aws/ws-channel-api`; set `ISECURE_WSAPI_ROOT` for another checkout. Authoritative
+fixtures and the independent authoring/checking command live in that backend.
+Normal tests require no AWS access or fixture download. The backend browser runner
+can test this SDK's compiled module locally without contacting any API.

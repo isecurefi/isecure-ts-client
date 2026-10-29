@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add an internal AES-256-GCM artifact codec with strict binary context and shared NIST/application vectors passing in native ARM64 Rust, Node, Chromium and WebKit. This does not activate encrypted S3 delivery.
+
 - Prepare unpublished 4.6.0-rc.1: generated optional transfer capabilities and opt-in bounded byte helpers, compatible with existing Production and Test. No compression/S3 activation.
 - Disable automatic replay of bank upload/download operations, including GET downloads; public signatures and wire fields stay unchanged.
 
