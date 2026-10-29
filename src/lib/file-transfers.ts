@@ -5,12 +5,20 @@ import { ISecureError } from "./errors.js";
 /** Generated from the backend-owned additive ListCerts metadata contract. */
 export type FileTransferCapability = components["schemas"]["FileTransferCapability"];
 export type TransferErrorReason =
-  "invalid-input" | "invalid-response" | "unsupported" | "size" | "session-changed" | "refused" | "in-progress";
+  | "invalid-input"
+  | "invalid-response"
+  | "unsupported"
+  | "size"
+  | "session-changed"
+  | "refused"
+  | "in-progress"
+  | "storage-uncertain";
 
 /** Static diagnostics only: never attaches file bytes, signatures or response bodies. */
 export class ISecureTransferError extends ISecureError {
   constructor(readonly reason: TransferErrorReason) {
     const messages: Record<TransferErrorReason, string> = {
+      "storage-uncertain": "Storage upload outcome is uncertain; reconcile it before resending",
       refused: "File transfer request was refused",
       "in-progress": "A transfer control request is already in progress",
       "invalid-input": "Invalid file transfer input",

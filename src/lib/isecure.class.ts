@@ -9,6 +9,7 @@ import {
 } from "./transfer-control.js";
 import {
   readEncryptedCapability,
+  type EncryptedTransferCapability,
   type EncryptedTransferSupport,
   type TransferEnvironment,
 } from "./encrypted-transfers.js";
@@ -573,7 +574,7 @@ export class WSChannel {
       intent: frozenIntent,
     });
     checkTransferBudget(bound, support.capability);
-    return this.transferSession(bound, assertCurrent);
+    return this.transferSession(bound, assertCurrent, support.capability);
   }
 
   /** Reauthorize saved metadata in the current session; never resumes bank execution implicitly. */
@@ -585,10 +586,14 @@ export class WSChannel {
     if (support.protocol === "unavailable") throw new ISecureTransferError("unsupported");
     if (support.capability.AccountScope !== bound.accountScope) throw new ISecureTransferError("session-changed");
     checkTransferBudget(bound, support.capability);
-    return this.transferSession(bound, assertCurrent);
+    return this.transferSession(bound, assertCurrent, support.capability);
   }
 
-  private transferSession(reference: TransferReference, assertCurrent: () => void): TransferSession {
+  private transferSession(
+    reference: TransferReference,
+    assertCurrent: () => void,
+    capability: EncryptedTransferCapability,
+  ): TransferSession {
     assertCurrent();
     if (reference.baseUrl !== this.props.BaseUrl || reference.bank !== this.props.Bank || this.props.Mode !== "data")
       throw new ISecureTransferError("session-changed");
@@ -597,10 +602,12 @@ export class WSChannel {
       (operation, id, body, options) => {
         assertCurrent();
         return this.call<unknown>(
-          operation === "create" || operation === "prepare" ? "POST" : operation === "status" ? "GET" : "DELETE",
+          operation === "status" ? "GET" : operation === "retire" ? "DELETE" : "POST",
           operation === "prepare"
             ? this.urls.transferUploadPreparation(requireValue(id, "TransferId"))
-            : this.urls.transfers(id),
+            : operation === "grant"
+              ? this.urls.transferUploadGrant(requireValue(id, "TransferId"))
+              : this.urls.transfers(id),
           {
             ...(body === undefined ? {} : { body }),
             auth: true,
@@ -611,6 +618,7 @@ export class WSChannel {
         );
       },
       assertCurrent,
+      capability,
     );
   }
 

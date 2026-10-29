@@ -151,3 +151,4 @@ export { TransferSession, createTransferRequestId } from "./lib/transfer-session
 export type { TransferIntent, TransferReference, TransferStatus } from "./lib/transfer-control.js";
 
 export type { PreparedUploadSummary } from "./lib/transfer-upload.js";
+export type { UploadedCiphertext } from "./lib/transfer-s3.js";

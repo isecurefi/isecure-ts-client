@@ -68,6 +68,9 @@ export class UrlBuilder {
   transferUploadPreparation(id: string): string {
     return this.url("file-transfers", id, "upload", "prepare");
   }
+  transferUploadGrant(id: string): string {
+    return this.url("file-transfers", id, "upload", "grant");
+  }
 
   transferCapabilities(): string {
     return this.url("file-transfers", "capabilities", this.parts().Bank);

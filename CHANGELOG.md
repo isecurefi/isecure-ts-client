@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add isolated ciphertext upload with strict signed-grant validation, omitted API credentials/cookies, bounded deadlines and retained S3 version receipts. Lost acknowledgements block repeat uploads; storage reconciliation and full bank delivery are still in progress. No hosted activation.
+
 - Add authenticated encrypted upload preparation with a frozen encoded-byte SHA-256, exact context checks and retained ciphertext for explicit retries. No S3 upload or bank execution is activated.
 
 - Add an internal bounded gzip/original-integrity codec, including strict single-member validation across Node and browsers. Existing byte helpers remain unchanged; full encrypted transport is still in progress.

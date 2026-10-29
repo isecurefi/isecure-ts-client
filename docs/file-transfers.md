@@ -215,7 +215,8 @@ workflow still require qualification.
 For a created S3 upload whose intent already contains the original byte count and
 SHA-256, `await transfer.prepareUpload(originalBytes, { signal })` now prepares and
 encrypts the file in memory. It returns encoding, sizes and fingerprints only.
-It does not upload to S3 or execute a bank operation; those steps remain in progress.
+Preparation does not upload to S3 or execute a bank operation. Use the separate
+`uploadPrepared` step below for storage; bank execution remains in progress.
 
 Preparation freezes the SHA-256 of the **exact encoded bytes** before the API releases
 a key. This is separate from the original-file hash and the ciphertext hash.
@@ -236,3 +237,25 @@ keeps only the pending encoded bytes, then replaces them with encrypted bytes.
 progress; it does not cancel the remote transfer. Retiring a transfer also clears
 its local upload buffers. JavaScript cannot guarantee erasure of every runtime copy.
 This remains unpublished and locally qualified; capabilities are not activated.
+
+## Uploading the encrypted object
+
+After preparation, `await transfer.uploadPrepared({ signal })` obtains a short-lived
+grant and sends the retained ciphertext to the advertised S3 origin. It returns
+`VersionId`, `CiphertextSha256` and `ObjectBytes`. The API call uses the existing
+session; the separate S3 request carries no API credentials, cookies or referrer and
+does not follow redirects. Neither call automatically retries. The SDK validates
+the grant, ciphertext checksum and returned version; it ignores the S3 XML body.
+
+A repeated successful call on the same handle returns the saved version without
+another upload. If the upload acknowledgement is lost or invalid, the handle reports
+`storage-uncertain` and refuses another POST. Do not create a new handle to work around
+that result. Server-side storage reconciliation and durable resume of an uploaded
+version are still being implemented; this is not yet a complete recovery workflow.
+Cancellation after dispatch can also leave an object stored. It never authorizes
+bank execution. The storage request has a deadline of at most two minutes, further
+bounded by grant expiry. Current upload feedback is completion only; incremental
+progress, execution and retained download delivery remain in progress.
+
+These helpers have local Node/browser tests using synthetic storage responses. They
+do not establish hosted S3 CORS, actual app WebView or end-to-end bank support.

@@ -37,6 +37,13 @@ const REQUIRED = [
   "S3Origin",
   ...Object.keys(LIMITS),
 ];
+export function isTransferS3Origin(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= 256 &&
+    /^https:\/\/[a-z0-9-]+\.s3\.eu-west-1\.amazonaws\.com$/u.test(value)
+  );
+}
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -76,9 +83,7 @@ export function readEncryptedCapability(
     !/^[a-f0-9]{64}$/.test(value.AccountScope) ||
     !choices(value.Encodings, ["identity", "gzip"], "identity") ||
     !choices(value.Delivery, ["inline", "s3"], "s3") ||
-    typeof value.S3Origin !== "string" ||
-    value.S3Origin.length > 256 ||
-    !/^https:\/\/[a-z0-9-]+\.s3\.eu-west-1\.amazonaws\.com$/.test(value.S3Origin) ||
+    !isTransferS3Origin(value.S3Origin) ||
     (Object.hasOwn(value, "RequestId") && (typeof value.RequestId !== "string" || value.RequestId.length > 128)) ||
     Object.entries(LIMITS).some(([name, maximum]) => {
       const number = value[name];
