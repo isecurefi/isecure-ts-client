@@ -30,6 +30,9 @@ async function setup(base: string, capabilities?: unknown) {
   let failure: Error | undefined;
   let onDiscovery: (() => void) | undefined;
   let onFile: (() => void) | undefined;
+  let detailResult: unknown;
+  let detailFailure: Error | undefined;
+  let onDetail: (() => void) | undefined;
   transport.respond((request) => {
     if (request.url.includes("/session/"))
       return response(
@@ -41,6 +44,11 @@ async function setup(base: string, capabilities?: unknown) {
       onDiscovery?.();
       if (failure) throw failure;
       return response(certificateResult);
+    }
+    if (request.url.includes("/file-transfers/capabilities/")) {
+      onDetail?.();
+      if (detailFailure) throw detailFailure;
+      return response(detailResult);
     }
     if (request.url.includes("/files/")) {
       onFile?.();
@@ -68,6 +76,15 @@ async function setup(base: string, capabilities?: unknown) {
   return {
     client,
     transport,
+    setDetail: (value: unknown) => {
+      detailResult = value;
+    },
+    setDetailFailure: (error: Error) => {
+      detailFailure = error;
+    },
+    onDetail: (callback: () => void) => {
+      onDetail = callback;
+    },
     setFailure: (value: Error) => {
       failure = value;
     },
@@ -242,5 +259,93 @@ describe.each(["https://ws-api.isecure.fi/v2", "https://ws-api.test.isecure.fi/v
     state.client.updateProps({ BaseUrl: "https://other.example/v2" });
     expect(await state.client.getFileTransferSupport()).toMatchObject({ protocol: "legacy-inline" });
     expect(state.transport.requests.at(-1)?.url).toBe("https://other.example/v2/certs");
+  });
+});
+
+function detailCapability() {
+  return {
+    ResponseCode: "00",
+    ResponseText: "Synthetic",
+    ContractVersion: 2,
+    Protocol: "transfer-v1",
+    ArtifactFormat: "s3-aead-v1",
+    Environment: "test",
+    Bank: "simulator",
+    AccountScope: "a".repeat(64),
+    Encodings: ["identity", "gzip"],
+    Delivery: ["inline", "s3"],
+    S3Origin: "https://synthetic-transfers.s3.eu-west-1.amazonaws.com",
+    MaxRawUploadBytes: 33554432,
+    MaxRawDownloadBytes: 33554432,
+    MaxInlineRequestBytes: 6225920,
+    MaxControlBytes: 2097152,
+    GrantMaxSeconds: 300,
+    ExecuteWindowSeconds: 3600,
+    DeliveryWindowSeconds: 86400,
+    RetentionSeconds: 604800,
+  };
+}
+describe("encrypted discovery is explicitly advertised and session-bound", () => {
+  const advertised = [{ ...caps, Protocols: ["inline-v1", "transfer-v1"] }];
+  it.each([undefined, [], [caps]])("does not probe encrypted routes without the existing marker", async (metadata) => {
+    const { client, transport } = await setup("https://ws-api.isecure.fi/v2", metadata);
+    expect(await client.getEncryptedFileTransferSupport("production")).toEqual({ protocol: "unavailable" });
+    expect(transport.requests).toHaveLength(1);
+    expect(transport.requests[0]?.url).toBe("https://ws-api.isecure.fi/v2/certs");
+  });
+  it("keeps version-1 support unchanged and only then reads explicit encrypted details", async () => {
+    const fixture = await setup("https://ws-api.test.isecure.fi/v2", advertised);
+    fixture.setDetail(detailCapability());
+    expect((await fixture.client.getFileTransferSupport()).protocol).toBe("inline-v1");
+    expect(fixture.transport.requests).toHaveLength(1);
+    const signal = new AbortController().signal;
+    const encrypted = await fixture.client.getEncryptedFileTransferSupport("test", { signal });
+    expect(encrypted.protocol).toBe("s3-aead-v1");
+    expect(fixture.transport.requests.at(-1)).toMatchObject({
+      method: "GET",
+      url: "https://ws-api.test.isecure.fi/v2/file-transfers/capabilities/simulator",
+      retry: false,
+      signal,
+      headers: { Authorization: "synthetic-id", "x-api-key": "synthetic-tenant" },
+    });
+    expect(files(fixture.transport.requests)).toHaveLength(0);
+  });
+  it("never converts authentication, missing-route, outage or malformed detail failures into fallback", async () => {
+    for (const failure of [
+      new ISecureHttpError({ status: 401, statusText: "Missing Authentication Token" }),
+      new ISecureHttpError({ status: 403, statusText: "Refused" }),
+      new ISecureNetworkError("Unavailable"),
+    ]) {
+      const fixture = await setup("https://ws-api.test.isecure.fi/v2", advertised);
+      fixture.setDetailFailure(failure);
+      await expect(fixture.client.getEncryptedFileTransferSupport("test")).rejects.toBe(failure);
+      expect(fixture.transport.requests).toHaveLength(2);
+    }
+    for (const bad of [
+      null,
+      {},
+      { ...detailCapability(), ArtifactFormat: "plaintext" },
+      { ...detailCapability(), ResponseCode: "01" },
+    ]) {
+      const fixture = await setup("https://ws-api.test.isecure.fi/v2", advertised);
+      fixture.setDetail(bad);
+      await expect(fixture.client.getEncryptedFileTransferSupport("test")).rejects.toBeInstanceOf(ISecureTransferError);
+      expect(files(fixture.transport.requests)).toHaveLength(0);
+    }
+  });
+  it("rejects an environment mismatch and session/base/bank changes during the detail call", async () => {
+    for (const change of ["bank", "base", "session", "environment"]) {
+      const fixture = await setup("https://ws-api.test.isecure.fi/v2", advertised);
+      fixture.setDetail(detailCapability());
+      fixture.onDetail(() => {
+        if (change === "bank") fixture.client.props.Bank = "other";
+        if (change === "base") fixture.client.props.BaseUrl = "https://other.invalid";
+        if (change === "session") Object.assign(fixture.client.session, { idToken: "changed-session" });
+      });
+      await expect(
+        fixture.client.getEncryptedFileTransferSupport(change === "environment" ? "production" : "test"),
+      ).rejects.toBeInstanceOf(ISecureTransferError);
+      expect(files(fixture.transport.requests)).toHaveLength(0);
+    }
   });
 });

@@ -140,3 +140,9 @@ export {
   type FileTransferOptions,
   type FileBytesResult,
 } from "./lib/file-transfers.js";
+
+export type {
+  EncryptedTransferCapability,
+  EncryptedTransferSupport,
+  TransferEnvironment,
+} from "./lib/encrypted-transfers.js";

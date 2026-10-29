@@ -63,7 +63,7 @@
   "scripts": {
     "clean": "rm -rf dist dist-examples coverage .generated .browser-check docs-api",
     "docs": "yarn generate:types && npx -y typedoc",
-    "generate:types": "mkdir -p .generated src/generated && swagger2openapi wsapi_v2.json -o .generated/wsapi_v2.openapi.json && openapi-typescript .generated/wsapi_v2.openapi.json -o src/generated/wsapi-v2.ts && swagger2openapi provider-api.json -o .generated/provider-api.openapi.json && openapi-typescript .generated/provider-api.openapi.json -o src/generated/provider-api.ts",
+    "generate:types": "mkdir -p .generated src/generated && swagger2openapi wsapi_v2.json -o .generated/wsapi_v2.openapi.json && openapi-typescript .generated/wsapi_v2.openapi.json -o src/generated/wsapi-v2.ts && swagger2openapi provider-api.json -o .generated/provider-api.openapi.json && openapi-typescript .generated/provider-api.openapi.json -o src/generated/provider-api.ts && swagger2openapi transfer-api.json -o .generated/transfer-api.openapi.json && openapi-typescript .generated/transfer-api.openapi.json -o src/generated/transfer-api.ts",
     "sync:platform-contracts": "node scripts/sync-platform-contracts.mjs --write",
     "check:platform-contracts": "node scripts/sync-platform-contracts.mjs --check",
     "build": "rm -rf dist && yarn generate:types && tsc -p tsconfig.json",
@@ -90,7 +90,9 @@
     "sync:transfer-contract": "node scripts/sync-transfer-contract.mjs --write",
     "check:transfer-contract": "node scripts/sync-transfer-contract.mjs",
     "sync:transfer-vectors": "node scripts/sync-transfer-aead-vectors.mjs --write",
-    "check:transfer-vectors": "node scripts/sync-transfer-aead-vectors.mjs"
+    "check:transfer-vectors": "node scripts/sync-transfer-aead-vectors.mjs",
+    "sync:encrypted-transfer-contract": "node scripts/sync-encrypted-transfer-contract.mjs --write",
+    "check:encrypted-transfer-contract": "node scripts/sync-encrypted-transfer-contract.mjs"
   },
   "dependencies": {
     "axios": "^1.20.0"

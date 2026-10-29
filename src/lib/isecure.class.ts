@@ -1,7 +1,12 @@
 import {
+  readEncryptedCapability,
+  type EncryptedTransferSupport,
+  type TransferEnvironment,
+} from "./encrypted-transfers.js";
+import {
   ISecureTransferError,
   LEGACY_INLINE_SUPPORT,
-  readTransferSupport,
+  readTransferDiscovery,
   requireInlineSupport,
   prepareInlineUpload,
   assertInlineUploadBudget,
@@ -525,6 +530,29 @@ export class WSChannel {
     return (await this.discoverFileTransfer(options)).support;
   }
 
+  /** Read explicit encrypted-transfer support without calling a bank or probing an absent route.
+   * This does not activate support on servers which have not advertised it. */
+  async getEncryptedFileTransferSupport(
+    environment: TransferEnvironment,
+    options: FileTransferOptions = {},
+  ): Promise<EncryptedTransferSupport> {
+    if (environment !== "test" && environment !== "production") throw new ISecureTransferError("invalid-input");
+    const { transferAdvertised, assertCurrent } = await this.discoverFileTransfer(options);
+    if (!transferAdvertised) return { protocol: "unavailable" };
+    assertCurrent();
+    const capability = await this.call<unknown>("GET", this.urls.transferCapabilities(), {
+      auth: true,
+      skipFreshness: true,
+      retry: false,
+      ...(options.signal ? { signal: options.signal } : {}),
+    });
+    assertCurrent();
+    return {
+      protocol: "s3-aead-v1",
+      capability: readEncryptedCapability(capability, { bank: this.props.Bank, environment }),
+    };
+  }
+
   /** Optional bytes helper. Only identity inline is implemented; bank operations are never replayed. */
   async uploadFileBytes(
     input: UploadFileBytesRequest,
@@ -576,7 +604,7 @@ export class WSChannel {
 
   private async discoverFileTransfer(
     options: FileTransferOptions,
-  ): Promise<{ support: FileTransferSupport; assertCurrent: () => void }> {
+  ): Promise<{ support: FileTransferSupport; transferAdvertised: boolean; assertCurrent: () => void }> {
     await this.ensureFreshSession();
     this.authHeaders();
     const tokens = this.tokens;
@@ -602,7 +630,10 @@ export class WSChannel {
       ...(options.signal ? { signal: options.signal } : {}),
     });
     assertCurrent();
-    return { support: readTransferSupport(metadata, Bank), assertCurrent };
+    return {
+      ...readTransferDiscovery(metadata, Bank),
+      assertCurrent,
+    };
   }
 
   async listFiles(query?: ListFilesQuery): Promise<ListFilesResponse>;

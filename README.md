@@ -93,7 +93,10 @@ The 4.6.0-rc.1 candidate adds `getFileTransferSupport()`, `uploadFileBytes()` an
 and download now disable automatic retries to avoid repeating an uncertain bank
 operation. The new helpers use authenticated metadata to select legacy or
 advertised identity inline support; compression and S3 remain unavailable.
-See [supported behavior and limits](docs/file-transfers.md).
+`getEncryptedFileTransferSupport("test")` adds strict, authenticated encrypted-protocol
+discovery without probing new routes on legacy servers. The encrypted workflow is
+still in development and no capability is activated. See
+[supported behavior and limits](docs/file-transfers.md).
 
 ## Register and sign in
 

@@ -47,8 +47,8 @@ name or Lambda runtime. Capability metadata does not grant bank access.
 Version 1 advertises `Protocols`, `Encodings`, `Delivery`, `MaxRawUploadBytes`,
 `MaxRawDownloadBytes` and `MaxInlineRequestBytes`, scoped by `Bank`.
 `inline-v1` explicitly means the existing Files wire format with advertised bounds;
-this SDK selects only `identity` + `inline`. `transfer-v1` is reserved for the future
-intent/execute protocol. Advertising it alone does not enable it in this SDK. Future backend rollout must
+the existing byte helpers select only `identity` + `inline`. `transfer-v1` permits
+an authenticated detail read; its presence alone never enables encrypted transfer. Backend rollout must
 preserve this version-1 bootstrap and `inline-v1` while legacy Files operations
 remain supported; richer transfer details belong to the separately versioned
 transfer protocol, not extra fields silently added to this closed schema.
@@ -72,6 +72,36 @@ dispatch cannot undo the bank operation; do not automatically resubmit. Aborting
 stops waiting when supported by the transport; it also cannot undo bank processing.
 Custom transports must honor `retry: false` and cancellation.
 
+## Explicit encrypted capability discovery
+
+```ts
+const encrypted = await client.getEncryptedFileTransferSupport("test", {
+  signal: abortController.signal,
+});
+if (encrypted.protocol === "s3-aead-v1") {
+  const limit = encrypted.capability.MaxRawUploadBytes;
+  // Metadata only: full encrypted upload/download workflow is still being implemented.
+}
+```
+
+The environment argument checks the response; it does not change `BaseUrl` or select
+another account. The SDK first reads the existing authenticated `ListCerts` envelope.
+It calls `GET /file-transfers/capabilities/{Bank}` only if that bank's unchanged
+version-1 metadata includes `transfer-v1`. Legacy Production needs no new route:
+without this explicit marker the new method returns `protocol: "unavailable"`.
+
+The detail response must specify contract version 2 and `s3-aead-v1`, match the bank
+and expected environment, and provide a canonical account scope, bounded limits,
+allowed encodings/delivery and an HTTPS regional S3 origin. The SDK returns an
+immutable snapshot and rejects contradictory limits. Authentication, missing-route,
+network and malformed-response failures stop discovery. They never authorize a
+plaintext or legacy retry. Session changes during either read also stop discovery.
+The existing `getFileTransferSupport()` behavior and legacy byte helpers are unchanged.
+
+No deployed capability is activated by this SDK change. The Web Crypto codec and
+shared Rust interoperability vectors are local foundations; successful discovery
+alone does not demonstrate an end-to-end large transfer.
+
 ## Explicit limits and unavailable functionality
 
 The inline SDK budget is 6,225,920 serialized UTF-8 JSON bytes: the six-MiB Lambda
@@ -86,9 +116,9 @@ Existing bank, wire/XML and runtime limits may be smaller; the backend remains
 authoritative. Legacy methods retain their existing server-side size handling.
 Inline helpers do not promise files larger than six MiB, even if highly compressible.
 
-Compression negotiation/execution, temporary S3 grants and delivery, transfer
-status/reconciliation, hashes, progress and download-to-sink are not implemented
-in this foundation. No new AWS resource, Gateway compression or response streaming
+Full compression/transfer execution, temporary S3 transport, resumable controls,
+original-file integrity verification, progress and download-to-sink remain to be
+connected to the encrypted codec and discovery. No new AWS resource, Gateway compression or response streaming
 is enabled. These follow the backend-owned large-file transfer specification and
 must be qualified before their capabilities are advertised. An already attempted
 bank operation is never repeated merely to select a different representation.
@@ -100,6 +130,11 @@ metadata schema. `yarn sync:transfer-contract` imports only that overlay into th
 pinned SDK specification; `yarn check:transfer-contract` checks it against the
 sibling backend checkout (or `ISECURE_WSAPI_ROOT`). `yarn generate:types` owns the
 TypeScript definitions. Existing upstream and PGP-overlay provenance is retained.
+The separate `transfer-api.json` export owns the unpublished transfer controls and
+crypto-context types; it does not replace the Production snapshot. Use
+`yarn sync:encrypted-transfer-contract` / `yarn check:encrypted-transfer-contract`
+with the same backend checkout to import/verify it. `transfer-contract.lock.json`
+pins its exact bytes. The encryption codec now consumes its generated context type.
 
 The local gate covers both endpoint fixtures, exact wire compatibility, byte and
 JSON boundaries, binary round trips, malformed advertisements/results, bank

@@ -11,7 +11,7 @@ export class ISecureTransferError extends ISecureError {
   constructor(readonly reason: TransferErrorReason) {
     const messages: Record<TransferErrorReason, string> = {
       "invalid-input": "Invalid file transfer input",
-      "invalid-response": "Invalid file transfer metadata or inline response",
+      "invalid-response": "Invalid file transfer metadata or response",
       unsupported: "This SDK and server do not share an available inline transfer protocol",
       size: "File or metadata exceeds the available inline transfer budget; large-file delivery is not enabled",
       "session-changed": "Session or transfer destination changed; do not automatically resubmit the operation",
@@ -100,16 +100,37 @@ function capability(value: unknown): FileTransferCapability {
   return value as FileTransferCapability;
 }
 
-/** Pure negotiation. A present malformed advertisement never degrades to legacy. */
-export function readTransferSupport(response: unknown, bank: string): FileTransferSupport {
+function readCapabilities(response: unknown): FileTransferCapability[] | undefined {
   if (!record(response) || response.ResponseCode !== "00" || !Array.isArray(response.Certs)) {
     throw new ISecureTransferError("invalid-response");
   }
-  if (!Object.hasOwn(response, "FileTransferCapabilities")) return { ...LEGACY_INLINE_SUPPORT };
+  if (!Object.hasOwn(response, "FileTransferCapabilities")) return undefined;
   const raw: unknown = response.FileTransferCapabilities;
   if (!Array.isArray(raw) || raw.length > 32) throw new ISecureTransferError("invalid-response");
   const caps = raw.map(capability);
   if (new Set(caps.map((item) => item.Bank)).size !== caps.length) throw new ISecureTransferError("invalid-response");
+  return caps;
+}
+/** Read the closed bootstrap once for both unchanged inline and optional detail discovery. */
+export function readTransferDiscovery(
+  response: unknown,
+  bank: string,
+): {
+  support: FileTransferSupport;
+  transferAdvertised: boolean;
+} {
+  const caps = readCapabilities(response);
+  return {
+    support: inlineSupport(caps, bank),
+    transferAdvertised: caps?.find((item) => item.Bank === bank)?.Protocols.includes("transfer-v1") ?? false,
+  };
+}
+/** Pure negotiation. A present malformed advertisement never degrades to legacy. */
+export function readTransferSupport(response: unknown, bank: string): FileTransferSupport {
+  return readTransferDiscovery(response, bank).support;
+}
+function inlineSupport(caps: FileTransferCapability[] | undefined, bank: string): FileTransferSupport {
+  if (!caps) return { ...LEGACY_INLINE_SUPPORT };
   const selected = caps.find((item) => item.Bank === bank);
   if (
     !selected?.Protocols.includes("inline-v1") ||

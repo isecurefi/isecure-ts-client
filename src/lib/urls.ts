@@ -61,6 +61,10 @@ export class UrlBuilder {
     return this.url("providers", provider, "check");
   }
 
+  transferCapabilities(): string {
+    return this.url("file-transfers", "capabilities", this.parts().Bank);
+  }
+
   certs(): string {
     return this.url("certs");
   }

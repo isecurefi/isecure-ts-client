@@ -1,3 +1,5 @@
+import type { components } from "../generated/transfer-api.js";
+
 /** s3-aead-v1 codec. Random keys are supplied by the authenticated transfer API;
  * context is authenticated data, never input to an implicit key derivation. */
 const MAX_BYTES = 32 * 1024 * 1024;
@@ -14,17 +16,8 @@ const CONTEXT_KEYS = [
   "EncodedBytes",
   "OriginalSha256",
 ];
-interface ContextFields {
-  Environment: "test" | "production";
-  AccountScope: string;
-  TransferId: string;
-  ArtifactId: string;
-  Purpose: "upload" | "download";
-  Encoding: "identity" | "gzip";
-  OriginalBytes: number;
-  EncodedBytes: number;
-  OriginalSha256: string;
-}
+type ContextFields = components["schemas"]["TransferArtifactContext"];
+
 class ArtifactError extends Error {
   constructor() {
     super("Encrypted file artifact rejected");
