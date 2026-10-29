@@ -514,3 +514,68 @@ it("refuses destination changes while initial session freshness is awaited befor
   await expect(pending).rejects.toMatchObject({ reason: "session-changed" });
   expect(f.transport.requests).toHaveLength(0);
 });
+
+it("prepares an encrypted upload through authenticated controls, preserving exact preparation on an explicit retry", async () => {
+  const { encodeTransferRepresentation } = await import("./transfer-representation.js");
+  const bytes = new Uint8Array(4096).fill(42);
+  const Integrity = (await encodeTransferRepresentation(bytes, false)).integrity;
+  const f = await setup("https://ws-api.test.isecure.fi/v2", [{ ...caps, Protocols: ["inline-v1", "transfer-v1"] }]);
+  f.setDetail(detailCapability());
+  const status = {
+    ResponseCode: "00",
+    ResponseText: "Synthetic",
+    TransferId: "c".repeat(64),
+    State: "prepared",
+    ExecuteUntil: Math.floor(Date.now() / 1000) + 3600,
+    RetentionUntil: Math.floor(Date.now() / 1000) + 604800,
+  };
+  f.setControl(status);
+  const transfer = await f.client.openFileTransfer(
+    { Operation: "upload", Bank: "simulator", FileType: "pain.001", Storage: "s3", Integrity, AcceptGzip: true },
+    { environment: "test" },
+  );
+  await transfer.create();
+  f.onControl(() => {
+    const body = f.transport.requests.at(-1)?.body as { Encoding: string; EncodedBytes: number; EncodedSha256: string };
+    f.setControl({
+      ...status,
+      Artifact: {
+        Format: "s3-aead-v1",
+        Context: {
+          Environment: "test",
+          AccountScope: "a".repeat(64),
+          TransferId: status.TransferId,
+          ArtifactId: "d".repeat(64),
+          Purpose: "upload",
+          Encoding: body.Encoding,
+          EncodedBytes: body.EncodedBytes,
+          OriginalBytes: bytes.length,
+          OriginalSha256: Integrity.Sha256,
+        },
+        EncodedSha256: body.EncodedSha256,
+        Key: btoa("k".repeat(32)),
+        Nonce: btoa("n".repeat(12)),
+      },
+    });
+  });
+  f.setControlFailure(new ISecureNetworkError("Synthetic timeout"));
+  await expect(transfer.prepareUpload(bytes)).rejects.toThrow("Synthetic timeout");
+  f.setControlFailure(undefined);
+  const prepared = await transfer.prepareUpload(bytes);
+  expect(await transfer.prepareUpload(bytes)).toEqual(prepared);
+  const requests = f.transport.requests.filter((r) => r.url.endsWith("/upload/prepare"));
+  expect(requests).toHaveLength(2);
+  expect(requests[0]?.body).toEqual(requests[1]?.body);
+  expect(requests[0]).toMatchObject({
+    method: "POST",
+    url: `https://ws-api.test.isecure.fi/v2/file-transfers/${status.TransferId}/upload/prepare`,
+    retry: false,
+    headers: { Authorization: "synthetic-id", "x-api-key": "synthetic-tenant" },
+  });
+  expect(Object.keys(transfer.reference)).not.toContain("Key");
+  const changed = bytes.slice();
+  changed[0] = 1;
+  await expect(transfer.prepareUpload(changed)).rejects.toMatchObject({ reason: "invalid-input" });
+  expect(files(f.transport.requests)).toHaveLength(0);
+  transfer.discardUpload();
+});

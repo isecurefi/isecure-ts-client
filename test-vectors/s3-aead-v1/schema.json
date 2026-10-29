@@ -185,7 +185,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "keyBase64", "nonceBase64", "aadSha256"],
+        "required": ["id", "keyBase64", "nonceBase64", "aadSha256", "encodedSha256"],
         "properties": {
           "id": {
             "type": "string"
@@ -202,6 +202,7 @@
             "maxLength": 16,
             "pattern": "^[A-Za-z0-9+/]{16}$"
           },
+          "encodedSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
           "aadSha256": {
             "type": "string",
             "minLength": 64,

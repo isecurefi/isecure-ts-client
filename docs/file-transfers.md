@@ -209,3 +209,30 @@ original-byte decoding, 32 MiB compressible/incompressible files and extra membe
 Node tests additionally cover corrupt headers/checksums, truncation, expansion and
 cancellation. The actual macOS app WebView, encrypted S3 transport and hosted
 workflow still require qualification.
+
+## Encrypted upload preparation
+
+For a created S3 upload whose intent already contains the original byte count and
+SHA-256, `await transfer.prepareUpload(originalBytes, { signal })` now prepares and
+encrypts the file in memory. It returns encoding, sizes and fingerprints only.
+It does not upload to S3 or execute a bank operation; those steps remain in progress.
+
+Preparation freezes the SHA-256 of the **exact encoded bytes** before the API releases
+a key. This is separate from the original-file hash and the ciphertext hash.
+Two valid gzip files can contain the same original bytes and have the same length
+while differing in headers or compression output. Their encoded hashes differ,
+so the server refuses to reuse a prepared key for the second representation.
+
+The SDK checks account, environment, transfer, purpose, lengths, hashes and canonical
+key/nonce encodings before encrypting. A repeated call with identical original bytes
+reuses the retained representation or ciphertext. A lost preparation response is not
+retried automatically; an explicit repeat uses the same frozen request. After losing
+local state, reconstruction must match the server's encoded fingerprint or fail.
+There is no unsafe fallback based on matching size alone.
+
+Keys are not returned to callers or stored in the resumable reference. The handle
+keeps only the pending encoded bytes, then replaces them with encrypted bytes.
+`transfer.discardUpload()` releases these local buffers when no control call is in
+progress; it does not cancel the remote transfer. Retiring a transfer also clears
+its local upload buffers. JavaScript cannot guarantee erasure of every runtime copy.
+This remains unpublished and locally qualified; capabilities are not activated.

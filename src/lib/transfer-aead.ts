@@ -79,6 +79,9 @@ export class AeadContext {
       throw new ArtifactError();
     return new AeadContext(Object.freeze(fields));
   }
+  get metadata(): Readonly<ContextFields> {
+    return this.fields;
+  }
   get encodedBytes(): number {
     return this.fields.EncodedBytes;
   }

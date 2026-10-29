@@ -597,8 +597,10 @@ export class WSChannel {
       (operation, id, body, options) => {
         assertCurrent();
         return this.call<unknown>(
-          operation === "create" ? "POST" : operation === "status" ? "GET" : "DELETE",
-          this.urls.transfers(id),
+          operation === "create" || operation === "prepare" ? "POST" : operation === "status" ? "GET" : "DELETE",
+          operation === "prepare"
+            ? this.urls.transferUploadPreparation(requireValue(id, "TransferId"))
+            : this.urls.transfers(id),
           {
             ...(body === undefined ? {} : { body }),
             auth: true,

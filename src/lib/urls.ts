@@ -65,6 +65,10 @@ export class UrlBuilder {
     return id === undefined ? this.url("file-transfers") : this.url("file-transfers", id);
   }
 
+  transferUploadPreparation(id: string): string {
+    return this.url("file-transfers", id, "upload", "prepare");
+  }
+
   transferCapabilities(): string {
     return this.url("file-transfers", "capabilities", this.parts().Bank);
   }

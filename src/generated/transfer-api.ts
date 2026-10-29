@@ -177,6 +177,8 @@ export interface components {
         TransferArtifactKeyGrant: {
             CiphertextSha256?: string;
             Context: components["schemas"]["TransferArtifactContext"];
+            /** @description SHA-256 of the exact encoded bytes, frozen before key release. A retry must reuse this representation, including gzip headers and compressed bytes. */
+            EncodedSha256: string;
             /** @enum {string} */
             Format: "s3-aead-v1";
             Key: string;
@@ -292,6 +294,8 @@ export interface components {
         };
         TransferUploadPrepareRequest: {
             EncodedBytes: number;
+            /** @description SHA-256 of the exact encoded bytes, frozen before key release. A retry must reuse this representation, including gzip headers and compressed bytes. */
+            EncodedSha256: string;
             /** @enum {string} */
             Encoding: "identity" | "gzip";
         };

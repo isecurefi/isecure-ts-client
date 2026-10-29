@@ -105,6 +105,13 @@
         "Context": {
           "$ref": "#/definitions/TransferArtifactContext"
         },
+        "EncodedSha256": {
+          "description": "SHA-256 of the exact encoded bytes, frozen before key release. A retry must reuse this representation, including gzip headers and compressed bytes.",
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
         "Format": {
           "enum": [
             "s3-aead-v1"
@@ -128,7 +135,8 @@
         "Format",
         "Context",
         "Nonce",
-        "Key"
+        "Key",
+        "EncodedSha256"
       ],
       "type": "object"
     },
@@ -597,6 +605,13 @@
           "minimum": 1,
           "type": "integer"
         },
+        "EncodedSha256": {
+          "description": "SHA-256 of the exact encoded bytes, frozen before key release. A retry must reuse this representation, including gzip headers and compressed bytes.",
+          "maxLength": 64,
+          "minLength": 64,
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
         "Encoding": {
           "enum": [
             "identity",
@@ -607,7 +622,8 @@
       },
       "required": [
         "Encoding",
-        "EncodedBytes"
+        "EncodedBytes",
+        "EncodedSha256"
       ],
       "type": "object"
     }

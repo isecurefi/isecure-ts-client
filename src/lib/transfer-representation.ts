@@ -18,12 +18,12 @@ function snapshot(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
   if (!(bytes instanceof Uint8Array) || bytes.byteLength > MAX_BYTES) throw new ISecureTransferError("size");
   return new Uint8Array(bytes);
 }
-async function integrity(bytes: Uint8Array<ArrayBuffer>): Promise<Integrity> {
+export async function sha256TransferBytes(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
-  return Object.freeze({
-    RawBytes: bytes.length,
-    Sha256: Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join(""),
-  });
+  return Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+async function integrity(bytes: Uint8Array<ArrayBuffer>): Promise<Integrity> {
+  return Object.freeze({ RawBytes: bytes.length, Sha256: await sha256TransferBytes(bytes) });
 }
 /** Native transforms behind one bounded collector. Overflow never returns partial bytes. */
 async function transform(

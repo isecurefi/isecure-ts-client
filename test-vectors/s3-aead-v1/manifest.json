@@ -1,5 +1,5 @@
 {
-  "fixtureSha256": "8f4740c66138d2e0f4f42918c16b15e939a66a1f47a9ecf2f6a8a5597ee89067",
+  "fixtureSha256": "e9603523542e1aeb8fadd54a0c424ab289b7db42b155361b2f4d23a24ce80caa",
   "nistSource": "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmtestvectors.zip",
   "nistArchiveSha256": "f9fc479e134cde2980b3bb7cddbcb567b2cd96fd753835243ed067699f26a023",
   "nistMember": "gcmEncryptExtIV256.rsp",

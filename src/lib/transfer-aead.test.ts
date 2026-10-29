@@ -1,4 +1,4 @@
-import { decodeTransferRepresentation } from "./transfer-representation.js";
+import { decodeTransferRepresentation, sha256TransferBytes } from "./transfer-representation.js";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
@@ -8,6 +8,7 @@ interface BindingVector {
   keyBase64: string;
   nonceBase64: string;
   aadSha256: string;
+  encodedSha256: string;
 }
 interface PrimitiveVector {
   id: string;
@@ -201,6 +202,7 @@ describe("canonical artifact key and context-binding vectors", () => {
       expect(hex(nonce)).toBe(vector.nonce);
       const aad = AeadContext.parse(vector.context).aad(nonce);
       expect(hex(new Uint8Array(await crypto.subtle.digest("SHA-256", aad)))).toBe(binding.aadSha256);
+      expect(await sha256TransferBytes(bytes(vector.encoded))).toBe(binding.encodedSha256);
     });
   }
   it("rejects noncanonical encodings instead of normalizing them", () => {

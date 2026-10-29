@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add authenticated encrypted upload preparation with a frozen encoded-byte SHA-256, exact context checks and retained ciphertext for explicit retries. No S3 upload or bank execution is activated.
+
 - Add an internal bounded gzip/original-integrity codec, including strict single-member validation across Node and browsers. Existing byte helpers remain unchanged; full encrypted transport is still in progress.
 
 - Add unpublished session-bound transfer references and explicit create/status/retire controls with stable logical request IDs, closed runtime validation and no automatic replay. Redact encrypted-transfer keys, grants and short payloads. Full encrypted file delivery remains in progress.
