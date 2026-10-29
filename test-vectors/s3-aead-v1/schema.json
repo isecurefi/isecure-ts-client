@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": false,
-  "required": ["format", "primitiveVectors", "artifactVectors"],
+  "required": ["format", "primitiveVectors", "artifactVectors", "bindingVectors"],
   "properties": {
     "format": {
       "const": "s3-aead-v1"
@@ -175,6 +175,38 @@
             "pattern": "^[0-9a-f]{64}$",
             "minLength": 64,
             "maxLength": 64
+          }
+        }
+      }
+    },
+    "bindingVectors": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "keyBase64", "nonceBase64", "aadSha256"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "keyBase64": {
+            "type": "string",
+            "minLength": 44,
+            "maxLength": 44,
+            "pattern": "^[A-Za-z0-9+/]{43}=$"
+          },
+          "nonceBase64": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 16,
+            "pattern": "^[A-Za-z0-9+/]{16}$"
+          },
+          "aadSha256": {
+            "type": "string",
+            "minLength": 64,
+            "maxLength": 64,
+            "pattern": "^[0-9a-f]{64}$"
           }
         }
       }

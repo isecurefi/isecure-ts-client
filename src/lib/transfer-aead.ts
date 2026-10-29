@@ -168,3 +168,21 @@ export async function openEncoded(
     throw new ArtifactError();
   }
 }
+
+/** Canonical padded RFC 4648 control encoding. Never normalize alternate forms. */
+function parseSecret(value: unknown, length: 12 | 32): Uint8Array<ArrayBuffer> {
+  try {
+    if (typeof value !== "string" || value.length !== Math.ceil(length / 3) * 4) throw new ArtifactError();
+    const binary = atob(value);
+    if (binary.length !== length || btoa(binary) !== value) throw new ArtifactError();
+    return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  } catch {
+    throw new ArtifactError();
+  }
+}
+export function parseArtifactKey(value: unknown): Uint8Array<ArrayBuffer> {
+  return parseSecret(value, 32);
+}
+export function parseArtifactNonce(value: unknown): Uint8Array<ArrayBuffer> {
+  return parseSecret(value, 12);
+}

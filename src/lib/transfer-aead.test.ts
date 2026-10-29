@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { AeadContext, openEncoded, sealEncoded } from "./transfer-aead.js";
+import { AeadContext, openEncoded, sealEncoded, parseArtifactKey, parseArtifactNonce } from "./transfer-aead.js";
+interface BindingVector {
+  id: string;
+  keyBase64: string;
+  nonceBase64: string;
+  aadSha256: string;
+}
 interface PrimitiveVector {
   id: string;
   key: string;
@@ -23,6 +29,7 @@ interface ArtifactVector {
 }
 const source = readFileSync(new URL("../../test-vectors/s3-aead-v1/vectors.json", import.meta.url));
 const document = JSON.parse(source.toString()) as {
+  bindingVectors: BindingVector[];
   primitiveVectors: PrimitiveVector[];
   artifactVectors: ArtifactVector[];
 };
@@ -172,5 +179,42 @@ describe("AEAD admission and asynchronous ownership", () => {
     const opened = openEncoded(context, bytes(vector.nonce), bytes(vector.key), object);
     object.fill(0);
     expect(hex(await opened)).toBe(vector.encoded);
+  });
+});
+
+describe("canonical artifact key and context-binding vectors", () => {
+  for (const binding of document.bindingVectors) {
+    it(binding.id, async () => {
+      const vector = document.artifactVectors.find((value) => value.id === binding.id);
+      if (!vector) throw new Error("Missing shared fixture");
+      const key = parseArtifactKey(binding.keyBase64);
+      const nonce = parseArtifactNonce(binding.nonceBase64);
+      expect(hex(key)).toBe(vector.key);
+      expect(hex(nonce)).toBe(vector.nonce);
+      const aad = AeadContext.parse(vector.context).aad(nonce);
+      expect(hex(new Uint8Array(await crypto.subtle.digest("SHA-256", aad)))).toBe(binding.aadSha256);
+    });
+  }
+  it("rejects noncanonical encodings instead of normalizing them", () => {
+    const canonical = btoa(String.fromCharCode(...new Uint8Array(32)));
+    for (const value of [
+      undefined,
+      null,
+      1,
+      [],
+      "",
+      canonical.slice(0, -1),
+      canonical + "=",
+      canonical + "\n",
+      " " + canonical,
+      canonical.replace("=", "_"),
+      "A".repeat(42) + "B=",
+      btoa("short"),
+    ]) {
+      expect(() => parseArtifactKey(value)).toThrow();
+    }
+    for (const value of ["", "AAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA=", "AAAAAAAAAAAAAAAA\n", "________________"]) {
+      expect(() => parseArtifactNonce(value)).toThrow();
+    }
   });
 });
