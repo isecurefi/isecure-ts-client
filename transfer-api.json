@@ -661,7 +661,7 @@
   },
   "host": "ws-api.test.isecure.fi",
   "info": {
-    "description": "Unpublished Test contract. Support is not advertised until end-to-end qualification. Current Production uses the existing Files API. Bootstrap only through an authenticated ListCerts version-1 transfer-v1 advertisement; require this endpoint's version-2 s3-aead-v1 capability. Errors never authorize plaintext or legacy fallback. Only explicit execute contacts the bank. Reuse a stable ClientRequestId and retained handle; uncertain outcomes must not trigger automatic bank resubmission.",
+    "description": "Unpublished contract for encrypted transfers on Test with the simulator. Discover current support before use. Current Production uses the existing Files API. Bootstrap only through an authenticated ListCerts version-1 transfer-v1 advertisement; require this endpoint's version-2 s3-aead-v1 capability. Errors never authorize plaintext or legacy fallback. Only explicit execute contacts the bank. Reuse a stable ClientRequestId and retained handle; uncertain outcomes must not trigger automatic bank resubmission.",
     "title": "ISECure encrypted file-transfer API",
     "version": "2.0.0"
   },

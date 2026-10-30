@@ -1,7 +1,9 @@
 # Optional byte-based file helpers
 
-Status: unpublished SDK 4.6.0-rc.1; local workflow qualification. No backend deployment or large-file
-activation is included. The same SDK package targets Production and Test.
+Status: unpublished SDK 4.6.0-rc.1. Local 32-MiB SDK/native Rust/HTTPS round trips
+passed for compressible and incompressible files. Test now advertises the encrypted
+transfer protocol for entitled simulator accounts; discover support before using it. Production retains the
+existing Files API. This package remains unpublished.
 
 Existing `uploadFile()` / `downloadFile()` signatures, authentication, requests and
 response envelopes are unchanged. `Content` still means ordinary Base64 of the
@@ -53,17 +55,17 @@ preserve this version-1 bootstrap and `inline-v1` while legacy Files operations
 remain supported; richer transfer details belong to the separately versioned
 transfer protocol, not extra fields silently added to this closed schema.
 
-| Caller                                     | Current Production / Test without metadata   | Future qualified inline advertisement            |
+| Caller                                     | Current Production / Test without metadata   | Test advertised inline support                   |
 | ------------------------------------------ | -------------------------------------------- | ------------------------------------------------ |
 | Existing methods                           | Existing wire requests/results; no discovery | Same existing wire requests/results              |
 | New helpers, fitting files                 | Legacy inline after authenticated discovery  | Advertised identity inline with server bounds    |
 | New helpers, oversized upload              | Local size error before bank contact         | Local size error; no compression/S3 fallback yet |
 | Unsupported protocol or malformed metadata | Stop without bank contact                    | Stop without bank contact                        |
 
-Current Rust Test has **no capability advertisement activated by this change**;
-it uses the same legacy-compatible path as Production. The advertised path is
-qualified with local transport fixtures, not claimed as a hosted feature. Existing
-account/PGP APIs retain their separate deployment boundaries.
+Test advertises `inline-v1` on visible connections and `transfer-v1` for the simulator.
+The detail read requires the current account and simulator entitlement. Other banks
+and Production do not advertise encrypted transfers. Existing account/PGP APIs
+retain their separate deployment boundaries.
 
 This foundation reads metadata for each new helper call (no cache or stale
 cross-session capability reuse). It checks the base URL, bank, identity, mode,
@@ -98,9 +100,8 @@ network and malformed-response failures stop discovery. They never authorize a
 plaintext or legacy retry. Session changes during either read also stop discovery.
 The existing `getFileTransferSupport()` behavior and legacy byte helpers are unchanged.
 
-No deployed capability is activated by this SDK change. The Web Crypto codec and
-shared Rust interoperability vectors are local foundations; successful discovery
-alone does not demonstrate an end-to-end large transfer.
+SDK installation does not activate server features. Web Crypto and native Rust share
+interoperability vectors; discovery alone does not demonstrate a complete transfer.
 
 ## Resumable metadata controls
 
@@ -145,7 +146,8 @@ means a retained bank response exists; check `ResponseCode` separately for the
 bank outcome, including bank refusal codes. `uncertain` must never trigger blind
 resubmission. Unexpected keys, URLs or file payloads in metadata-only responses
 are rejected. These controls and the encrypted workflow below are locally
-fixture-tested. Hosted qualification remains in progress.
+fixture-tested. Hosted Test checks passed inline upload, encrypted S3 upload, download, retained
+S3 delivery and retirement using this unpublished package.
 
 ## Explicit limits and unavailable functionality
 
@@ -164,10 +166,9 @@ Inline helpers do not promise files larger than six MiB, even if highly compress
 The separate transfer handle implements negotiated compression, explicit execution,
 encrypted S3 transport and original-file verification before bytes or a sink are
 released. Optional progress reports describe local work and ciphertext receipt;
-hosted qualification remains in progress. Saved ciphertext can be restored through
-the explicit process below. These SDK changes do not activate a hosted capability.
-Gateway compression and response streaming remain disabled. These features follow the backend-owned large-file transfer specification and
-must be qualified before their capabilities are advertised. An already attempted
+saved ciphertext can be restored through the explicit process below. Runtime discovery
+controls availability. Gateway compression and response streaming remain disabled.
+These features follow the backend-owned large-file transfer specification. An already attempted
 bank operation is never repeated merely to select a different representation.
 
 ## Progress without changing retry behavior
@@ -252,8 +253,10 @@ Web Crypto own compression, checksums and hashing; no new dependency is added.
 Local Node, Chromium and WebKit tests cover shared encrypted fixtures through
 original-byte decoding, 32 MiB compressible/incompressible files and extra members.
 Node tests additionally cover corrupt headers/checksums, truncation, expansion and
-cancellation. The actual macOS app WebView, encrypted S3 transport and hosted
-workflow still require qualification.
+cancellation. The isolated macOS ARM64 app WKWebView also passed the shared codec/vector suite.
+Local end-to-end tests exercised actual SDK encryption and native Rust through
+ordinary bank HTTPS with local AWS storage doubles. Bounded Test checks also passed
+against real Gateway/Lambda/S3. These are separate from a hosted 32-MiB capacity claim.
 
 ## Encrypted upload preparation
 
@@ -282,7 +285,7 @@ keeps only the pending encoded bytes, then replaces them with encrypted bytes.
 `transfer.discardUpload()` releases these local buffers when no control call is in
 progress; it does not cancel the remote transfer. Retiring a transfer also clears
 its local upload buffers. JavaScript cannot guarantee erasure of every runtime copy.
-This remains unpublished and locally qualified; capabilities are not activated.
+This remains unpublished. Test availability requires authenticated discovery.
 
 ## Uploading the encrypted object
 
@@ -383,7 +386,8 @@ rather than silently using it. A resumed handle must confirm state before execut
 If status is `executing` or `uncertain`, do not resubmit. A fresh `prepared` status
 allows a separate, deliberate execution decision; checking status itself never
 executes. Keep the same logical reference and do not generate a new ID to bypass
-uncertainty. These scenarios have local synthetic SDK tests, not hosted rollout proof.
+uncertainty. These scenarios passed local synthetic and SDK/native interoperability
+tests; consult the deployment record for hosted availability.
 
 ## Resume an upload after restarting the application
 

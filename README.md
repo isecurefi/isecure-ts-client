@@ -98,7 +98,10 @@ discovery without probing new routes on legacy servers. Optional `openFileTransf
 `resumeFileTransfer()` handles add explicit create/status/retire controls and stable
 request IDs. The handle also exposes explicit execute, encrypted upload, retained
 download and verified-sink methods; only execute can contact the bank. This workflow
-is locally tested and still awaits hosted qualification. No capability is activated. See
+has passed local SDK/native Rust round trips through ordinary simulator HTTPS.
+Bounded Test checks also passed encrypted upload, retained download and retirement.
+Exact deployment evidence is tracked in the backend TASKS.md; Production continues
+to use the existing Files methods. See
 [supported behavior and limits](docs/file-transfers.md).
 
 ## Register and sign in
@@ -181,7 +184,7 @@ this field; display an unknown date instead of inferring one from login or delet
 
 The local candidate contract adds `configurePgpPolicy`, `lockPgpPolicy`,
 `deletePgpKey` (full primary fingerprint), and `requestActionMfa` (SMS dispatch).
-These operations require a supporting deployment such as `gpgtest-rust`; their
+These operations require a supporting Test deployment; their
 presence in this SDK does not imply production availability. `uploadPgpKey` accepts
 an optional reviewed policy revision. `retireCert(query, factor)` and
 `deleteAccount(email, confirmation, factor)` accept an explicit fresh factor with

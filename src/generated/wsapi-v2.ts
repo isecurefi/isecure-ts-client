@@ -1854,7 +1854,7 @@ export interface components {
             /** @description Fresh verification code. Never log this request body. */
             Code: string;
         };
-        /** @description Optional per-bank transfer advertisement. Omission from a successful ListCerts response means legacy inline support. Advertising is not authorization or evidence of deployment. Version 1 inline-v1 uses unchanged Files operations; transfer-v1 is reserved until qualified. */
+        /** @description Optional per-bank transfer advertisement. Omission from a successful ListCerts response means legacy inline support. Advertising is not authorization or evidence of deployment. Version 1 inline-v1 uses unchanged Files operations; transfer-v1 requires authenticated version-2 details before use. Test supports the simulator; Production remains on the existing Files contract. */
         FileTransferCapability: {
             /** @enum {integer} */
             ContractVersion: 1;
