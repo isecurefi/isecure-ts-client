@@ -315,10 +315,12 @@ start a new logical transfer to hide an uncertain bank outcome.
 Cancellation after dispatch can also leave an object stored. It never authorizes
 bank execution. The storage request has a deadline of at most two minutes, further
 bounded by grant expiry. Current upload feedback is completion only; incremental
-progress remains in progress. Execution and retained delivery are explicit below.
+upload-byte progress is not provided. Execution and retained delivery are explicit below.
 
-These helpers have local Node/browser tests using synthetic storage responses. They
-do not establish hosted S3 CORS, actual app WebView or end-to-end bank support.
+These helpers have local Node/browser tests using synthetic storage responses, and
+bounded Node SDK checks passed against real Test S3 and the simulator. That evidence
+does not establish every browser origin's S3 CORS configuration. The app WKWebView
+codec/vector suite is separate from a hosted app file-transfer workflow.
 
 ## Execute and receive a retained result
 
