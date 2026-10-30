@@ -1,3 +1,4 @@
+import type { SavedUpload } from "./transfer-upload-state.js";
 import { PendingDelivery } from "./transfer-delivery.js";
 import { prepareExecution, type TransferExecutionInput } from "./transfer-execution.js";
 import { PendingUpload, type PreparedUploadSummary } from "./transfer-upload.js";
@@ -25,6 +26,21 @@ export type TransferControlCall = (
 /** Random logical identifier, not a key derivation. Save it before the first mutation. */
 export function createTransferRequestId(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+export interface SavedUploadData {
+  readonly state: SavedUpload;
+  readonly ciphertext: Uint8Array;
+}
+class UploadSnapshot implements SavedUploadData {
+  constructor(
+    readonly state: SavedUpload,
+    readonly ciphertext: Uint8Array,
+  ) {
+    Object.freeze(this);
+  }
+  toJSON(): string {
+    return "<redacted saved upload>";
+  }
 }
 export interface TransferFileResult {
   readonly status: TransferStatus;
@@ -72,6 +88,41 @@ export class TransferSession {
       if (this.upload.summary) return this.upload.summary;
       const reply = await this.request("prepare", this.snapshot.transferId, this.upload.preparation, checked);
       return this.upload.seal(reply, Math.floor(Date.now() / 1000), checked);
+    });
+  }
+  /** Copy verified ciphertext for caller-managed persistence. Persist state and
+   * bytes separately; neither contains a key or signed grant. */
+  saveUpload(): SavedUploadData {
+    if (this.busy) throw new ISecureTransferError("in-progress");
+    this.assertCurrent();
+    if (!this.upload) throw new ISecureTransferError("invalid-input");
+    return new UploadSnapshot(this.upload.save(), this.upload.copyCiphertext());
+  }
+  /** Reauthorize and authenticate saved ciphertext without encrypting or sending
+   * it. Reconcile storage next; restore never authorizes bank execution. */
+  async restoreUpload(
+    state: unknown,
+    ciphertext: Uint8Array,
+    options: FileTransferOptions = {},
+  ): Promise<PreparedUploadSummary> {
+    return this.exclusive(options, async (checked) => {
+      if (!this.snapshot.transferId || !this.capability) throw new ISecureTransferError("invalid-input");
+      const candidate = await PendingUpload.fromSaved(this.snapshot, state, ciphertext, checked);
+      let accepted = false;
+      try {
+        const reply = await this.request("prepare", this.snapshot.transferId, candidate.preparation, checked);
+        const result = await candidate.seal(reply, Math.floor(Date.now() / 1000), checked);
+        this.assertCurrent();
+        checked.signal?.throwIfAborted();
+        this.upload?.dispose();
+        this.upload = candidate;
+        // Persisted local receipts cannot prove whether a prior POST completed.
+        this.uploaded = "uncertain";
+        accepted = true;
+        return result;
+      } finally {
+        if (!accepted) candidate.dispose();
+      }
     });
   }
   /** Upload retained ciphertext once. A lost S3 acknowledgement requires storage

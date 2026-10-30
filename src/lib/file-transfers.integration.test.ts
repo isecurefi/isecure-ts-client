@@ -532,7 +532,7 @@ it.each(["success", "lost acknowledgement", "existing object"])(
       RetentionUntil: Math.floor(Date.now() / 1000) + 604800,
     };
     f.setControl(status);
-    const transfer = await f.client.openFileTransfer(
+    let transfer = await f.client.openFileTransfer(
       { Operation: "upload", Bank: "simulator", FileType: "pain.001", Storage: "s3", Integrity, AcceptGzip: true },
       { environment: "test" },
     );
@@ -579,6 +579,19 @@ it.each(["success", "lost acknowledgement", "existing object"])(
       headers: { Authorization: "synthetic-id", "x-api-key": "synthetic-tenant" },
     });
     expect(Object.keys(transfer.reference)).not.toContain("Key");
+    if (outcome === "existing object") {
+      const saved = transfer.saveUpload();
+      expect(JSON.stringify(saved)).not.toContain("ciphertext");
+      transfer.discardUpload();
+      transfer = await f.client.resumeFileTransfer(saved.state.reference);
+      await expect(transfer.restoreUpload(saved.state, saved.ciphertext)).resolves.toEqual(prepared);
+      await expect(transfer.uploadPrepared()).rejects.toMatchObject({ reason: "storage-uncertain" });
+      f.onControl(() => {
+        f.setControl(status);
+      });
+      await transfer.status();
+      saved.ciphertext.fill(0);
+    }
     const changed = bytes.slice();
     changed[0] = 1;
     await expect(transfer.prepareUpload(changed)).rejects.toMatchObject({ reason: "invalid-input" });
@@ -627,6 +640,7 @@ it.each(["success", "lost acknowledgement", "existing object"])(
     });
     vi.stubGlobal("fetch", storage);
     try {
+      if (outcome === "existing object") await transfer.reconcileUpload();
       if (outcome !== "lost acknowledgement") {
         const uploaded = await transfer.uploadPrepared();
         expect(uploaded.VersionId).toBe("synthetic-version");

@@ -1,10 +1,11 @@
+import { readSavedUpload, type SavedUpload } from "./transfer-upload-state.js";
 import type { components } from "../generated/transfer-api.js";
 import { BoundArtifact } from "./transfer-artifact.js";
 import { readTransferReference, readTransferStatus, type TransferReference } from "./transfer-control.js";
 import {
   encodeTransferRepresentation,
   sha256TransferBytes,
-  type TransferRepresentation,
+  decodeTransferRepresentation,
 } from "./transfer-representation.js";
 import { ISecureTransferError, type FileTransferOptions } from "./file-transfers.js";
 
@@ -52,16 +53,13 @@ export class PendingUpload {
   #encoded: Uint8Array<ArrayBuffer> | undefined;
   #ciphertext: Uint8Array<ArrayBuffer> | undefined;
   #summary: PreparedUploadSummary | undefined;
+  #saved: PreparedUploadSummary | undefined;
   #sealing = false;
   #disposed = false;
-  private constructor(reference: TransferReference, representation: TransferRepresentation, hash: string) {
+  private constructor(reference: TransferReference, preparation: Preparation, encoded?: Uint8Array<ArrayBuffer>) {
     this.#reference = reference;
-    this.#encoded = representation.bytes;
-    this.preparation = Object.freeze({
-      Encoding: representation.encoding,
-      EncodedBytes: representation.bytes.length,
-      EncodedSha256: hash,
-    });
+    this.#encoded = encoded;
+    this.preparation = Object.freeze({ ...preparation });
   }
   static async create(
     reference: TransferReference,
@@ -85,12 +83,50 @@ export class PendingUpload {
         throw new ISecureTransferError("invalid-input");
       const hash = await sha256TransferBytes(representation.bytes);
       signal?.throwIfAborted();
-      const pending = new PendingUpload(bound, representation, hash);
+      const pending = new PendingUpload(
+        bound,
+        { Encoding: representation.encoding, EncodedBytes: representation.bytes.length, EncodedSha256: hash },
+        representation.bytes,
+      );
       accepted = true;
       return pending;
     } finally {
       if (!accepted) representation.bytes.fill(0);
     }
+  }
+  static async fromSaved(
+    reference: TransferReference,
+    saved: unknown,
+    bytes: Uint8Array,
+    options: FileTransferOptions = {},
+  ): Promise<PendingUpload> {
+    const signal = options.signal;
+    const state = readSavedUpload(saved, reference);
+    if (!(bytes instanceof Uint8Array) || bytes.length !== state.prepared.ObjectBytes)
+      throw new ISecureTransferError("invalid-input");
+    signal?.throwIfAborted();
+    const copy = new Uint8Array(bytes);
+    let accepted = false;
+    try {
+      if ((await sha256TransferBytes(copy)) !== state.prepared.CiphertextSha256)
+        throw new ISecureTransferError("invalid-input");
+      signal?.throwIfAborted();
+      const pending = new PendingUpload(state.reference, {
+        Encoding: state.prepared.Encoding,
+        EncodedBytes: state.prepared.EncodedBytes,
+        EncodedSha256: state.prepared.EncodedSha256,
+      });
+      pending.#ciphertext = copy;
+      pending.#saved = state.prepared;
+      accepted = true;
+      return pending;
+    } finally {
+      if (!accepted) copy.fill(0);
+    }
+  }
+  save(): SavedUpload {
+    if (!this.#summary || this.#disposed) throw new ISecureTransferError("invalid-input");
+    return Object.freeze({ version: 1, reference: this.#reference, prepared: this.#summary });
   }
   get summary(): PreparedUploadSummary | undefined {
     return this.#summary;
@@ -129,15 +165,42 @@ export class PendingUpload {
     try {
       artifact = artifactReply(reply, this.#reference, this.preparation, now);
       const ciphertextSha256 = artifact.ciphertextSha256;
-      if (!this.#encoded) throw invalid();
-      ciphertext = await artifact.seal(this.#encoded);
+      if (this.#encoded) ciphertext = await artifact.seal(this.#encoded);
+      else if (this.#ciphertext && this.#saved) {
+        // Restoring never encrypts: verify the saved object under the freshly
+        // authorized descriptor/key, then the original file, before making it usable.
+        let encoded: Uint8Array<ArrayBuffer> | undefined;
+        let original: Uint8Array<ArrayBuffer> | undefined;
+        try {
+          encoded = await artifact.open(this.#ciphertext);
+          if (
+            (await sha256TransferBytes(encoded)) !== this.preparation.EncodedSha256 ||
+            this.#reference.intent.Operation !== "upload"
+          )
+            throw invalid();
+          original = await decodeTransferRepresentation(
+            encoded,
+            this.preparation.Encoding,
+            this.#reference.intent.Integrity,
+            signal ? { signal } : {},
+          );
+          ciphertext = this.#ciphertext;
+        } finally {
+          encoded?.fill(0);
+          original?.fill(0);
+        }
+      } else throw invalid();
       const hash = await sha256TransferBytes(ciphertext);
-      if (ciphertextSha256 !== undefined && ciphertextSha256 !== hash) throw invalid();
+      if (
+        (ciphertextSha256 !== undefined && ciphertextSha256 !== hash) ||
+        (this.#saved && this.#saved.CiphertextSha256 !== hash)
+      )
+        throw invalid();
       signal?.throwIfAborted();
       if (this.#disposed) throw invalid();
       const summary = Object.freeze({ ...this.preparation, CiphertextSha256: hash, ObjectBytes: ciphertext.length });
       this.#ciphertext = ciphertext;
-      this.#encoded.fill(0);
+      this.#encoded?.fill(0);
       this.#encoded = undefined;
       this.#summary = summary;
       accepted = true;
@@ -153,7 +216,7 @@ export class PendingUpload {
     }
   }
   copyCiphertext(): Uint8Array<ArrayBuffer> {
-    if (!this.#ciphertext || this.#disposed) throw new ISecureTransferError("invalid-input");
+    if (!this.#ciphertext || !this.#summary || this.#disposed) throw new ISecureTransferError("invalid-input");
     return this.#ciphertext.slice();
   }
   dispose(): void {
@@ -163,6 +226,7 @@ export class PendingUpload {
     this.#ciphertext?.fill(0);
     this.#ciphertext = undefined;
     this.#summary = undefined;
+    this.#saved = undefined;
   }
   toJSON(): { preparation: Preparation; sealed: boolean } {
     return { preparation: this.preparation, sealed: this.#summary !== undefined };

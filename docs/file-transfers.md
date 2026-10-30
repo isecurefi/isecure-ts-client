@@ -163,8 +163,8 @@ Inline helpers do not promise files larger than six MiB, even if highly compress
 
 The separate transfer handle implements negotiated compression, explicit execution,
 encrypted S3 transport and original-file verification before bytes or a sink are
-released. Incremental progress, durable ciphertext restoration and hosted
-qualification remain in progress. No new AWS resource, Gateway compression or response streaming
+released. Incremental progress and hosted qualification remain in progress. Saved ciphertext
+can be restored through the explicit process below. No new AWS resource, Gateway compression or response streaming
 is enabled. These follow the backend-owned large-file transfer specification and
 must be qualified before their capabilities are advertised. An already attempted
 bank operation is never repeated merely to select a different representation.
@@ -260,10 +260,10 @@ later explicit `uploadPrepared()` may send the same ciphertext. A POST already
 in flight can still finish after that check, so duplicate identical S3 versions
 remain possible. No bank operation is performed by either method.
 
-Metadata-only resume across process restarts still requires original bytes to
-reconstruct the exact prepared representation. Durable local ciphertext/receipt
-restoration remains in progress. Do not start a new logical transfer to hide an
-uncertain bank outcome.
+If ciphertext was not saved, metadata-only resume still requires original bytes
+to reconstruct the exact prepared representation; the server refuses a changed
+encoded fingerprint. Otherwise restore the ciphertext as described below. Do not
+start a new logical transfer to hide an uncertain bank outcome.
 Cancellation after dispatch can also leave an object stored. It never authorizes
 bank execution. The storage request has a deadline of at most two minutes, further
 bounded by grant expiry. Current upload feedback is completion only; incremental
@@ -339,3 +339,51 @@ If status is `executing` or `uncertain`, do not resubmit. A fresh `prepared` sta
 allows a separate, deliberate execution decision; checking status itself never
 executes. Keep the same logical reference and do not generate a new ID to bypass
 uncertainty. These scenarios have local synthetic SDK tests, not hosted rollout proof.
+
+## Resume an upload after restarting the application
+
+After `prepareUpload()` succeeds, `saveUpload()` returns a copy of the ciphertext
+and versioned metadata. Store the two separately using your application's storage:
+
+```ts
+const saved = transfer.saveUpload();
+const metadataJson = JSON.stringify(saved.state);
+const ciphertextBytes = saved.ciphertext;
+// Persist metadataJson and ciphertextBytes together, plus the transfer reference.
+```
+
+No key, nonce field, signature, token, URL or upload receipt is saved in the metadata.
+The encrypted object itself includes its public nonce header. Metadata contains
+private file selectors and hashes; keep it out of logs. Serializing the whole
+snapshot returns a redacted placeholder to avoid accidentally logging file bytes.
+The caller owns the exported byte copy and may clear it after persistence.
+
+In a new authenticated session, first resume the saved reference and check status.
+For a still-prepared transfer, restore the saved metadata and ciphertext:
+
+```ts
+const resumed = await client.resumeFileTransfer(saved.state.reference);
+const current = await resumed.status();
+if (current.State === "prepared") {
+  await resumed.restoreUpload(saved.state, saved.ciphertext);
+  const existing = await resumed.reconcileUpload();
+  // If absent, a later explicit uploadPrepared() can send the same ciphertext.
+  // Execution remains a separate deliberate call; restore never executes.
+}
+```
+
+`restoreUpload()` validates metadata and byte bounds, reauthorizes the same frozen
+preparation through the API, and authenticates/decrypts privately to verify the
+encoded and original bytes. It never recompresses or encrypts again. The temporary
+key and private plaintext buffers are cleared where the runtime permits. Unknown
+fields, changed scope/intent, malformed digests, corrupt ciphertext and invalid
+compression fail. JSON field ordering does not change the meaning of valid metadata;
+strings and encodings are never silently normalized.
+
+A local saved receipt cannot prove whether an interrupted POST completed. Restored
+handles therefore require `reconcileUpload()` before another upload. Matching
+stored versions are reused. A denied or failed inspection cannot authorize a resend;
+only confirmed absence permits a later explicit upload. If status is already
+completed, use `refreshDelivery()` instead of restoring or executing the upload.
+This process is locally tested, including browser engines at 32 MiB; hosted
+storage and bank qualification remain separate.
