@@ -1,6 +1,6 @@
 import type { components } from "../generated/transfer-api.js";
-import { AeadContext, parseArtifactKey, parseArtifactNonce, sealEncoded } from "./transfer-aead.js";
-import { readTransferReference, readTransferStatus, isTransferId, type TransferReference } from "./transfer-control.js";
+import { BoundArtifact } from "./transfer-artifact.js";
+import { readTransferReference, readTransferStatus, type TransferReference } from "./transfer-control.js";
 import {
   encodeTransferRepresentation,
   sha256TransferBytes,
@@ -29,30 +29,20 @@ function artifactReply(reply: unknown, reference: TransferReference, preparation
     !object(artifact)
   )
     throw invalid();
-  const required = ["Format", "Context", "Nonce", "Key", "EncodedSha256"];
-  if (
-    !required.every((key) => Object.hasOwn(artifact, key)) ||
-    Object.keys(artifact).some((key) => !required.includes(key) && key !== "CiphertextSha256") ||
-    artifact.Format !== "s3-aead-v1" ||
-    artifact.EncodedSha256 !== preparation.EncodedSha256 ||
-    (Object.hasOwn(artifact, "CiphertextSha256") && !isTransferId(artifact.CiphertextSha256))
-  )
-    throw invalid();
-  const context = AeadContext.parse(artifact.Context);
-  const fields = context.metadata;
+  const bound = BoundArtifact.parse(artifact, reference, "upload");
+  const fields = bound.context.metadata;
   if (
     reference.intent.Operation !== "upload" ||
-    fields.Environment !== reference.environment ||
-    fields.AccountScope !== reference.accountScope ||
-    fields.TransferId !== reference.transferId ||
-    fields.Purpose !== "upload" ||
+    bound.encodedSha256 !== preparation.EncodedSha256 ||
     fields.Encoding !== preparation.Encoding ||
     fields.EncodedBytes !== preparation.EncodedBytes ||
     fields.OriginalBytes !== reference.intent.Integrity.RawBytes ||
     fields.OriginalSha256 !== reference.intent.Integrity.Sha256
-  )
+  ) {
+    bound.dispose();
     throw invalid();
-  return { artifact, context, ciphertextSha256: artifact.CiphertextSha256 };
+  }
+  return bound;
 }
 /** Memory-only representation/ciphertext owner. Serializing it never includes
  * file bytes or a key. It cannot execute a bank operation or issue an S3 request. */
@@ -133,16 +123,14 @@ export class PendingUpload {
     signal?.throwIfAborted();
     if (this.#summary) return this.#summary;
     this.#sealing = true;
-    let key: Uint8Array<ArrayBuffer> | undefined;
-    let nonce: Uint8Array<ArrayBuffer> | undefined;
+    let artifact: BoundArtifact | undefined;
     let ciphertext: Uint8Array<ArrayBuffer> | undefined;
     let accepted = false;
     try {
-      const { artifact, context, ciphertextSha256 } = artifactReply(reply, this.#reference, this.preparation, now);
-      nonce = parseArtifactNonce(artifact.Nonce);
-      key = parseArtifactKey(artifact.Key);
+      artifact = artifactReply(reply, this.#reference, this.preparation, now);
+      const ciphertextSha256 = artifact.ciphertextSha256;
       if (!this.#encoded) throw invalid();
-      ciphertext = await sealEncoded(context, nonce, key, this.#encoded);
+      ciphertext = await artifact.seal(this.#encoded);
       const hash = await sha256TransferBytes(ciphertext);
       if (ciphertextSha256 !== undefined && ciphertextSha256 !== hash) throw invalid();
       signal?.throwIfAborted();
@@ -159,8 +147,7 @@ export class PendingUpload {
       if (error instanceof ISecureTransferError) throw error;
       throw invalid();
     } finally {
-      key?.fill(0);
-      nonce?.fill(0);
+      artifact?.dispose();
       if (!accepted) ciphertext?.fill(0);
       this.#sealing = false;
     }

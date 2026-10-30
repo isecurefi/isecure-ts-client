@@ -282,6 +282,7 @@ it("accepts only an unambiguous, matching version receipt or confirmed-absence g
   for (const change of [
     { Uploaded: null },
     { Uploaded: { ...Uploaded, VersionId: "null" } },
+    { Uploaded: { ...Uploaded, VersionId: "\ud800" } },
     { Uploaded: { ...Uploaded, CiphertextSha256: "0".repeat(64) } },
     { Uploaded: { ...Uploaded, ObjectBytes: summary.ObjectBytes + 1 } },
     { Uploaded: { ...Uploaded, ObjectBytes: Number.MAX_SAFE_INTEGER + 1 } },

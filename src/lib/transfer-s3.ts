@@ -1,3 +1,4 @@
+import { base64Hash, objectVersion } from "./transfer-storage.js";
 import { ISecureTransferError, type FileTransferOptions } from "./file-transfers.js";
 import { isTransferId, readTransferStatus } from "./transfer-control.js";
 import { isTransferS3Origin } from "./encrypted-transfers.js";
@@ -36,11 +37,6 @@ function canonicalBase64(value: string): boolean {
   } catch {
     return false;
   }
-}
-function base64Hash(hash: string): string {
-  if (!isTransferId(hash)) throw invalid();
-  const bytes = Uint8Array.from({ length: 32 }, (_, index) => parseInt(hash.slice(index * 2, index * 2 + 2), 16));
-  return btoa(String.fromCharCode(...bytes));
 }
 /** Validated, immutable bearer grant. Never attach it to logs/errors or persist it. */
 class UploadGrant {
@@ -122,16 +118,6 @@ interface StorageEffects extends FileTransferOptions {
   now?: () => number;
   send?: typeof fetch;
   beforeSend?: () => void;
-}
-function objectVersion(value: unknown): value is string {
-  return (
-    typeof value === "string" &&
-    value !== "null" &&
-    value.length > 0 &&
-    value.length <= 1024 &&
-    !/[\s\p{Cc}]/u.test(value) &&
-    new TextEncoder().encode(value).length <= 1024
-  );
 }
 export type UploadControlResult =
   | { readonly kind: "stored"; readonly receipt: UploadedCiphertext }
