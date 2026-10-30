@@ -1,3 +1,5 @@
+import { PendingDelivery } from "./transfer-delivery.js";
+import { prepareExecution, type TransferExecutionInput } from "./transfer-execution.js";
 import { PendingUpload, type PreparedUploadSummary } from "./transfer-upload.js";
 import {
   readUploadControlResult,
@@ -15,7 +17,7 @@ import {
 } from "./transfer-control.js";
 
 export type TransferControlCall = (
-  operation: "create" | "status" | "retire" | "prepare" | "grant",
+  operation: "create" | "status" | "retire" | "prepare" | "grant" | "execute" | "delivery",
   id: string | undefined,
   body: unknown,
   options: FileTransferOptions,
@@ -24,10 +26,17 @@ export type TransferControlCall = (
 export function createTransferRequestId(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
-/** Explicit controls; never dispatches a bank call or automatically retries a mutation. */
+export interface TransferFileResult {
+  readonly status: TransferStatus;
+  readonly bytes?: Uint8Array;
+}
+/** Explicit controls. Only execute may contact a bank; no mutation is automatically retried. */
 export class TransferSession {
   private snapshot: TransferReference;
   private busy = false;
+  private lastStatus: TransferStatus | undefined;
+  private needsStatus = false;
+  private delivery: PendingDelivery | undefined;
   private upload: PendingUpload | undefined;
   private uploaded: UploadedCiphertext | "uncertain" | undefined;
   constructor(
@@ -105,6 +114,101 @@ export class TransferSession {
       return this.uploaded;
     });
   }
+  /** Execute a confirmed prepared intent. After uncertainty, check status first;
+   * another execution always requires an explicit caller decision. */
+  async execute(input: TransferExecutionInput = {}, options: FileTransferOptions = {}): Promise<TransferStatus> {
+    return this.exclusive(options, async (checked) => {
+      const id = this.snapshot.transferId;
+      const capability = this.capability;
+      if (this.needsStatus) throw new ISecureTransferError("execution-uncertain");
+      if (
+        !id ||
+        !capability ||
+        this.lastStatus?.State !== "prepared" ||
+        Math.floor(Date.now() / 1000) >= this.lastStatus.ExecuteUntil
+      )
+        throw new ISecureTransferError("invalid-input");
+      if (this.uploaded === "uncertain") throw new ISecureTransferError("storage-uncertain");
+      const body = await prepareExecution(this.snapshot, capability, input, this.uploaded, checked);
+      this.assertCurrent();
+      checked.signal?.throwIfAborted();
+      this.clearDelivery();
+      this.needsStatus = true;
+      try {
+        const reply = await this.request("execute", id, body, checked);
+        const delivery = PendingDelivery.parse(reply, this.snapshot, capability, Math.floor(Date.now() / 1000));
+        this.delivery = delivery;
+        this.lastStatus = delivery.status;
+        this.needsStatus = delivery.status.State === "prepared";
+        return delivery.status;
+      } catch {
+        // Even an error response can follow bank dispatch. Do not retain its body,
+        // or turn an unknown outcome into an automatic retry.
+        throw new ISecureTransferError("execution-uncertain");
+      }
+    });
+  }
+  /** Reauthorize retained delivery and renew its URL. Never contacts the bank. */
+  async refreshDelivery(options: FileTransferOptions = {}): Promise<TransferStatus> {
+    return this.exclusive(options, async (checked) => {
+      const id = this.snapshot.transferId;
+      const capability = this.capability;
+      if (!id || !capability) throw new ISecureTransferError("invalid-input");
+      this.clearDelivery();
+      const reply = await this.request("delivery", id, {}, checked);
+      const now = Math.floor(Date.now() / 1000);
+      this.delivery = PendingDelivery.parse(reply, this.snapshot, capability, now);
+      if (
+        this.delivery.status.State !== "completed" ||
+        this.delivery.status.DeliveryUntil === undefined ||
+        this.delivery.status.DeliveryUntil <= now ||
+        this.delivery.status.DeliveryRevokedAt !== undefined
+      )
+        throw new ISecureTransferError("invalid-response");
+      this.lastStatus = this.delivery.status;
+      return this.delivery.status;
+    });
+  }
+  /** Consume the current delivery once. Expired/failed delivery needs an explicit
+   * refreshDelivery; neither this method nor refresh re-executes the bank request. */
+  async receive(options: FileTransferOptions = {}): Promise<TransferFileResult> {
+    let bytes: Uint8Array | undefined;
+    try {
+      return await this.exclusive(options, async (checked) => {
+        const delivery = this.delivery;
+        if (!delivery) throw new ISecureTransferError("invalid-input");
+        this.delivery = undefined;
+        bytes = await delivery.receive({ ...checked, beforeRelease: this.assertCurrent });
+        return { status: delivery.status, ...(bytes === undefined ? {} : { bytes }) };
+      });
+    } catch (error) {
+      bytes?.fill(0);
+      throw error;
+    }
+  }
+  /** The sink borrows one fully verified file until its promise settles. Copy
+   * bytes if retaining them; private buffers are cleared afterwards. */
+  async receiveTo(
+    sink: (bytes: Uint8Array) => void | Promise<void>,
+    options: FileTransferOptions = {},
+  ): Promise<TransferStatus> {
+    return this.exclusive(options, async (checked) => {
+      const delivery = this.delivery;
+      if (!delivery || typeof sink !== "function") throw new ISecureTransferError("invalid-input");
+      this.delivery = undefined;
+      await delivery.receiveTo(sink, { ...checked, beforeRelease: this.assertCurrent });
+      return delivery.status;
+    });
+  }
+  /** Release local delivery keys and buffers without any remote operation. */
+  discardDelivery(): void {
+    if (this.busy) throw new ISecureTransferError("in-progress");
+    this.clearDelivery();
+  }
+  private clearDelivery(): void {
+    this.delivery?.dispose();
+    this.delivery = undefined;
+  }
   private async inspectUpload(
     summary: PreparedUploadSummary,
     checked: FileTransferOptions,
@@ -133,6 +237,7 @@ export class TransferSession {
   ): Promise<TransferStatus> {
     return this.exclusive(options, async (checked) => {
       const id = this.snapshot.transferId;
+      if (operation === "retire") this.clearDelivery();
       if (operation !== "create" && id === undefined) throw new ISecureTransferError("invalid-input");
       const body =
         operation === "create"
@@ -140,6 +245,11 @@ export class TransferSession {
           : undefined;
       const reply = await this.request(operation, operation === "create" ? undefined : id, body, checked);
       const result = readTransferStatus(reply, id);
+      this.lastStatus = result;
+      if (operation === "status") {
+        this.needsStatus = false;
+        if (result.State !== "completed" || result.DeliveryRevokedAt !== undefined) this.clearDelivery();
+      }
       this.snapshot = Object.freeze({ ...this.snapshot, transferId: result.TransferId });
       if (operation === "retire") {
         this.upload?.dispose();
@@ -166,7 +276,12 @@ export class TransferSession {
     action: (checked: FileTransferOptions) => Promise<Result>,
   ): Promise<Result> {
     if (this.busy) throw new ISecureTransferError("in-progress");
-    this.assertCurrent();
+    try {
+      this.assertCurrent();
+    } catch (error) {
+      this.clearDelivery();
+      throw error;
+    }
     const signal = options.signal;
     signal?.throwIfAborted();
     this.busy = true;
@@ -175,6 +290,9 @@ export class TransferSession {
       this.assertCurrent();
       signal?.throwIfAborted();
       return result;
+    } catch (error) {
+      this.clearDelivery();
+      throw error;
     } finally {
       this.busy = false;
     }

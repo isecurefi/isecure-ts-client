@@ -664,11 +664,168 @@ it.each(["success", "lost acknowledgement", "existing object"])(
         headers: { Authorization: "synthetic-id", "x-api-key": "synthetic-tenant" },
       });
       if (outcome !== "existing object") expect(storage.mock.calls[0]?.[0]).toBe(grant.Url);
+      f.onControl(() => {
+        f.setControl({ ...status, State: "completed", DeliveryUntil: Math.floor(Date.now() / 1000) + 86400 });
+      });
+      await transfer.execute({ signature: "synthetic-detached-signature" });
+      expect(f.transport.requests.at(-1)).toMatchObject({
+        method: "POST",
+        url: `https://ws-api.test.isecure.fi/v2/file-transfers/${status.TransferId}/execute`,
+        retry: false,
+        body: {
+          Signature: "synthetic-detached-signature",
+          Payload: {
+            Kind: "s3",
+            Version: outcome === "lost acknowledgement" ? "synthetic-recovered" : "synthetic-version",
+          },
+        },
+      });
+      expect((await transfer.receive()).bytes).toBeUndefined();
+      await expect(transfer.execute()).rejects.toThrow();
       expect(JSON.stringify(transfer.reference)).not.toContain("synthetic-version");
     } finally {
       vi.unstubAllGlobals();
     }
     expect(files(f.transport.requests)).toHaveLength(0);
     transfer.discardUpload();
+  },
+);
+
+it("executes explicitly once, receives verified content and renews delivery without another bank execution", async () => {
+  const { sha256TransferBytes } = await import("./transfer-representation.js");
+  const f = await setup("https://ws-api.test.isecure.fi/v2", [{ ...caps, Protocols: ["inline-v1", "transfer-v1"] }]);
+  f.setDetail(detailCapability());
+  const now = Math.floor(Date.now() / 1000);
+  const prepared = {
+    ResponseCode: "00",
+    ResponseText: "Synthetic",
+    TransferId: "c".repeat(64),
+    State: "prepared",
+    ExecuteUntil: now + 3600,
+    RetentionUntil: now + 604800,
+  };
+  f.setControl(prepared);
+  const transfer = await f.client.openFileTransfer(
+    { Operation: "download", Bank: "simulator", FileType: "pain.002", FileReference: "synthetic", AcceptGzip: true },
+    { environment: "test" },
+  );
+  await expect(transfer.execute()).rejects.toMatchObject({ reason: "invalid-input" });
+  await transfer.create();
+  const bytes = Uint8Array.of(0, 255, 127);
+  const completed = {
+    ...prepared,
+    State: "completed",
+    DeliveryUntil: now + 86400,
+    FilePayload: {
+      Kind: "inline",
+      Encoding: "identity",
+      RawBytes: bytes.length,
+      Sha256: await sha256TransferBytes(bytes),
+      Data: "AP9/",
+    },
+  };
+  f.setControl(completed);
+  const status = await transfer.execute();
+  expect(status.State).toBe("completed");
+  expect(status).not.toHaveProperty("FilePayload");
+  expect(f.transport.requests.at(-1)).toMatchObject({
+    method: "POST",
+    url: `https://ws-api.test.isecure.fi/v2/file-transfers/${prepared.TransferId}/execute`,
+    body: {},
+    retry: false,
+  });
+  const received = await transfer.receive();
+  expect(received.bytes).toEqual(bytes);
+  await expect(transfer.execute()).rejects.toThrow();
+  await expect(transfer.receive()).rejects.toThrow();
+  await transfer.refreshDelivery();
+  expect(f.transport.requests.at(-1)).toMatchObject({
+    method: "POST",
+    url: `https://ws-api.test.isecure.fi/v2/file-transfers/${prepared.TransferId}/download-url`,
+    body: {},
+    retry: false,
+  });
+  const sink = vi.fn((data: Uint8Array) => {
+    expect(data).toEqual(bytes);
+  });
+  await transfer.receiveTo(sink);
+  expect(sink).toHaveBeenCalledTimes(1);
+  expect(f.transport.requests.filter((r) => r.url.endsWith("/execute"))).toHaveLength(1);
+  expect(files(f.transport.requests)).toHaveLength(0);
+});
+
+it("requires status reconciliation after lost execution and on resume; no control retries a bank request", async () => {
+  const f = await setup("https://ws-api.test.isecure.fi/v2", [{ ...caps, Protocols: ["inline-v1", "transfer-v1"] }]);
+  f.setDetail(detailCapability());
+  const now = Math.floor(Date.now() / 1000);
+  const prepared = {
+    ResponseCode: "00",
+    ResponseText: "Synthetic",
+    TransferId: "c".repeat(64),
+    State: "prepared",
+    ExecuteUntil: now + 3600,
+    RetentionUntil: now + 604800,
+  };
+  f.setControl(prepared);
+  const transfer = await f.client.openFileTransfer(
+    { Operation: "download", Bank: "simulator", FileType: "pain.002", FileReference: "synthetic", AcceptGzip: false },
+    { environment: "test" },
+  );
+  await transfer.create();
+  f.setControlFailure(new ISecureNetworkError("Synthetic lost execute acknowledgement"));
+  await expect(transfer.execute()).rejects.toMatchObject({ reason: "execution-uncertain" });
+  await expect(transfer.execute()).rejects.toMatchObject({ reason: "execution-uncertain" });
+  f.setControlFailure(undefined);
+  const resumed = await f.client.resumeFileTransfer(transfer.reference);
+  await expect(resumed.execute()).rejects.toMatchObject({ reason: "invalid-input" });
+  f.setControl({ ...prepared, State: "uncertain" });
+  await resumed.status();
+  await expect(resumed.execute()).rejects.toThrow();
+  await transfer.status();
+  await expect(transfer.execute()).rejects.toThrow();
+  expect(f.transport.requests.filter((r) => r.url.endsWith("/execute"))).toHaveLength(1);
+  expect(f.transport.requests.filter((r) => r.url.includes("/file-transfers/")).every((r) => r.retry === false)).toBe(
+    true,
+  );
+});
+
+it.each(["abort", "session", "malformed"])(
+  "does not retain execution delivery after %s at the response boundary",
+  async (failure) => {
+    const f = await setup("https://ws-api.test.isecure.fi/v2", [{ ...caps, Protocols: ["inline-v1", "transfer-v1"] }]);
+    f.setDetail(detailCapability());
+    const now = Math.floor(Date.now() / 1000);
+    const prepared = {
+      ResponseCode: "00",
+      ResponseText: "Synthetic",
+      TransferId: "c".repeat(64),
+      State: "prepared",
+      ExecuteUntil: now + 3600,
+      RetentionUntil: now + 604800,
+    };
+    f.setControl(prepared);
+    const transfer = await f.client.openFileTransfer(
+      { Operation: "download", Bank: "simulator", FileType: "pain.002", FileReference: "synthetic", AcceptGzip: false },
+      { environment: "test" },
+    );
+    await transfer.create();
+    const controller = new AbortController();
+    f.onControl(() => {
+      f.setControl({
+        ...prepared,
+        State: "completed",
+        DeliveryUntil: now + 86400,
+        ...(failure === "malformed" ? { Artifact: {} } : {}),
+      });
+      if (failure === "abort") controller.abort();
+      if (failure === "session") Object.assign(f.client.session, { idToken: "changed" });
+    });
+    await expect(transfer.execute({}, { signal: controller.signal })).rejects.toMatchObject({
+      reason: "execution-uncertain",
+    });
+    await expect(transfer.receive()).rejects.toThrow();
+    await expect(transfer.execute()).rejects.toThrow();
+    expect(f.transport.requests.filter((r) => r.url.endsWith("/execute"))).toHaveLength(1);
+    transfer.discardDelivery();
   },
 );

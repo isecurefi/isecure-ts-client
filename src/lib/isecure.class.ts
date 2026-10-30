@@ -607,7 +607,11 @@ export class WSChannel {
             ? this.urls.transferUploadPreparation(requireValue(id, "TransferId"))
             : operation === "grant"
               ? this.urls.transferUploadGrant(requireValue(id, "TransferId"))
-              : this.urls.transfers(id),
+              : operation === "execute"
+                ? this.urls.transferExecution(requireValue(id, "TransferId"))
+                : operation === "delivery"
+                  ? this.urls.transferDelivery(requireValue(id, "TransferId"))
+                  : this.urls.transfers(id),
           {
             ...(body === undefined ? {} : { body }),
             auth: true,

@@ -72,6 +72,13 @@ export class UrlBuilder {
     return this.url("file-transfers", id, "upload", "grant");
   }
 
+  transferExecution(id: string): string {
+    return this.url("file-transfers", id, "execute");
+  }
+  transferDelivery(id: string): string {
+    return this.url("file-transfers", id, "download-url");
+  }
+
   transferCapabilities(): string {
     return this.url("file-transfers", "capabilities", this.parts().Bank);
   }

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add explicit transfer execution, retained-download refresh, verified byte/sink delivery and local delivery disposal. Require confirmed prepared status; lost execution acknowledgements require a status check before any explicit retry. Inline execution negotiates gzip and budgets the exact JSON envelope; S3 execution uses the verified version receipt. This is locally qualified only, with no hosted capability activation.
+
+- Share artifact-key and canonical storage validation across upload/download. Bound S3 reads, authenticate before decompression or plaintext release, and reject invalid expiry checks and malformed Unicode versions.
+
 - Reconcile lost encrypted-upload acknowledgements through the existing authenticated grant control. Reuse matching S3 versions; require confirmed absence before an explicit resend. Storage failures never count as absence. This remains locally tested and unadvertised.
 
 - Add isolated ciphertext upload with strict signed-grant validation, omitted API credentials/cookies, bounded deadlines and retained S3 version receipts. Lost acknowledgements block repeat uploads; storage reconciliation and full bank delivery are still in progress. No hosted activation.

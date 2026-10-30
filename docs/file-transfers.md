@@ -1,6 +1,6 @@
 # Optional byte-based file helpers
 
-Status: unpublished SDK 4.6.0-rc.1 foundation. No backend deployment or large-file
+Status: unpublished SDK 4.6.0-rc.1; local workflow qualification. No backend deployment or large-file
 activation is included. The same SDK package targets Production and Test.
 
 Existing `uploadFile()` / `downloadFile()` signatures, authentication, requests and
@@ -80,7 +80,7 @@ const encrypted = await client.getEncryptedFileTransferSupport("test", {
 });
 if (encrypted.protocol === "s3-aead-v1") {
   const limit = encrypted.capability.MaxRawUploadBytes;
-  // Metadata only: full encrypted upload/download workflow is still being implemented.
+  // Metadata only. Opening/executing a transfer is a separate caller decision.
 }
 ```
 
@@ -120,10 +120,10 @@ const transfer = await client.openFileTransfer(
   },
   { environment: "test" },
 );
-const savedReference = transfer.reference; // Save before attempting create.
+let savedReference = transfer.reference; // Save before attempting create.
 const created = await transfer.create({ signal: abortController.signal });
 const current = await transfer.status(); // Does not contact the bank.
-// Save transfer.reference again to retain the confirmed TransferId.
+savedReference = transfer.reference; // Save again, now including the confirmed TransferId.
 ```
 
 `create()` reserves the stable random `ClientRequestId` and immutable intent. It
@@ -144,8 +144,8 @@ bank processing. Neither status nor retirement contacts the bank. `completed`
 means a retained bank response exists; check `ResponseCode` separately for the
 bank outcome, including bank refusal codes. `uncertain` must never trigger blind
 resubmission. Unexpected keys, URLs or file payloads in metadata-only responses
-are rejected. These controls are locally fixture-tested; prepare/grant/execute,
-encrypted file delivery and hosted qualification remain in progress.
+are rejected. These controls and the encrypted workflow below are locally
+fixture-tested. Hosted qualification remains in progress.
 
 ## Explicit limits and unavailable functionality
 
@@ -161,9 +161,10 @@ Existing bank, wire/XML and runtime limits may be smaller; the backend remains
 authoritative. Legacy methods retain their existing server-side size handling.
 Inline helpers do not promise files larger than six MiB, even if highly compressible.
 
-Full compression/transfer execution, temporary S3 transport, resumable controls,
-original-file integrity verification, progress and download-to-sink remain to be
-connected to the encrypted codec and discovery. No new AWS resource, Gateway compression or response streaming
+The separate transfer handle implements negotiated compression, explicit execution,
+encrypted S3 transport and original-file verification before bytes or a sink are
+released. Incremental progress, durable ciphertext restoration and hosted
+qualification remain in progress. No new AWS resource, Gateway compression or response streaming
 is enabled. These follow the backend-owned large-file transfer specification and
 must be qualified before their capabilities are advertised. An already attempted
 bank operation is never repeated merely to select a different representation.
@@ -266,7 +267,75 @@ uncertain bank outcome.
 Cancellation after dispatch can also leave an object stored. It never authorizes
 bank execution. The storage request has a deadline of at most two minutes, further
 bounded by grant expiry. Current upload feedback is completion only; incremental
-progress, execution and retained download delivery remain in progress.
+progress remains in progress. Execution and retained delivery are explicit below.
 
 These helpers have local Node/browser tests using synthetic storage responses. They
 do not establish hosted S3 CORS, actual app WebView or end-to-end bank support.
+
+## Execute and receive a retained result
+
+Only `execute()` may contact the bank. It requires a confirmed `prepared` result
+from `create()` or `status()` and an unexpired execution window. For a prepared
+S3 upload, after `prepareUpload()` and `uploadPrepared()` have succeeded:
+
+```ts
+const outcome = await transfer.execute({ signature: detachedSignature });
+// Check outcome.State and outcome.ResponseCode; completed does not mean bank success.
+const receipt = await transfer.receive(); // Optional verified upload receipt bytes.
+```
+
+For a prepared inline upload, use
+`await transfer.execute({ bytes: originalBytes, signature: detachedSignature })`.
+The SDK checks the original hash, chooses gzip only if negotiated and smaller,
+and counts the exact Base64 plus escaped JSON metadata before sending. It does
+not silently change an inline intent to S3. If it does not fit, execution is not
+sent; choose the intended storage explicitly before creating a new operation.
+
+For a prepared download, the execution body is empty:
+
+```ts
+const outcome = await transfer.execute({}, { signal: abortController.signal });
+if (outcome.State === "completed") {
+  const result = await transfer.receive({ signal: abortController.signal });
+  // result.status preserves the bank result. result.bytes is absent if there is no file.
+}
+```
+
+`receive()` consumes the current local delivery once. It does not execute, refresh
+a URL or fall back automatically. S3 reads use the exact immutable version and
+verify ciphertext SHA-256, AES-GCM authentication, encoded-byte SHA-256, bounded
+decompression and original length/hash before returning any file bytes. An absent
+S3 checksum header does not skip the SDK's actual-byte hash check. Keys and URLs
+stay inside the handle. Use `discardDelivery()` to clear local delivery material
+without making a remote request.
+
+For a sink, use `await transfer.receiveTo(async bytes => { /* consume bytes */ })`.
+The sink receives one fully verified file, not provisional plaintext chunks. Its
+buffer is borrowed until its returned promise settles, then cleared; copy bytes
+if retaining them. Empty receipts reach the sink as an empty buffer; absent files
+do not call it. Cancellation or session changes before release prevent delivery,
+but cannot retract bytes already consumed or undo a bank operation.
+
+## Lost execution response or expired download URL
+
+An execution error reports `execution-uncertain` because the bank might already
+have acted. There is no automatic replay. Check status explicitly:
+
+```ts
+const resumed = await client.resumeFileTransfer(savedReference);
+const state = await resumed.status();
+if (state.State === "completed" && state.DeliveryRevokedAt === undefined) {
+  await resumed.refreshDelivery();
+  const retained = await resumed.receive();
+  // Handle retained.status and retained.bytes without another bank request.
+}
+```
+
+`refreshDelivery()` reauthorizes access to the existing result and obtains a new
+short-lived grant. It never calls the bank. It requires a live completed delivery;
+expired or revoked delivery is refused. A failed refresh clears old local material
+rather than silently using it. A resumed handle must confirm state before executing.
+If status is `executing` or `uncertain`, do not resubmit. A fresh `prepared` status
+allows a separate, deliberate execution decision; checking status itself never
+executes. Keep the same logical reference and do not generate a new ID to bypass
+uncertainty. These scenarios have local synthetic SDK tests, not hosted rollout proof.

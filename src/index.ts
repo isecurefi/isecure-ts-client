@@ -152,3 +152,6 @@ export type { TransferIntent, TransferReference, TransferStatus } from "./lib/tr
 
 export type { PreparedUploadSummary } from "./lib/transfer-upload.js";
 export type { UploadedCiphertext } from "./lib/transfer-s3.js";
+
+export type { TransferExecutionInput } from "./lib/transfer-execution.js";
+export type { TransferFileResult } from "./lib/transfer-session.js";

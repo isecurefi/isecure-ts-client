@@ -147,3 +147,69 @@ it("cancels before dispatch and after response without retry or learning a stale
   await expect(session.create({ signal: controller.signal })).rejects.toThrow();
   expect(calls).toBe(1);
 });
+
+it("refuses incomplete delivery-refresh responses and invalidates previous material on failed refresh or retirement", async () => {
+  const now = Math.floor(Date.now() / 1000);
+  const completed = {
+    ...status,
+    State: "completed",
+    ExecuteUntil: now + 3600,
+    RetentionUntil: now + 604800,
+    DeliveryUntil: now + 86400,
+  };
+  const { readEncryptedCapability } = await import("./encrypted-transfers.js");
+  const capability = readEncryptedCapability(
+    {
+      ResponseCode: "00",
+      ResponseText: "Synthetic",
+      ContractVersion: 2,
+      Protocol: "transfer-v1",
+      ArtifactFormat: "s3-aead-v1",
+      Environment: "test",
+      Bank: "simulator",
+      AccountScope: reference.accountScope,
+      Encodings: ["identity"],
+      Delivery: ["s3"],
+      S3Origin: "https://synthetic.s3.eu-west-1.amazonaws.com",
+      MaxRawUploadBytes: 33554432,
+      MaxRawDownloadBytes: 33554432,
+      MaxInlineRequestBytes: 6225920,
+      MaxControlBytes: 2097152,
+      GrantMaxSeconds: 300,
+      ExecuteWindowSeconds: 3600,
+      DeliveryWindowSeconds: 86400,
+      RetentionSeconds: 604800,
+    },
+    { bank: "simulator", environment: "test" },
+  );
+  let reply: unknown = completed;
+  let fail = false;
+  const session = new TransferSession(
+    { ...reference, transferId: status.TransferId },
+    async () => {
+      if (fail) throw new Error("synthetic outage");
+      return reply;
+    },
+    () => undefined,
+    capability,
+  );
+  for (const invalid of [
+    { ...completed, State: "prepared", DeliveryUntil: undefined },
+    { ...status, ExecuteUntil: now + 3600, RetentionUntil: now + 604800 },
+    { ...completed, DeliveryUntil: now - 1 },
+    { ...completed, DeliveryRevokedAt: now - 1 },
+  ]) {
+    reply = invalid;
+    await expect(session.refreshDelivery()).rejects.toThrow();
+  }
+  reply = completed;
+  await session.refreshDelivery();
+  fail = true;
+  await expect(session.refreshDelivery()).rejects.toThrow();
+  await expect(session.receive()).rejects.toThrow();
+  fail = false;
+  await session.refreshDelivery();
+  fail = true;
+  await expect(session.retire()).rejects.toThrow();
+  await expect(session.receive()).rejects.toThrow();
+});

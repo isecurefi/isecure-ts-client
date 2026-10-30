@@ -12,19 +12,21 @@ export type TransferErrorReason =
   | "session-changed"
   | "refused"
   | "in-progress"
-  | "storage-uncertain";
+  | "storage-uncertain"
+  | "execution-uncertain";
 
 /** Static diagnostics only: never attaches file bytes, signatures or response bodies. */
 export class ISecureTransferError extends ISecureError {
   constructor(readonly reason: TransferErrorReason) {
     const messages: Record<TransferErrorReason, string> = {
+      "execution-uncertain": "Execution outcome requires a status check; do not automatically resubmit",
       "storage-uncertain": "Storage upload outcome is uncertain; reconcile it before resending",
       refused: "File transfer request was refused",
       "in-progress": "A transfer control request is already in progress",
       "invalid-input": "Invalid file transfer input",
       "invalid-response": "Invalid file transfer metadata or response",
       unsupported: "The requested file transfer protocol is not available",
-      size: "File or metadata exceeds the available inline transfer budget; large-file delivery is not enabled",
+      size: "File or metadata exceeds the available transfer limit",
       "session-changed": "Session or transfer destination changed; do not automatically resubmit the operation",
     };
     super(messages[reason]);
