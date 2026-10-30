@@ -3,6 +3,7 @@ import { isTransferId } from "./transfer-control.js";
 import { isTransferS3Origin } from "./encrypted-transfers.js";
 import { base64Hash, objectVersion } from "./transfer-storage.js";
 import { sha256TransferBytes } from "./transfer-representation.js";
+import { transferProgressObserver } from "./transfer-progress.js";
 
 function invalid(): ISecureTransferError {
   return new ISecureTransferError("invalid-response");
@@ -134,6 +135,7 @@ export async function downloadCiphertext(
   const now = effects.now ?? (() => Math.floor(Date.now() / 1000));
   const send = effects.send ?? fetch;
   const beforeSend = effects.beforeSend;
+  const progress = transferProgressObserver(effects.onProgress);
   signal?.throwIfAborted();
   const remaining = grant.expiresAt - now();
   if (!Number.isSafeInteger(remaining) || remaining <= 0 || remaining > 300) throw invalid();
@@ -153,7 +155,9 @@ export async function downloadCiphertext(
   signal?.addEventListener("abort", abort, { once: true });
   const timer = setTimeout(abort, Math.min(remaining * 1000, 120000));
   try {
+    progress({ phase: "read-ciphertext", receivedBytes: 0, totalBytes: grant.objectBytes });
     signal?.throwIfAborted();
+    beforeSend?.();
     response = await send(grant.url, {
       method: "GET",
       credentials: "omit",
@@ -180,6 +184,7 @@ export async function downloadCiphertext(
     reader = response.body.getReader();
     output = new Uint8Array(grant.objectBytes);
     let offset = 0;
+    let reported = 0;
     for (;;) {
       const next = await reader.read();
       if (controller.signal.aborted) throw invalid();
@@ -187,6 +192,12 @@ export async function downloadCiphertext(
       if (!(next.value instanceof Uint8Array) || next.value.length > output.length - offset) throw invalid();
       output.set(next.value, offset);
       offset += next.value.length;
+      // Bound observer work independently of an upstream stream's chunk size.
+      // Counts are ciphertext received, not authenticated plaintext or bank success.
+      if (offset > reported && (offset - reported >= 256 * 1024 || offset === output.length)) {
+        progress({ phase: "read-ciphertext", receivedBytes: offset, totalBytes: output.length });
+        reported = offset;
+      }
     }
     if (offset !== output.length || (await sha256TransferBytes(output)) !== grant.checksum || controller.signal.aborted)
       throw invalid();

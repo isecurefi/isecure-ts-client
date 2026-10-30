@@ -40,7 +40,19 @@ export interface UploadFileBytesRequest extends Omit<UploadFileRequest, "FileCon
 }
 export interface FileTransferOptions {
   signal?: AbortSignal;
+  /** Optional encrypted TransferSession progress. Counts describe ciphertext,
+   * never bank acceptance. Observers are not awaited; failures are ignored.
+   * Use signal to cancel. No file bytes, identifiers, hashes or grants are exposed. */
+  onProgress?: (event: FileTransferProgress) => void | Promise<void>;
 }
+/** Local transfer work only. A full read count still requires integrity/AEAD
+ * verification. Store completion means a confirmed storage receipt, not bank execution. */
+export type FileTransferProgress =
+  | Readonly<{
+      phase: "prepare-upload" | "store-upload" | "verify-download";
+      state: "started" | "completed";
+    }>
+  | Readonly<{ phase: "read-ciphertext"; receivedBytes: number; totalBytes: number }>;
 export type InlineTransferSupport = {
   protocol: "legacy-inline" | "inline-v1";
   maxRawUploadBytes: number;

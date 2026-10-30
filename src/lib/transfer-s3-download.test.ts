@@ -1,6 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { readDownloadGrant, downloadCiphertext } from "./transfer-s3-download.js";
 import { sha256TransferBytes } from "./transfer-representation.js";
+import type { FileTransferProgress } from "./file-transfers.js";
 const origin = "https://synthetic.s3.eu-west-1.amazonaws.com";
 const id = "c".repeat(64);
 const bytes = new Uint8Array(40).fill(7);
@@ -23,17 +24,88 @@ function fixture() {
     url.searchParams.set(key, value);
   return { Url: url.href, ExpiresAt: 1300 };
 }
-function read(value: unknown = fixture()) {
+function read(value: unknown = fixture(), objectBytes = 40, digest = hash) {
   return readDownloadGrant(value, {
     origin,
     transferId: id,
     now: 1000,
     deliveryUntil: 87400,
     grantMaxSeconds: 300,
-    objectBytes: 40,
-    checksum: hash,
+    objectBytes,
+    checksum: digest,
   });
 }
+it("reports only bounded ciphertext byte counts and isolates observer failures", async () => {
+  const onProgress = vi.fn(() => {
+    throw new Error("private observer failure");
+  });
+  const send = vi.fn<typeof fetch>(
+    async () =>
+      new Response(bytes, {
+        headers: { "x-amz-version-id": "opaque/+version" },
+      }),
+  );
+  await expect(downloadCiphertext(read(), { send, now: () => 1000, onProgress })).resolves.toEqual(bytes);
+  expect(onProgress.mock.calls).toEqual([
+    [{ phase: "read-ciphertext", receivedBytes: 0, totalBytes: 40 }],
+    [{ phase: "read-ciphertext", receivedBytes: 40, totalBytes: 40 }],
+  ]);
+  expect(send).toHaveBeenCalledTimes(1);
+});
+it("bounds progress calls for tiny chunks and freezes each metadata-only event", async () => {
+  const payload = new Uint8Array(1024 * 1024).fill(7);
+  const digest = await sha256TransferBytes(payload);
+  let offset = 0;
+  const stream = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      if (offset === payload.length) controller.close();
+      else {
+        controller.enqueue(payload.subarray(offset, offset + 256));
+        offset += 256;
+      }
+    },
+  });
+  const events: FileTransferProgress[] = [];
+  await expect(
+    downloadCiphertext(read(fixture(), payload.length, digest), {
+      now: () => 1000,
+      send: async () => new Response(stream, { headers: { "x-amz-version-id": "opaque/+version" } }),
+      onProgress: (event) => {
+        events.push(event);
+        expect(Object.isFrozen(event)).toBe(true);
+      },
+    }),
+  ).resolves.toEqual(payload);
+  expect(events).toEqual(
+    [0, 1, 2, 3, 4].map((part) => ({
+      phase: "read-ciphertext",
+      receivedBytes: part * 256 * 1024,
+      totalBytes: payload.length,
+    })),
+  );
+});
+it("honors cancellation and changed session from a start observer before any storage request", async () => {
+  for (const mode of ["abort", "session"] as const) {
+    const controller = new AbortController();
+    let current = true;
+    const send = vi.fn<typeof fetch>();
+    await expect(
+      downloadCiphertext(read(), {
+        send,
+        now: () => 1000,
+        signal: controller.signal,
+        beforeSend: () => {
+          if (!current) throw new Error("session changed");
+        },
+        onProgress: () => {
+          if (mode === "abort") controller.abort();
+          else current = false;
+        },
+      }),
+    ).rejects.toThrow();
+    expect(send).not.toHaveBeenCalled();
+  }
+});
 it("binds an exact storage origin, path, immutable version and expiry without normalizing URLs", () => {
   const grant = read();
   expect(grant.version).toBe("opaque/+version");

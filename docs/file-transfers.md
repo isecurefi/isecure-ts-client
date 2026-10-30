@@ -163,11 +163,55 @@ Inline helpers do not promise files larger than six MiB, even if highly compress
 
 The separate transfer handle implements negotiated compression, explicit execution,
 encrypted S3 transport and original-file verification before bytes or a sink are
-released. Incremental progress and hosted qualification remain in progress. Saved ciphertext
-can be restored through the explicit process below. No new AWS resource, Gateway compression or response streaming
-is enabled. These follow the backend-owned large-file transfer specification and
+released. Optional progress reports describe local work and ciphertext receipt;
+hosted qualification remains in progress. Saved ciphertext can be restored through
+the explicit process below. These SDK changes do not activate a hosted capability.
+Gateway compression and response streaming remain disabled. These features follow the backend-owned large-file transfer specification and
 must be qualified before their capabilities are advertised. An already attempted
 bank operation is never repeated merely to select a different representation.
+
+## Progress without changing retry behavior
+
+`TransferSession.prepareUpload`, `uploadPrepared`, `receive` and `receiveTo` accept
+an optional `onProgress` callback beside `signal`. Events are frozen metadata only:
+
+- `prepare-upload`: preparation started or completed.
+- `store-upload`: storage checking/upload started, or a matching storage receipt
+  was confirmed. A reused receipt can report only `completed`. Fetch does not
+  provide portable upload byte progress, so the SDK does not invent it.
+- `read-ciphertext`: received and total ciphertext bytes. Updates occur at most
+  once per 256 KiB received, plus start and the exact final count.
+- `verify-download`: authentication, decoding and original-file checking started
+  or completed. The operation's returned promise or sink call establishes delivery.
+
+These events contain no file bytes, filenames, account IDs, hashes, keys or signed
+URLs. A full ciphertext count is **not** proof of valid content or bank acceptance.
+Use the returned transfer status for the bank outcome. Legacy inline helpers and
+metadata-only controls do not emit these encrypted-session events.
+
+Callbacks are observational: the SDK ignores their exceptions and rejected
+promises, and does not await them. This prevents a UI callback error from turning
+a confirmed storage write into apparent failure. Use `AbortSignal` to cancel;
+throwing inside a callback does not cancel. Session and cancellation checks still
+run before requests and plaintext release. Callback errors are never logged.
+
+```ts
+await transfer.receiveTo(saveVerifiedFile, {
+  signal: abortController.signal,
+  onProgress(event) {
+    if (event.phase === "read-ciphertext") {
+      updateByteProgress(event.receivedBytes, event.totalBytes);
+    } else {
+      updateStage(event.phase, event.state);
+    }
+  },
+});
+```
+
+Here `saveVerifiedFile` is the application's sink; it receives the complete verified
+file and must copy bytes if it keeps them after its promise settles. The two UI
+callbacks receive only the counts/stages shown above. Progress itself never
+resends an S3 request or executes a bank operation.
 
 ## Source and verification
 
@@ -217,7 +261,8 @@ For a created S3 upload whose intent already contains the original byte count an
 SHA-256, `await transfer.prepareUpload(originalBytes, { signal })` now prepares and
 encrypts the file in memory. It returns encoding, sizes and fingerprints only.
 Preparation does not upload to S3 or execute a bank operation. Use the separate
-`uploadPrepared` step below for storage; bank execution remains in progress.
+`uploadPrepared` step below for storage, followed by an explicit `execute` call
+when the application is ready to contact the bank.
 
 Preparation freezes the SHA-256 of the **exact encoded bytes** before the API releases
 a key. This is separate from the original-file hash and the ciphertext hash.

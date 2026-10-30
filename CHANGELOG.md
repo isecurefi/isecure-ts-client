@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add optional metadata-only progress to encrypted transfer preparation, storage and verified delivery. Bound download updates, isolate observer failures, and preserve session/cancellation checks without replaying requests. Progress never means bank acceptance; hosted qualification remains separate.
+
 - Add key-free saved upload metadata and ciphertext snapshots. Restore through current API authorization and full authentication/integrity checks without recompressing or re-encrypting; require storage reconciliation before another upload. Local Node/browser qualification only.
 
 - Add explicit transfer execution, retained-download refresh, verified byte/sink delivery and local delivery disposal. Require confirmed prepared status; lost execution acknowledgements require a status check before any explicit retry. Inline execution negotiates gzip and budgets the exact JSON envelope; S3 execution uses the verified version receipt. This is locally qualified only, with no hosted capability activation.

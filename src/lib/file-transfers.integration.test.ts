@@ -567,7 +567,12 @@ it.each(["success", "lost acknowledgement", "existing object"])(
     f.setControlFailure(new ISecureNetworkError("Synthetic timeout"));
     await expect(transfer.prepareUpload(bytes)).rejects.toThrow("Synthetic timeout");
     f.setControlFailure(undefined);
-    const prepared = await transfer.prepareUpload(bytes);
+    const preparationProgress = vi.fn();
+    const prepared = await transfer.prepareUpload(bytes, { onProgress: preparationProgress });
+    expect(preparationProgress.mock.calls).toEqual([
+      [{ phase: "prepare-upload", state: "started" }],
+      [{ phase: "prepare-upload", state: "completed" }],
+    ]);
     expect(await transfer.prepareUpload(bytes)).toEqual(prepared);
     const requests = f.transport.requests.filter((r) => r.url.endsWith("/upload/prepare"));
     expect(requests).toHaveLength(2);
@@ -639,14 +644,19 @@ it.each(["success", "lost acknowledgement", "existing object"])(
       });
     });
     vi.stubGlobal("fetch", storage);
+    const storageProgress = vi.fn(() => {
+      throw new Error("private observer failure");
+    });
     try {
       if (outcome === "existing object") await transfer.reconcileUpload();
       if (outcome !== "lost acknowledgement") {
-        const uploaded = await transfer.uploadPrepared();
+        const uploaded = await transfer.uploadPrepared({ onProgress: storageProgress });
         expect(uploaded.VersionId).toBe("synthetic-version");
         expect(await transfer.uploadPrepared()).toEqual(uploaded);
       } else {
-        await expect(transfer.uploadPrepared()).rejects.toMatchObject({ reason: "storage-uncertain" });
+        await expect(transfer.uploadPrepared({ onProgress: storageProgress })).rejects.toMatchObject({
+          reason: "storage-uncertain",
+        });
         await expect(transfer.uploadPrepared()).rejects.toMatchObject({ reason: "storage-uncertain" });
         f.setControlFailure(new ISecureNetworkError("Synthetic storage inspection unavailable"));
         await expect(transfer.reconcileUpload()).rejects.toThrow("Synthetic storage inspection unavailable");
@@ -670,6 +680,13 @@ it.each(["success", "lost acknowledgement", "existing object"])(
         expect(await transfer.uploadPrepared()).toEqual(recovered);
       }
       expect(storage).toHaveBeenCalledTimes(outcome === "existing object" ? 0 : 1);
+      expect(storageProgress.mock.calls).toEqual(
+        outcome === "existing object"
+          ? [[{ phase: "store-upload", state: "completed" }]]
+          : outcome === "lost acknowledgement"
+            ? [[{ phase: "store-upload", state: "started" }]]
+            : [[{ phase: "store-upload", state: "started" }], [{ phase: "store-upload", state: "completed" }]],
+      );
       expect(f.transport.requests.at(-1)).toMatchObject({
         method: "POST",
         url: `https://ws-api.test.isecure.fi/v2/file-transfers/${status.TransferId}/upload/grant`,
@@ -764,6 +781,24 @@ it("executes explicitly once, receives verified content and renews delivery with
   });
   await transfer.receiveTo(sink);
   expect(sink).toHaveBeenCalledTimes(1);
+  await transfer.refreshDelivery();
+  let observedTime = Date.now();
+  const clock = vi.spyOn(Date, "now").mockImplementation(() => observedTime);
+  try {
+    await expect(
+      transfer.receive({
+        onProgress(event) {
+          if (event.phase === "verify-download" && event.state === "completed") {
+            queueMicrotask(() => {
+              observedTime = completed.DeliveryUntil * 1000;
+            });
+          }
+        },
+      }),
+    ).rejects.toMatchObject({ reason: "invalid-response" });
+  } finally {
+    clock.mockRestore();
+  }
   expect(f.transport.requests.filter((r) => r.url.endsWith("/execute"))).toHaveLength(1);
   expect(files(f.transport.requests)).toHaveLength(0);
 });

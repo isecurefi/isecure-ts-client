@@ -138,6 +138,7 @@ export {
   type InlineTransferSupport,
   type UploadFileBytesRequest,
   type FileTransferOptions,
+  type FileTransferProgress,
   type FileBytesResult,
 } from "./lib/file-transfers.js";
 

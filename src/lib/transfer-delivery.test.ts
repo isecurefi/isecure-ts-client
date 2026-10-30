@@ -4,6 +4,7 @@ import { PendingDelivery } from "./transfer-delivery.js";
 import { sha256TransferBytes } from "./transfer-representation.js";
 import type { TransferReference } from "./transfer-control.js";
 import type { EncryptedTransferCapability } from "./encrypted-transfers.js";
+import type { FileTransferProgress } from "./file-transfers.js";
 const vectors = JSON.parse(
   readFileSync(new URL("../../test-vectors/s3-aead-v1/vectors.json", import.meta.url), "utf8"),
 ) as {
@@ -124,6 +125,88 @@ it("preserves metadata-only and bank-error outcomes without creating another ban
   expect(pending.status.ResponseCode).toBe("01");
   expect(await pending.receive({ send: f.send, now: () => 1000 })).toBeUndefined();
   expect(f.send).not.toHaveBeenCalled();
+});
+it("reports verification completion only after authentication and original-file checks", async () => {
+  const f = await fixture();
+  for (const valid of [true, false]) {
+    const reply = valid ? f.reply : { ...f.reply, Artifact: { ...f.reply.Artifact, Key: base64("11".repeat(32)) } };
+    const progress = vi.fn<(event: FileTransferProgress) => void>();
+    const pending = PendingDelivery.parse(reply, f.reference, f.capability, 1000);
+    const receiving = pending.receive({ send: f.send, now: () => 1000, onProgress: progress });
+    if (valid) await expect(receiving).resolves.toEqual(raw(f.vector.original));
+    else await expect(receiving).rejects.toThrow();
+    expect(progress).toHaveBeenCalledWith({ phase: "verify-download", state: "started" });
+    const completed = [{ phase: "verify-download", state: "completed" }];
+    expect(progress.mock.calls.some((call) => JSON.stringify(call) === JSON.stringify(completed))).toBe(valid);
+  }
+});
+it("rechecks cancellation and session changes from verification observers before releasing plaintext", async () => {
+  for (const mode of ["abort", "session"] as const) {
+    const f = await fixture();
+    const pending = PendingDelivery.parse(f.reply, f.reference, f.capability, 1000);
+    const controller = new AbortController();
+    let current = true;
+    const sink = vi.fn();
+    await expect(
+      pending.receiveTo(sink, {
+        send: f.send,
+        now: () => 1000,
+        signal: controller.signal,
+        beforeRelease: () => {
+          if (!current) throw new Error("session changed");
+        },
+        onProgress: (event) => {
+          if (event.phase === "verify-download" && event.state === "completed") {
+            if (mode === "abort") controller.abort();
+            else current = false;
+          }
+        },
+      }),
+    ).rejects.toThrow();
+    expect(sink).not.toHaveBeenCalled();
+    expect(f.send).toHaveBeenCalledTimes(1);
+  }
+});
+it("rechecks expiry and local disposal after verification observers before plaintext release", async () => {
+  for (const mode of ["expire", "dispose"] as const) {
+    const f = await fixture();
+    const pending = PendingDelivery.parse(f.reply, f.reference, f.capability, 1000);
+    let now = 1000;
+    const sink = vi.fn();
+    await expect(
+      pending.receiveTo(sink, {
+        send: f.send,
+        now: () => now,
+        onProgress: (event) => {
+          if (event.phase === "verify-download" && event.state === "completed") {
+            if (mode === "expire") now = f.status.DeliveryUntil;
+            else pending.dispose();
+          }
+        },
+      }),
+    ).rejects.toThrow();
+    expect(sink).not.toHaveBeenCalled();
+  }
+});
+it("rechecks expiry across the asynchronous handoff to the plaintext sink", async () => {
+  const f = await fixture();
+  const pending = PendingDelivery.parse(f.reply, f.reference, f.capability, 1000);
+  let now = 1000;
+  const sink = vi.fn();
+  await expect(
+    pending.receiveTo(sink, {
+      send: f.send,
+      now: () => now,
+      onProgress: (event) => {
+        if (event.phase === "verify-download" && event.state === "completed") {
+          queueMicrotask(() => {
+            now = f.status.DeliveryUntil;
+          });
+        }
+      },
+    }),
+  ).rejects.toThrow();
+  expect(sink).not.toHaveBeenCalled();
 });
 it("withholds bytes from sinks on tampering, changed authority, failed decoding and cancellation", async () => {
   for (const change of [{ Key: base64("11".repeat(32)) }, { EncodedSha256: "e".repeat(64) }]) {

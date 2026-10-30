@@ -1,5 +1,6 @@
 import type { SavedUpload } from "./transfer-upload-state.js";
-import { PendingDelivery } from "./transfer-delivery.js";
+import { transferProgressObserver } from "./transfer-progress.js";
+import { PendingDelivery, requireDeliveryTime } from "./transfer-delivery.js";
 import { prepareExecution, type TransferExecutionInput } from "./transfer-execution.js";
 import { PendingUpload, type PreparedUploadSummary } from "./transfer-upload.js";
 import {
@@ -82,12 +83,20 @@ export class TransferSession {
   async prepareUpload(bytes: Uint8Array, options: FileTransferOptions = {}): Promise<PreparedUploadSummary> {
     return this.exclusive(options, async (checked) => {
       if (this.snapshot.transferId === undefined) throw new ISecureTransferError("invalid-input");
+      const progress = transferProgressObserver(checked.onProgress);
+      progress({ phase: "prepare-upload", state: "started" });
+      checked.signal?.throwIfAborted();
       if (this.upload) await this.upload.requireOriginal(bytes, checked);
       else this.upload = await PendingUpload.create(this.snapshot, bytes, checked);
       this.assertCurrent();
-      if (this.upload.summary) return this.upload.summary;
+      if (this.upload.summary) {
+        progress({ phase: "prepare-upload", state: "completed" });
+        return this.upload.summary;
+      }
       const reply = await this.request("prepare", this.snapshot.transferId, this.upload.preparation, checked);
-      return this.upload.seal(reply, Math.floor(Date.now() / 1000), checked);
+      const result = await this.upload.seal(reply, Math.floor(Date.now() / 1000), checked);
+      progress({ phase: "prepare-upload", state: "completed" });
+      return result;
     });
   }
   /** Copy verified ciphertext for caller-managed persistence. Persist state and
@@ -130,13 +139,20 @@ export class TransferSession {
   async uploadPrepared(options: FileTransferOptions = {}): Promise<UploadedCiphertext> {
     return this.exclusive(options, async (checked) => {
       if (this.uploaded === "uncertain") throw new ISecureTransferError("storage-uncertain");
-      if (this.uploaded) return this.uploaded;
+      const progress = transferProgressObserver(checked.onProgress);
+      if (this.uploaded) {
+        progress({ phase: "store-upload", state: "completed" });
+        return this.uploaded;
+      }
       const upload = this.upload;
       const summary = upload?.summary;
       if (!upload || !summary) throw new ISecureTransferError("invalid-input");
+      progress({ phase: "store-upload", state: "started" });
+      checked.signal?.throwIfAborted();
       const result = await this.inspectUpload(summary, checked);
       if (result.kind === "stored") {
         this.uploaded = result.receipt;
+        progress({ phase: "store-upload", state: "completed" });
         return result.receipt;
       }
       this.assertCurrent();
@@ -148,6 +164,7 @@ export class TransferSession {
           ...checked,
           beforeSend: this.assertCurrent,
         });
+        progress({ phase: "store-upload", state: "completed" });
         return this.uploaded;
       } finally {
         ciphertext.fill(0);
@@ -225,13 +242,17 @@ export class TransferSession {
   async receive(options: FileTransferOptions = {}): Promise<TransferFileResult> {
     let bytes: Uint8Array | undefined;
     try {
-      return await this.exclusive(options, async (checked) => {
+      const result = await this.exclusive(options, async (checked) => {
         const delivery = this.delivery;
         if (!delivery) throw new ISecureTransferError("invalid-input");
         this.delivery = undefined;
         bytes = await delivery.receive({ ...checked, beforeRelease: this.assertCurrent });
         return { status: delivery.status, ...(bytes === undefined ? {} : { bytes }) };
       });
+      if (result.bytes !== undefined) {
+        requireDeliveryTime(Math.floor(Date.now() / 1000), result.status.DeliveryUntil);
+      }
+      return result;
     } catch (error) {
       bytes?.fill(0);
       throw error;
@@ -334,10 +355,14 @@ export class TransferSession {
       throw error;
     }
     const signal = options.signal;
+    const onProgress = options.onProgress;
+    // Validate and capture before effects; later caller mutation of options cannot
+    // replace the observer during an in-flight operation.
+    transferProgressObserver(onProgress);
     signal?.throwIfAborted();
     this.busy = true;
     try {
-      const result = await action(signal ? { signal } : {});
+      const result = await action({ ...(signal ? { signal } : {}), ...(onProgress ? { onProgress } : {}) });
       this.assertCurrent();
       signal?.throwIfAborted();
       return result;

@@ -10,9 +10,14 @@ import { ISecureTransferError, INLINE_JSON_BUDGET, type FileTransferOptions } fr
 import type { EncryptedTransferCapability } from "./encrypted-transfers.js";
 import { decodeTransferRepresentation, sha256TransferBytes, type TransferEncoding } from "./transfer-representation.js";
 import { readDownloadGrant, downloadCiphertext } from "./transfer-s3-download.js";
+import { transferProgressObserver } from "./transfer-progress.js";
 
 function invalid(): ISecureTransferError {
   return new ISecureTransferError("invalid-response");
+}
+/** Pure freshness gate reused at each SDK-owned plaintext handoff. */
+export function requireDeliveryTime(timestamp: number, until: number | undefined): void {
+  if (!Number.isSafeInteger(timestamp) || timestamp < 0 || until === undefined || timestamp >= until) throw invalid();
 }
 function object(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && Object.getPrototypeOf(value) === Object.prototype;
@@ -149,41 +154,42 @@ export class PendingDelivery {
     let original: Uint8Array<ArrayBuffer> | undefined;
     let accepted = false;
     try {
+      const onProgress = effects.onProgress;
+      const progress = transferProgressObserver(onProgress);
       signal?.throwIfAborted();
       beforeRelease?.();
       if (!payload) return undefined;
-      const timestamp = now();
-      if (
-        !Number.isSafeInteger(timestamp) ||
-        timestamp < 0 ||
-        this.status.DeliveryUntil === undefined ||
-        timestamp >= this.status.DeliveryUntil ||
-        !this.#integrity ||
-        !this.#encoding
-      )
-        throw invalid();
-      if (payload.kind === "inline") encoded = payload.bytes;
-      else {
+      requireDeliveryTime(now(), this.status.DeliveryUntil);
+      if (!this.#integrity || !this.#encoding) throw invalid();
+      if (payload.kind === "inline") {
+        progress({ phase: "verify-download", state: "started" });
+        signal?.throwIfAborted();
+        encoded = payload.bytes;
+      } else {
         cipher = await downloadCiphertext(payload.grant, {
           now,
           ...(send ? { send } : {}),
           ...(signal ? { signal } : {}),
           ...(beforeRelease ? { beforeSend: beforeRelease } : {}),
+          ...(onProgress ? { onProgress } : {}),
         });
+        progress({ phase: "verify-download", state: "started" });
+        signal?.throwIfAborted();
         encoded = await payload.artifact.open(cipher);
         if ((await sha256TransferBytes(encoded)) !== payload.artifact.encodedSha256) throw invalid();
       }
       original = await decodeTransferRepresentation(encoded, this.#encoding, this.#integrity, signal ? { signal } : {});
       signal?.throwIfAborted();
       beforeRelease?.();
-      const completedAt = now();
-      if (
-        this.#payload !== payload ||
-        !Number.isSafeInteger(completedAt) ||
-        completedAt < 0 ||
-        completedAt >= this.status.DeliveryUntil
-      )
-        throw invalid();
+      const assertCurrentDelivery = () => {
+        requireDeliveryTime(now(), this.status.DeliveryUntil);
+        if (this.#payload !== payload) throw invalid();
+      };
+      assertCurrentDelivery();
+      signal?.throwIfAborted();
+      progress({ phase: "verify-download", state: "completed" });
+      beforeRelease?.();
+      assertCurrentDelivery();
       signal?.throwIfAborted();
       accepted = true;
       return original;
@@ -200,12 +206,16 @@ export class PendingDelivery {
     if (typeof sink !== "function") throw new ISecureTransferError("invalid-input");
     const signal = effects.signal;
     const beforeRelease = effects.beforeRelease;
-    const bytes = await this.receive({ ...effects });
+    const now = effects.now ?? (() => Math.floor(Date.now() / 1000));
+    const bytes = await this.receive({ ...effects, now });
     try {
       signal?.throwIfAborted();
       beforeRelease?.();
       signal?.throwIfAborted();
-      if (bytes !== undefined) await sink(bytes);
+      if (bytes !== undefined) {
+        requireDeliveryTime(now(), this.status.DeliveryUntil);
+        await sink(bytes);
+      }
     } finally {
       bytes?.fill(0);
     }
