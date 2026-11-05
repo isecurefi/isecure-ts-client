@@ -66,16 +66,16 @@ it("bounds progress calls for tiny chunks and freezes each metadata-only event",
     },
   });
   const events: FileTransferProgress[] = [];
-  await expect(
-    downloadCiphertext(read(fixture(), payload.length, digest), {
-      now: () => 1000,
-      send: async () => new Response(stream, { headers: { "x-amz-version-id": "opaque/+version" } }),
-      onProgress: (event) => {
-        events.push(event);
-        expect(Object.isFrozen(event)).toBe(true);
-      },
-    }),
-  ).resolves.toEqual(payload);
+  const received = await downloadCiphertext(read(fixture(), payload.length, digest), {
+    now: () => 1000,
+    send: async () => new Response(stream, { headers: { "x-amz-version-id": "opaque/+version" } }),
+    onProgress: (event) => {
+      events.push(event);
+      expect(Object.isFrozen(event)).toBe(true);
+    },
+  });
+  // Exact bytes without a per-element deep equality walk over 1 MiB (slow on CI runners).
+  expect(Buffer.compare(Buffer.from(received), Buffer.from(payload))).toBe(0);
   expect(events).toEqual(
     [0, 1, 2, 3, 4].map((part) => ({
       phase: "read-ciphertext",
