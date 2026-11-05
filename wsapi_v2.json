@@ -1100,7 +1100,8 @@
         "ResponseCode": "..",
         "ResponseText": "..",
         "Retired": [],
-        "FileTransferCapabilities": []
+        "FileTransferCapabilities": [],
+        "SftpKeys": []
       },
       "properties": {
         "Certs": {
@@ -1139,6 +1140,13 @@
             "$ref": "#/definitions/FileTransferCapability"
           },
           "maxItems": 32
+        },
+        "SftpKeys": {
+          "description": "Bank SFTP login keys visible to this account, listed beside the X.509 certificates. Absent when there are none.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SftpKeyDescriptor"
+          }
         }
       },
       "required": [
@@ -1733,6 +1741,54 @@
         "Features"
       ],
       "type": "object"
+    },
+    "SftpKeyDescriptor": {
+      "type": "object",
+      "description": "A server-generated bank SSH login key. Only the public key is ever returned; SSH keys have no expiry and stay registered at the bank until revoked.",
+      "required": [
+        "Bank",
+        "Type",
+        "Access",
+        "SftpUser",
+        "PublicKey"
+      ],
+      "properties": {
+        "Bank": {
+          "type": "string",
+          "description": "Public File Exchange API bank identifier"
+        },
+        "Type": {
+          "type": "string",
+          "enum": [
+            "sftp-public-key"
+          ]
+        },
+        "Access": {
+          "type": "string",
+          "description": "Whether this account owns the connection or uses the one of its linked account",
+          "enum": [
+            "direct",
+            "shared"
+          ]
+        },
+        "SftpUser": {
+          "type": "string",
+          "description": "Login user name assigned by the bank"
+        },
+        "PublicKey": {
+          "type": "string",
+          "description": "OpenSSH public key registered with the bank"
+        },
+        "Fingerprint": {
+          "type": "string",
+          "description": "OpenSSH SHA256 fingerprint of PublicKey"
+        },
+        "Created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "UTC enrollment time"
+        }
+      }
     },
     "ShareCertsResp": {
       "example": {

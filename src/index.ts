@@ -48,6 +48,7 @@ export {
   type ApiResponse,
   type BankConnectionCertificateDescriptor,
   type BankConnectionDescriptor,
+  type SftpKeyDescriptor,
   type ConfigCertsRequest,
   type ConfigCertsResponse,
   type DeleteFileResponse,
@@ -117,6 +118,8 @@ export {
   type VerifyTotpResponse,
 } from "./lib/api-types.js";
 export type { components, operations, paths } from "./generated/wsapi-v2.js";
+
+export { ABSENT_HOLVI_VERSION, type HolviConnection, type HolviConnectionCheck } from "./lib/holvi.js";
 
 export {
   ABSENT_PROVIDER_VERSION,

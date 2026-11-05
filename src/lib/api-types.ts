@@ -107,6 +107,8 @@ export type UploadFileResponse = JsonResponse<"UploadFile", 201> & {
 };
 export type BankConnectionCertificateDescriptor = components["schemas"]["BankConnectionCertificateDescriptor"];
 export type BankConnectionDescriptor = components["schemas"]["BankConnectionDescriptor"];
+/** Bank SFTP login key (Holvi) listed beside the X.509 certificates; public material only. */
+export type SftpKeyDescriptor = components["schemas"]["SftpKeyDescriptor"];
 export type ListCertsResponse = JsonResponse<"ListCerts", 200>;
 export type ConfigCertsRequest = JsonRequest<"ConfigCerts">;
 export type ConfigCertsResponse = JsonResponse<"ConfigCerts", 200>;

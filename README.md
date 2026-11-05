@@ -119,6 +119,27 @@ Login may require MFA, email or phone verification. Follow the returned state; d
 in an unbounded loop. See [Registration, login and sessions](docs/authentication.md) for TOTP,
 CLI prompts and session renewal. Registration alone grants neither Simulator enrollment.
 
+## Holvi SFTP connection (unpublished)
+
+Holvi is the bank `holvi`. The existing file methods (`listFiles`, `downloadFile`,
+`uploadFile`, `deleteFile`) work unchanged with `Bank: "holvi"`; `FileType` is Holvi's format
+identifier such as `camt.053.001.02` or `pain.001.001.03`. An Admin session manages the SFTP
+connection; the server generates the key and returns only its public half:
+
+```ts
+import { ABSENT_HOLVI_VERSION } from "isecure-ts-client";
+
+const connection = await admin.enrollHolviConnection("ab12345.01", ABSENT_HOLVI_VERSION);
+// Send connection.PublicKey and the connection.SourceAddresses (for Holvi's IP allow-list)
+// to Holvi, then confirm Holvi accepts the key. listCerts().SftpKeys also lists the key
+// (Type "sftp-public-key", Created; SSH keys have no expiry) if the response is lost.
+const check = await admin.checkHolviConnection(); // ResponseCode "30" until Holvi registers it
+await admin.disableHolviConnection((await admin.getHolviConnection()).Version);
+```
+
+Changes require the current `Version` and are never replayed automatically. The routes are
+available only after the separately authorized `holvi` deployment.
+
 ## Bank Simulator administration
 
 Manage workspaces, scenarios and synthetic runs with `createSimulationAdminClient` and

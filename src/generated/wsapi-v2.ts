@@ -1265,7 +1265,8 @@ export interface components {
          *       "ResponseCode": "..",
          *       "ResponseText": "..",
          *       "Retired": [],
-         *       "FileTransferCapabilities": []
+         *       "FileTransferCapabilities": [],
+         *       "SftpKeys": []
          *     }
          */
         ListCertsResp: {
@@ -1281,6 +1282,8 @@ export interface components {
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
             /** @description Optional per-bank versioned transfer support. Absent on legacy servers. Empty array advertises no supported transfers. Capability discovery does not contact a bank or grant authority. */
             FileTransferCapabilities?: components["schemas"]["FileTransferCapability"][];
+            /** @description Bank SFTP login keys visible to this account, listed beside the X.509 certificates. Absent when there are none. */
+            SftpKeys?: components["schemas"]["SftpKeyDescriptor"][];
         };
         /**
          * @example {
@@ -1589,6 +1592,29 @@ export interface components {
              * @enum {string}
              */
             Type: "operator" | "integrator" | "customer";
+        };
+        /** @description A server-generated bank SSH login key. Only the public key is ever returned; SSH keys have no expiry and stay registered at the bank until revoked. */
+        SftpKeyDescriptor: {
+            /** @description Public File Exchange API bank identifier */
+            Bank: string;
+            /** @enum {string} */
+            Type: "sftp-public-key";
+            /**
+             * @description Whether this account owns the connection or uses the one of its linked account
+             * @enum {string}
+             */
+            Access: "direct" | "shared";
+            /** @description Login user name assigned by the bank */
+            SftpUser: string;
+            /** @description OpenSSH public key registered with the bank */
+            PublicKey: string;
+            /** @description OpenSSH SHA256 fingerprint of PublicKey */
+            Fingerprint?: string;
+            /**
+             * Format: date-time
+             * @description UTC enrollment time
+             */
+            Created?: string;
         };
         /**
          * @example {

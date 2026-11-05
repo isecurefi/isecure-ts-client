@@ -4,6 +4,54 @@
  */
 
 export interface paths {
+    "/providers/holvi/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * CheckHolviConnection
+         * @description Admin-only check that Holvi accepts the registered key: authenticates over SFTP and counts /from_holvi without reading or moving files. ResponseCode 30 means the key is not (yet) registered with Holvi.
+         */
+        get: operations["CheckHolviConnection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/providers/holvi/connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * GetHolviConnection
+         * @description Admin-only Holvi SFTP connection. The server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi. PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.
+         */
+        get: operations["GetHolviConnection"];
+        /**
+         * EnrollHolviConnection
+         * @description Admin-only Holvi SFTP connection. The server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi. PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.
+         */
+        put: operations["EnrollHolviConnection"];
+        post?: never;
+        /**
+         * DisableHolviConnection
+         * @description Admin-only Holvi SFTP connection. The server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi. PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.
+         */
+        delete: operations["DisableHolviConnection"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/providers/maventa/check": {
         parameters: {
             query?: never;
@@ -104,6 +152,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CheckHolviConnectionResp: {
+            NewFiles: number;
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+        };
         CheckMaventaConnectionResp: {
             Environment: string;
             Ready: boolean;
@@ -119,6 +174,23 @@ export interface components {
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
+        };
+        DisableHolviConnectionResp: {
+            /** @description UTC enrollment time. SSH keys have no expiry; Holvi keeps a registered key until it is revoked. */
+            Created?: string;
+            Enrolled: boolean;
+            Fingerprint?: string;
+            /** @description Always sftp-public-key: an SSH login key, not an X.509 certificate */
+            KeyType?: string;
+            PublicKey?: string;
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+            SftpUser?: string;
+            /** @description Fixed public IPv4 addresses that ISECure connects to Holvi from; give them to Holvi for its allow-list. Empty only for the synthetic test bank. */
+            SourceAddresses: string[];
+            Version: string;
         };
         DisableMaventaConnectionResp: {
             Enrolled: boolean;
@@ -136,6 +208,27 @@ export interface components {
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
+            Version: string;
+        };
+        EnrollHolviConnectionReq: {
+            /** @description Holvi-assigned SFTP login (<client id><client number>). */
+            SftpUser: string;
+        };
+        EnrollHolviConnectionResp: {
+            /** @description UTC enrollment time. SSH keys have no expiry; Holvi keeps a registered key until it is revoked. */
+            Created?: string;
+            Enrolled: boolean;
+            Fingerprint?: string;
+            /** @description Always sftp-public-key: an SSH login key, not an X.509 certificate */
+            KeyType?: string;
+            PublicKey?: string;
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+            SftpUser?: string;
+            /** @description Fixed public IPv4 addresses that ISECure connects to Holvi from; give them to Holvi for its allow-list. Empty only for the synthetic test bank. */
+            SourceAddresses: string[];
             Version: string;
         };
         EnrollMaventaConnectionReq: {
@@ -203,6 +296,23 @@ export interface components {
             /** @description Human readable response text */
             ResponseText?: string;
         };
+        GetHolviConnectionResp: {
+            /** @description UTC enrollment time. SSH keys have no expiry; Holvi keeps a registered key until it is revoked. */
+            Created?: string;
+            Enrolled: boolean;
+            Fingerprint?: string;
+            /** @description Always sftp-public-key: an SSH login key, not an X.509 certificate */
+            KeyType?: string;
+            PublicKey?: string;
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
+            SftpUser?: string;
+            /** @description Fixed public IPv4 addresses that ISECure connects to Holvi from; give them to Holvi for its allow-list. Empty only for the synthetic test bank. */
+            SourceAddresses: string[];
+            Version: string;
+        };
         GetMaventaConnectionResp: {
             Enrolled: boolean;
             Environment: string;
@@ -230,6 +340,299 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    CheckHolviConnection: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckHolviConnectionResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    GetHolviConnection: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetHolviConnectionResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    EnrollHolviConnection: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+                /** @description Current connection Version from GET, optionally quoted; absent for a new connection. */
+                "If-Match": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Files parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrollHolviConnectionReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrollHolviConnectionResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    DisableHolviConnection: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+                /** @description Current connection Version from GET, optionally quoted; absent for a new connection. */
+                "If-Match": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisableHolviConnectionResp"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     CheckMaventaConnection: {
         parameters: {
             query?: never;

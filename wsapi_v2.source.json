@@ -4,20 +4,40 @@
   "source": "https://raw.githubusercontent.com/isecurefi/wsapi-v2/3278f9820dc1258f7fa01e110094757c9a0a2095/wsapi_v2.json",
   "ref": "3278f982",
   "commit": "3278f9820dc1258f7fa01e110094757c9a0a2095",
-  "sha256": "64d5c105ebcce5663c433399bf88d5d6ef68cf9a42ae4e898d23d4a4fea24c2d",
+  "sha256": "1c147d69f48d837d07e3a6a2c7c11975f2b4e6a4165d626f3d37c5b1ad0c5ddf",
   "upstreamSha256": "f35191c43c45f12342c9a1e20b433fa0f0147e211ae7916b1fe9eadbd273b180",
   "candidateOverlay": {
     "repository": "https://github.com/isecurefi/aws",
     "commit": "3682bc501931d05ba859fd545236fc7f8d2983ec",
-    "paths": ["ws-channel-api/config.json", "ws-channel-api/__wsapi.json.tmpl"],
+    "paths": [
+      "ws-channel-api/config.json",
+      "ws-channel-api/__wsapi.json.tmpl"
+    ],
     "stage": "gpgtest-rust",
-    "operations": ["ConfigurePgpPolicy", "LockPgpPolicy", "DeletePgpKey", "RequestActionMfa"],
+    "operations": [
+      "ConfigurePgpPolicy",
+      "LockPgpPolicy",
+      "DeletePgpKey",
+      "RequestActionMfa"
+    ],
     "description": "Local candidate contract additions; public upstream publication is unchanged."
   },
   "transferOverlay": {
     "repository": "https://github.com/isecurefi/aws",
-    "paths": ["ws-channel-api/config.json", "ws-channel-api/__wsapi.json.tmpl"],
+    "paths": [
+      "ws-channel-api/config.json",
+      "ws-channel-api/__wsapi.json.tmpl"
+    ],
     "definitionSha256": "c4ed2640fcf6c70d931ab9c891a1228dae111ef01b6d0408e742f0aa04cdc8b5",
     "description": "Unpublished additive metadata contract. No transfer capability activation or large-file support implied."
+  },
+  "sftpKeyOverlay": {
+    "repository": "https://github.com/isecurefi/aws",
+    "paths": [
+      "ws-channel-api/config.json",
+      "ws-channel-api/__wsapi.json.tmpl"
+    ],
+    "definitionSha256": "0c6c3e3e2737d5d9d76d971f642464522c7e3172f64c9782f1a787faf8f6a1a7",
+    "description": "Unpublished additive ListCerts SftpKeys listing (Holvi SFTP public keys). No Holvi availability implied."
   }
 }

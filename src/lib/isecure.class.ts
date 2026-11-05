@@ -26,6 +26,7 @@ import {
   type FileBytesResult,
   type UploadFileBytesRequest,
 } from "./file-transfers.js";
+import { holviVersionHeaders, requireHolviLogin, type HolviConnection, type HolviConnectionCheck } from "./holvi.js";
 import {
   providerChangeHeaders,
   requireProvider,
@@ -805,6 +806,39 @@ export class WSChannel {
       headers: providerChangeHeaders(change),
       retry: false,
     });
+  }
+
+  /** Admin-only Holvi SFTP connection: login, OpenSSH public key, fingerprint and Version. */
+  async getHolviConnection(): Promise<HolviConnection> {
+    return this.call<HolviConnection>("GET", this.urls.providerConnection("holvi"), { auth: true });
+  }
+
+  /**
+   * Create the connection (the server generates the key) or change its login. Pass the current
+   * Version, or ABSENT_HOLVI_VERSION for a new connection. Register the returned PublicKey with
+   * Holvi. No automatic replay: after an uncertain outcome, read the connection back.
+   */
+  async enrollHolviConnection(sftpUser: string, expectedVersion: string): Promise<HolviConnection> {
+    return this.call<HolviConnection>("PUT", this.urls.providerConnection("holvi"), {
+      auth: true,
+      body: { SftpUser: requireHolviLogin(sftpUser) },
+      headers: holviVersionHeaders(expectedVersion),
+      retry: false,
+    });
+  }
+
+  /** Remove the connection and its key. Rotate a key by disabling and enrolling again. */
+  async disableHolviConnection(expectedVersion: string): Promise<HolviConnection> {
+    return this.call<HolviConnection>("DELETE", this.urls.providerConnection("holvi"), {
+      auth: true,
+      headers: holviVersionHeaders(expectedVersion),
+      retry: false,
+    });
+  }
+
+  /** Authenticate to Holvi with the registered key and count new files; changes nothing. */
+  async checkHolviConnection(): Promise<HolviConnectionCheck> {
+    return this.call<HolviConnectionCheck>("GET", this.urls.providerCheck("holvi"), { auth: true });
   }
 
   async listCerts(): Promise<ListCertsResponse> {
