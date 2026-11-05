@@ -327,6 +327,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
+        /** @description Closed JSON object of at most 2 MiB with a client-chosen ClientRequestId and the transfer Intent. Path and query parameters are refused. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["TransferCreateRequest"];
@@ -627,6 +628,7 @@ export interface operations {
             };
             cookie?: never;
         };
+        /** @description Must be the empty JSON object {}. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["TransferEmptyRequest"];
@@ -705,6 +707,7 @@ export interface operations {
             };
             cookie?: never;
         };
+        /** @description For an upload, the detached PGP Signature required by the account policy plus Payload; for a download, {}. Fields are bound to the stored transfer intent. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["TransferExecuteRequest"];
@@ -783,6 +786,7 @@ export interface operations {
             };
             cookie?: never;
         };
+        /** @description Closed JSON object of at most 2 MiB with the CiphertextSha256 of the encrypted artifact to upload. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["TransferUploadGrantRequest"];
@@ -861,6 +865,7 @@ export interface operations {
             };
             cookie?: never;
         };
+        /** @description Closed JSON object of at most 2 MiB describing the exact encoded upload: Encoding, EncodedBytes (greater than zero and within the transfer limit) and EncodedSha256. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["TransferUploadPrepareRequest"];

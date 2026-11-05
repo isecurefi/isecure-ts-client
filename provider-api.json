@@ -924,6 +924,9 @@
         ]
       },
       "put": {
+        "consumes": [
+          "application/json"
+        ],
         "description": "Admin-only Holvi SFTP connection. The server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi. PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.",
         "operationId": "EnrollHolviConnection",
         "parameters": [
@@ -942,7 +945,7 @@
             "type": "string"
           },
           {
-            "description": "Files parameters",
+            "description": "JSON object with SftpUser, the login Holvi assigned: 1-64 ASCII letters, digits, '.', '_' or '-', starting with a letter or digit. No key material is sent; the server generates the key.",
             "in": "body",
             "name": "EnrollHolviConnectionReq",
             "required": true,
@@ -1450,6 +1453,9 @@
         ]
       },
       "put": {
+        "consumes": [
+          "application/json"
+        ],
         "description": "Admin-only account and tenant scoped credential resource. Credentials are never returned. PUT validates provider access before a version-conditional DynamoDB/KMS write. DELETE removes active ciphertext and retains a revision. PUT and DELETE require If-Match and Idempotency-Key.",
         "operationId": "EnrollMaventaConnection",
         "parameters": [
@@ -1468,7 +1474,7 @@
             "type": "string"
           },
           {
-            "description": "Files parameters",
+            "description": "Closed JSON object of at most 4096 bytes with the Maventa company credentials. Unknown fields and base64-encoded bodies are refused; responses return connection metadata only, never the credentials.",
             "in": "body",
             "name": "EnrollMaventaConnectionReq",
             "required": true,
@@ -1983,6 +1989,9 @@
         ]
       },
       "put": {
+        "consumes": [
+          "application/json"
+        ],
         "description": "Admin-only account and tenant scoped credential resource. Credentials are never returned. PUT validates provider access before a version-conditional DynamoDB/KMS write. DELETE removes active ciphertext and retains a revision. PUT and DELETE require If-Match and Idempotency-Key.",
         "operationId": "EnrollMobilePayConnection",
         "parameters": [
@@ -2001,7 +2010,7 @@
             "type": "string"
           },
           {
-            "description": "Files parameters",
+            "description": "Closed JSON object of at most 4096 bytes with the MobilePay client credentials and ledger settings. Unknown fields and base64-encoded bodies are refused; responses return connection metadata only, never the credentials.",
             "in": "body",
             "name": "EnrollMobilePayConnectionReq",
             "required": true,

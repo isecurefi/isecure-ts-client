@@ -496,7 +496,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description Files parameters */
+        /** @description JSON object with SftpUser, the login Holvi assigned: 1-64 ASCII letters, digits, '.', '_' or '-', starting with a letter or digit. No key material is sent; the server generates the key. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["EnrollHolviConnectionReq"];
@@ -791,7 +791,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description Files parameters */
+        /** @description Closed JSON object of at most 4096 bytes with the Maventa company credentials. Unknown fields and base64-encoded bodies are refused; responses return connection metadata only, never the credentials. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["EnrollMaventaConnectionReq"];
@@ -1088,7 +1088,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description Files parameters */
+        /** @description Closed JSON object of at most 4096 bytes with the MobilePay client credentials and ledger settings. Unknown fields and base64-encoded bodies are refused; responses return connection metadata only, never the credentials. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["EnrollMobilePayConnectionReq"];
