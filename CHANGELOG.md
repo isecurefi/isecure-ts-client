@@ -42,6 +42,19 @@
 - Keep provider availability limited to the test API and separately admitted production RC until live promotion.
 
 
+## [4.6.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.5.2...isecure-ts-client-v4.6.0) (2026-11-05)
+
+
+### Features
+
+* add Holvi SFTP connection methods and list SFTP public keys ([3dde000](https://github.com/isecurefi/isecure-ts-client/commit/3dde0002b012cb0e7b2c86207a7880c252e146bd))
+
+
+### Bug Fixes
+
+* **deps:** patch follow-redirects and minimatch advisories ([167f6b8](https://github.com/isecurefi/isecure-ts-client/commit/167f6b80aa43a97625ba2d7eb4e33df3559c064e))
+* format the SDK contract provenance record ([b0a6567](https://github.com/isecurefi/isecure-ts-client/commit/b0a656758532b80d325fd3a4a0c236de9815ba87))
+
 ## [4.5.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.5.1...isecure-ts-client-v4.5.2) (2026-10-23)
 
 
