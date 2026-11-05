@@ -104,6 +104,46 @@ describe("Holvi SFTP connection", () => {
     expect(transport.requests[1]).not.toHaveProperty("body");
   });
 
+  it("starts REST consent with Channel api, the exact version and no automatic replay", async () => {
+    const started = {
+      Enrolled: true,
+      Channel: "api",
+      Status: "pending",
+      AuthorizationUrl: "https://app.holvi.com/home/oauth/company/authorize/?response_type=code&state=synthetic",
+      Created: "2026-11-05T12:00:00Z",
+      SourceAddresses: [],
+      Version: version,
+      ResponseCode: "00",
+      ResponseText: "OK",
+    } satisfies HolviConnection;
+    const { sdk, transport } = await client(started);
+    const reply = await sdk.startHolviAuthorization(ABSENT_HOLVI_VERSION);
+    expect(reply.AuthorizationUrl).toBe(started.AuthorizationUrl);
+    expect(transport.requests[0]).toMatchObject({
+      method: "PUT",
+      url: "https://ws-api.test.isecure.fi/v2/providers/holvi/connection",
+      body: { Channel: "api" },
+      headers: { "If-Match": '"absent"' },
+      retry: false,
+    });
+  });
+
+  it("refuses a consent reply without an HTTPS authorization URL", async () => {
+    for (const AuthorizationUrl of [undefined, "http://app.holvi.com/x", "javascript:alert(1)"]) {
+      const { sdk } = await client({
+        Enrolled: true,
+        Channel: "api",
+        Status: "pending",
+        AuthorizationUrl,
+        Version: version,
+        ResponseCode: "00",
+      });
+      await expect(sdk.startHolviAuthorization(ABSENT_HOLVI_VERSION)).rejects.toBeInstanceOf(ISecureError);
+    }
+    const { sdk } = await client({ ResponseCode: "01", ResponseText: "Refused" });
+    expect((await sdk.startHolviAuthorization(ABSENT_HOLVI_VERSION)).ResponseCode).toBe("01");
+  });
+
   it("refuses malformed logins and versions before any request", async () => {
     const { sdk, transport } = await client(connection);
     for (const user of ["", ".x", "a b", "a/b", "x".repeat(65)])

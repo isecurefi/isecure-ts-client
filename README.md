@@ -119,7 +119,7 @@ Login may require MFA, email or phone verification. Follow the returned state; d
 in an unbounded loop. See [Registration, login and sessions](docs/authentication.md) for TOTP,
 CLI prompts and session renewal. Registration alone grants neither Simulator enrollment.
 
-## Holvi SFTP connection (unpublished)
+## Holvi connection (unpublished)
 
 Holvi is the bank `holvi`. The existing file methods (`listFiles`, `downloadFile`,
 `uploadFile`, `deleteFile`) work unchanged with `Bank: "holvi"`; `FileType` is Holvi's format
@@ -137,8 +137,22 @@ const check = await admin.checkHolviConnection(); // ResponseCode "30" until Hol
 await admin.disableHolviConnection((await admin.getHolviConnection()).Version);
 ```
 
+Holvi's REST API is the alternative channel (one channel at a time; disable the other first).
+The customer approves access at Holvi; no key is exchanged:
+
+```ts
+const started = await admin.startHolviAuthorization(ABSENT_HOLVI_VERSION);
+// Open started.AuthorizationUrl in the customer's browser (valid for 10 minutes), then poll:
+const connection = await admin.getHolviConnection(); // Channel "api", Status "connected"
+```
+
+`Status: "reauthorization_required"` means the customer must approve again. Over REST,
+`FileReference` is Holvi's opaque file id, `NEW`/`DLD` reflect downloads through ISECure, and
+`deleteFile` answers `27` (Holvi offers no delete).
+
 Changes require the current `Version` and are never replayed automatically. The routes are
-available only after the separately authorized `holvi` deployment.
+available only after the separately authorized `holvi` deployment; the REST channel only after
+its own deployment.
 
 ## Bank Simulator administration
 

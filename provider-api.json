@@ -77,6 +77,14 @@
     },
     "DisableHolviConnectionResp": {
       "properties": {
+        "AuthorizationUrl": {
+          "description": "api only, in the PUT reply that starts consent: open it in the customer's browser to approve at Holvi.",
+          "type": "string"
+        },
+        "Channel": {
+          "description": "sftp or api",
+          "type": "string"
+        },
         "Created": {
           "description": "UTC enrollment time. SSH keys have no expiry; Holvi keeps a registered key until it is revoked.",
           "type": "string"
@@ -111,6 +119,10 @@
             "type": "string"
           },
           "type": "array"
+        },
+        "Status": {
+          "description": "api only: pending, connected or reauthorization_required",
+          "type": "string"
         },
         "Version": {
           "type": "string"
@@ -186,20 +198,34 @@
     "EnrollHolviConnectionReq": {
       "additionalProperties": false,
       "properties": {
+        "Channel": {
+          "description": "sftp (default) or api (Holvi REST API with OAuth consent).",
+          "enum": [
+            "sftp",
+            "api"
+          ],
+          "type": "string"
+        },
         "SftpUser": {
-          "description": "Holvi-assigned SFTP login (<client id><client number>).",
+          "description": "Holvi-assigned SFTP login (<client id><client number>); required for sftp.",
           "maxLength": 64,
           "minLength": 1,
           "type": "string"
         }
       },
-      "required": [
-        "SftpUser"
-      ],
+      "required": [],
       "type": "object"
     },
     "EnrollHolviConnectionResp": {
       "properties": {
+        "AuthorizationUrl": {
+          "description": "api only, in the PUT reply that starts consent: open it in the customer's browser to approve at Holvi.",
+          "type": "string"
+        },
+        "Channel": {
+          "description": "sftp or api",
+          "type": "string"
+        },
         "Created": {
           "description": "UTC enrollment time. SSH keys have no expiry; Holvi keeps a registered key until it is revoked.",
           "type": "string"
@@ -234,6 +260,10 @@
             "type": "string"
           },
           "type": "array"
+        },
+        "Status": {
+          "description": "api only: pending, connected or reauthorization_required",
+          "type": "string"
         },
         "Version": {
           "type": "string"
@@ -430,6 +460,14 @@
     },
     "GetHolviConnectionResp": {
       "properties": {
+        "AuthorizationUrl": {
+          "description": "api only, in the PUT reply that starts consent: open it in the customer's browser to approve at Holvi.",
+          "type": "string"
+        },
+        "Channel": {
+          "description": "sftp or api",
+          "type": "string"
+        },
         "Created": {
           "description": "UTC enrollment time. SSH keys have no expiry; Holvi keeps a registered key until it is revoked.",
           "type": "string"
@@ -464,6 +502,10 @@
             "type": "string"
           },
           "type": "array"
+        },
+        "Status": {
+          "description": "api only: pending, connected or reauthorization_required",
+          "type": "string"
         },
         "Version": {
           "type": "string"
@@ -533,6 +575,23 @@
         "Enrolled",
         "Environment",
         "Version"
+      ],
+      "type": "object"
+    },
+    "Response": {
+      "properties": {
+        "ResponseCode": {
+          "description": "Two digit response code in string format",
+          "type": "string"
+        },
+        "ResponseText": {
+          "description": "Human readable response text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ResponseCode",
+        "ResponseText"
       ],
       "type": "object"
     }
@@ -671,7 +730,7 @@
     },
     "/providers/holvi/connection": {
       "delete": {
-        "description": "Admin-only Holvi SFTP connection. The server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi. PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.",
+        "description": "Admin-only Holvi connection over SFTP (Channel sftp: the server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi) or the Holvi REST API (Channel api: PUT returns AuthorizationUrl for the customer to approve at Holvi; Holvi redirects to the OAuth callback and Status becomes connected; tokens are stored KMS-encrypted and never returned; reauthorization_required means consent again). PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.",
         "operationId": "DisableHolviConnection",
         "parameters": [
           {
@@ -801,7 +860,7 @@
         ]
       },
       "get": {
-        "description": "Admin-only Holvi SFTP connection. The server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi. PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.",
+        "description": "Admin-only Holvi connection over SFTP (Channel sftp: the server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi) or the Holvi REST API (Channel api: PUT returns AuthorizationUrl for the customer to approve at Holvi; Holvi redirects to the OAuth callback and Status becomes connected; tokens are stored KMS-encrypted and never returned; reauthorization_required means consent again). PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.",
         "operationId": "GetHolviConnection",
         "parameters": [
           {
@@ -927,7 +986,7 @@
         "consumes": [
           "application/json"
         ],
-        "description": "Admin-only Holvi SFTP connection. The server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi. PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.",
+        "description": "Admin-only Holvi connection over SFTP (Channel sftp: the server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi) or the Holvi REST API (Channel api: PUT returns AuthorizationUrl for the customer to approve at Holvi; Holvi redirects to the OAuth callback and Status becomes connected; tokens are stored KMS-encrypted and never returned; reauthorization_required means consent again). PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.",
         "operationId": "EnrollHolviConnection",
         "parameters": [
           {
@@ -945,7 +1004,7 @@
             "type": "string"
           },
           {
-            "description": "JSON object with SftpUser, the login Holvi assigned: 1-64 ASCII letters, digits, '.', '_' or '-', starting with a letter or digit. No key material is sent; the server generates the key.",
+            "description": "JSON object. Channel sftp (default) needs SftpUser, the login Holvi assigned: 1-64 ASCII letters, digits, '.', '_' or '-', starting with a letter or digit; no key material is sent, the server generates the key. Channel api starts Holvi OAuth consent and needs no other field.",
             "in": "body",
             "name": "EnrollHolviConnectionReq",
             "required": true,
@@ -1043,6 +1102,104 @@
           }
         ],
         "summary": "EnrollHolviConnection",
+        "tags": [
+          "Files"
+        ],
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": ""
+          },
+          {
+            "lang": "PHP",
+            "source": ""
+          },
+          {
+            "lang": "C#",
+            "source": ""
+          },
+          {
+            "lang": "Javascript",
+            "source": ""
+          }
+        ]
+      }
+    },
+    "/providers/holvi/oauth/callback": {
+      "get": {
+        "description": "Holvi's OAuth redirect target (unauthenticated; registered with Holvi). Completes a consent started with EnrollHolviConnection Channel api exactly once and answers a static HTML page; it never returns tokens or account details.",
+        "operationId": "HolviOAuthCallback",
+        "parameters": [
+          {
+            "description": "Single-use state from the authorisation request.",
+            "in": "query",
+            "name": "state",
+            "type": "string"
+          },
+          {
+            "description": "Authorisation code when the customer approved.",
+            "in": "query",
+            "name": "code",
+            "type": "string"
+          },
+          {
+            "description": "access_denied when the customer declined.",
+            "in": "query",
+            "name": "error",
+            "type": "string"
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation successfully processed. See response.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Cache-Control": {
+                "type": "string"
+              }
+            },
+            "schema": {
+              "$ref": "#/definitions/Response"
+            }
+          },
+          "400": {
+            "description": "Request validation error",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Cache-Control": {
+                "type": "string"
+              }
+            },
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Unexpected error occurred",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              },
+              "Cache-Control": {
+                "type": "string"
+              }
+            },
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        },
+        "security": [
+          {}
+        ],
+        "summary": "HolviOAuthCallback",
         "tags": [
           "Files"
         ],

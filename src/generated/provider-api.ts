@@ -33,20 +33,40 @@ export interface paths {
         };
         /**
          * GetHolviConnection
-         * @description Admin-only Holvi SFTP connection. The server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi. PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.
+         * @description Admin-only Holvi connection over SFTP (Channel sftp: the server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi) or the Holvi REST API (Channel api: PUT returns AuthorizationUrl for the customer to approve at Holvi; Holvi redirects to the OAuth callback and Status becomes connected; tokens are stored KMS-encrypted and never returned; reauthorization_required means consent again). PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.
          */
         get: operations["GetHolviConnection"];
         /**
          * EnrollHolviConnection
-         * @description Admin-only Holvi SFTP connection. The server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi. PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.
+         * @description Admin-only Holvi connection over SFTP (Channel sftp: the server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi) or the Holvi REST API (Channel api: PUT returns AuthorizationUrl for the customer to approve at Holvi; Holvi redirects to the OAuth callback and Status becomes connected; tokens are stored KMS-encrypted and never returned; reauthorization_required means consent again). PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.
          */
         put: operations["EnrollHolviConnection"];
         post?: never;
         /**
          * DisableHolviConnection
-         * @description Admin-only Holvi SFTP connection. The server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi. PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.
+         * @description Admin-only Holvi connection over SFTP (Channel sftp: the server generates the Ed25519 key, stores it KMS-encrypted and returns only the OpenSSH public key to register with Holvi) or the Holvi REST API (Channel api: PUT returns AuthorizationUrl for the customer to approve at Holvi; Holvi redirects to the OAuth callback and Status becomes connected; tokens are stored KMS-encrypted and never returned; reauthorization_required means consent again). PUT and DELETE require If-Match with the current Version (absent for a new connection); a stale version is refused. Rotate the key by DELETE then PUT. SourceAddresses lists the fixed public IPv4 addresses for Holvi's allow-list; the key is also listed in ListCerts SftpKeys.
          */
         delete: operations["DisableHolviConnection"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/providers/holvi/oauth/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * HolviOAuthCallback
+         * @description Holvi's OAuth redirect target (unauthenticated; registered with Holvi). Completes a consent started with EnrollHolviConnection Channel api exactly once and answers a static HTML page; it never returns tokens or account details.
+         */
+        get: operations["HolviOAuthCallback"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -176,6 +196,10 @@ export interface components {
             ResponseText: string;
         };
         DisableHolviConnectionResp: {
+            /** @description api only, in the PUT reply that starts consent: open it in the customer's browser to approve at Holvi. */
+            AuthorizationUrl?: string;
+            /** @description sftp or api */
+            Channel?: string;
             /** @description UTC enrollment time. SSH keys have no expiry; Holvi keeps a registered key until it is revoked. */
             Created?: string;
             Enrolled: boolean;
@@ -190,6 +214,8 @@ export interface components {
             SftpUser?: string;
             /** @description Fixed public IPv4 addresses that ISECure connects to Holvi from; give them to Holvi for its allow-list. Empty only for the synthetic test bank. */
             SourceAddresses: string[];
+            /** @description api only: pending, connected or reauthorization_required */
+            Status?: string;
             Version: string;
         };
         DisableMaventaConnectionResp: {
@@ -211,10 +237,19 @@ export interface components {
             Version: string;
         };
         EnrollHolviConnectionReq: {
-            /** @description Holvi-assigned SFTP login (<client id><client number>). */
-            SftpUser: string;
+            /**
+             * @description sftp (default) or api (Holvi REST API with OAuth consent).
+             * @enum {string}
+             */
+            Channel?: "sftp" | "api";
+            /** @description Holvi-assigned SFTP login (<client id><client number>); required for sftp. */
+            SftpUser?: string;
         };
         EnrollHolviConnectionResp: {
+            /** @description api only, in the PUT reply that starts consent: open it in the customer's browser to approve at Holvi. */
+            AuthorizationUrl?: string;
+            /** @description sftp or api */
+            Channel?: string;
             /** @description UTC enrollment time. SSH keys have no expiry; Holvi keeps a registered key until it is revoked. */
             Created?: string;
             Enrolled: boolean;
@@ -229,6 +264,8 @@ export interface components {
             SftpUser?: string;
             /** @description Fixed public IPv4 addresses that ISECure connects to Holvi from; give them to Holvi for its allow-list. Empty only for the synthetic test bank. */
             SourceAddresses: string[];
+            /** @description api only: pending, connected or reauthorization_required */
+            Status?: string;
             Version: string;
         };
         EnrollMaventaConnectionReq: {
@@ -297,6 +334,10 @@ export interface components {
             ResponseText?: string;
         };
         GetHolviConnectionResp: {
+            /** @description api only, in the PUT reply that starts consent: open it in the customer's browser to approve at Holvi. */
+            AuthorizationUrl?: string;
+            /** @description sftp or api */
+            Channel?: string;
             /** @description UTC enrollment time. SSH keys have no expiry; Holvi keeps a registered key until it is revoked. */
             Created?: string;
             Enrolled: boolean;
@@ -311,6 +352,8 @@ export interface components {
             SftpUser?: string;
             /** @description Fixed public IPv4 addresses that ISECure connects to Holvi from; give them to Holvi for its allow-list. Empty only for the synthetic test bank. */
             SourceAddresses: string[];
+            /** @description api only: pending, connected or reauthorization_required */
+            Status?: string;
             Version: string;
         };
         GetMaventaConnectionResp: {
@@ -330,6 +373,12 @@ export interface components {
             /** @description Human readable response text */
             ResponseText: string;
             Version: string;
+        };
+        Response: {
+            /** @description Two digit response code in string format */
+            ResponseCode: string;
+            /** @description Human readable response text */
+            ResponseText: string;
         };
     };
     responses: never;
@@ -496,7 +545,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description JSON object with SftpUser, the login Holvi assigned: 1-64 ASCII letters, digits, '.', '_' or '-', starting with a letter or digit. No key material is sent; the server generates the key. */
+        /** @description JSON object. Channel sftp (default) needs SftpUser, the login Holvi assigned: 1-64 ASCII letters, digits, '.', '_' or '-', starting with a letter or digit; no key material is sent, the server generates the key. Channel api starts Holvi OAuth consent and needs no other field. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["EnrollHolviConnectionReq"];
@@ -611,6 +660,57 @@ export interface operations {
             };
             /** @description Unauthenticated */
             403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    HolviOAuthCallback: {
+        parameters: {
+            query?: {
+                /** @description Single-use state from the authorisation request. */
+                state?: string;
+                /** @description Authorisation code when the customer approved. */
+                code?: string;
+                /** @description access_denied when the customer declined. */
+                error?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    "Cache-Control"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
                 headers: {
                     "Access-Control-Allow-Origin"?: string;
                     "Cache-Control"?: string;

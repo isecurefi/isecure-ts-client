@@ -26,7 +26,13 @@ import {
   type FileBytesResult,
   type UploadFileBytesRequest,
 } from "./file-transfers.js";
-import { holviVersionHeaders, requireHolviLogin, type HolviConnection, type HolviConnectionCheck } from "./holvi.js";
+import {
+  holviVersionHeaders,
+  requireAuthorizationUrl,
+  requireHolviLogin,
+  type HolviConnection,
+  type HolviConnectionCheck,
+} from "./holvi.js";
 import {
   providerChangeHeaders,
   requireProvider,
@@ -825,6 +831,21 @@ export class WSChannel {
       headers: holviVersionHeaders(expectedVersion),
       retry: false,
     });
+  }
+
+  /**
+   * Admin-only: start Holvi REST (OAuth) consent instead of SFTP. Open the returned HTTPS
+   * AuthorizationUrl in the customer's browser, then poll getHolviConnection() until Status is
+   * "connected". Pass the current Version, or ABSENT_HOLVI_VERSION. No automatic replay.
+   */
+  async startHolviAuthorization(expectedVersion: string): Promise<HolviConnection> {
+    const reply = await this.call<HolviConnection>("PUT", this.urls.providerConnection("holvi"), {
+      auth: true,
+      body: { Channel: "api" },
+      headers: holviVersionHeaders(expectedVersion),
+      retry: false,
+    });
+    return requireAuthorizationUrl(reply);
   }
 
   /** Remove the connection and its key. Rotate a key by disabling and enrolling again. */

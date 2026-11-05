@@ -19,6 +19,19 @@ export function holviVersionHeaders(expectedVersion: string): HttpHeaders {
   return { "If-Match": `"${expectedVersion}"` };
 }
 
+/** A started consent must carry the HTTPS URL the customer opens; refusals pass through. */
+export function requireAuthorizationUrl(reply: HolviConnection): HolviConnection {
+  if (reply.ResponseCode !== "00") return reply;
+  let protocol: string | undefined;
+  try {
+    protocol = new URL(reply.AuthorizationUrl ?? "").protocol;
+  } catch {
+    protocol = undefined;
+  }
+  if (protocol !== "https:") throw new ISecureError("Holvi consent reply has no HTTPS authorization URL");
+  return reply;
+}
+
 /** Holvi-assigned SFTP login (`<client id><client number>`). */
 export function requireHolviLogin(sftpUser: string): string {
   if (!LOGIN.test(sftpUser)) throw new ISecureError("Invalid Holvi SFTP login");

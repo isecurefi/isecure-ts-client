@@ -234,7 +234,7 @@ describe("provider guards and contract", () => {
       expect(transport.requests[0]?.retry).toBe(false);
     },
   );
-  it("pins the generated provider contract to the backend digest and all twelve methods", () => {
+  it("pins the generated provider contract to the backend digest and all thirteen methods", () => {
     const bytes = readFileSync(new URL("../../provider-api.json", import.meta.url));
     const lock = JSON.parse(readFileSync(new URL("../../provider-contract.lock.json", import.meta.url), "utf8")) as {
       sha256: string;
@@ -244,12 +244,14 @@ describe("provider guards and contract", () => {
     expect(Object.keys(spec.paths).sort()).toEqual([
       "/providers/holvi/check",
       "/providers/holvi/connection",
+      // Holvi's browser redirect target; deliberately not an SDK method.
+      "/providers/holvi/oauth/callback",
       "/providers/maventa/check",
       "/providers/maventa/connection",
       "/providers/mobilepay/check",
       "/providers/mobilepay/connection",
     ]);
-    expect(Object.values(spec.paths).reduce((n, path) => n + Object.keys(path).length, 0)).toBe(12);
+    expect(Object.values(spec.paths).reduce((n, path) => n + Object.keys(path).length, 0)).toBe(13);
   });
   it("does not emit echoed secrets from transport error messages", async () => {
     const logs: unknown[] = [];
