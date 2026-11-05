@@ -42,6 +42,13 @@
 - Keep provider availability limited to the test API and separately admitted production RC until live promotion.
 
 
+## [4.7.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.6.0...isecure-ts-client-v4.7.0) (2026-11-05)
+
+
+### Features
+
+* start Holvi REST (OAuth) consent with startHolviAuthorization ([4cc67a0](https://github.com/isecurefi/isecure-ts-client/commit/4cc67a0900476986a734cd8e3daf44df1dbdab18))
+
 ## [4.6.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.5.2...isecure-ts-client-v4.6.0) (2026-11-05)
 
 
