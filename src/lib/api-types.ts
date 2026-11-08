@@ -1,3 +1,5 @@
+import type { PasswordDiscovery } from "./challenge-crypto.js";
+export type PasswordProfileFields = Partial<Pick<PasswordDiscovery, "EncryptionProfile" | "KeyId">>;
 import type { components, operations } from "../generated/wsapi-v2.js";
 
 type JsonResponse<
@@ -21,14 +23,14 @@ export type PgpKeyPurpose = "authorize" | "export";
 
 export type ApiResponse = components["schemas"]["Response"];
 export type ApiErrorResponse = components["schemas"]["ErrorResponse"];
-export type InitPasswordResetResponse = JsonResponse<"InitPasswordReset", 200>;
-export type PasswordResetRequest = JsonRequest<"PasswordReset">;
+export type InitPasswordResetResponse = JsonResponse<"InitPasswordReset", 200> & Partial<PasswordDiscovery>;
+export type PasswordResetRequest = JsonRequest<"PasswordReset"> & PasswordProfileFields;
 export type PasswordResetResponse = JsonResponse<"PasswordReset", 200>;
-export type RegisterRequest = JsonRequest<"Register">;
+export type RegisterRequest = JsonRequest<"Register"> & PasswordProfileFields;
 export type RegisterResponse = JsonResponse<"Register", 201>;
-export type InitRegisterResponse = JsonResponse<"InitRegister", 200>;
-export type InitLoginResponse = JsonResponse<"InitLogin", 200>;
-export type LoginRequest = JsonRequest<"Login">;
+export type InitRegisterResponse = JsonResponse<"InitRegister", 200> & Partial<PasswordDiscovery>;
+export type InitLoginResponse = JsonResponse<"InitLogin", 200> & Partial<PasswordDiscovery>;
+export type LoginRequest = JsonRequest<"Login"> & PasswordProfileFields;
 
 /**
  * Shared optional authentication fields for compatible high-level response types.
