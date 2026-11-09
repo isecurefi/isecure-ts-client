@@ -59,7 +59,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "tag": "next"
+    "tag": "latest"
   },
   "scripts": {
     "clean": "rm -rf dist dist-examples coverage .generated .browser-check docs-api",
