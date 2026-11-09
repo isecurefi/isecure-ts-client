@@ -11,7 +11,7 @@ Bank Simulator workspaces and scenarios. Each service checks the signed-in accou
 Requires Node.js 24 or later. Modern browser bundlers are also supported; see [Runtime support](#runtime-support).
 
 ```sh
-npm install isecure-ts-client
+npm install isecure-ts-client@next
 ```
 
 ## Choose a client
@@ -235,14 +235,29 @@ permission. Missing policy and malformed/unavailable policy are distinct.
 `wsapi_v2.source.json` records the public upstream and the unpublished candidate
 contract overlay; neither SDK nor API documentation has been published by this change.
 
-## Opt-in password profile (gpgtest)
+## Migrating to v5 authentication
 
 Qualification (2026-11-08): this implementation passed local checks and
 bounded hosted registration/login tests on ordinary gpgtest, including Admin MFA
 and 283-byte UTF-8 passwords. RSA-3072 and RSA-4096 login were exercised.
-The stronger profile is currently available on gpgtest only. Existing configuration
-keeps legacy authentication for production; SDK installation does not activate
-the new profile.
+Version 5 defaults to `password-rsa-oaep-sha256-v1` for registration, login and
+password reset. The stronger profile is currently available on gpgtest only.
+Version 5 is distributed under npm's `next` tag; `latest` remains version 4.8.0.
+
+Omit `EncryptionProfile` for the v5 default, or explicitly supply
+`PASSWORD_ENCRYPTION_PROFILE`. To use current production or an older server,
+select legacy authentication explicitly:
+
+```ts
+const productionClient = new WSChannel({ ...productionSettings, EncryptionProfile: "legacy" });
+```
+
+Legacy authentication still requires a compatible tenant policy where policy is
+active. It cannot create new gpgtest tenants. The SDK never infers the profile
+from the endpoint URL and never silently falls back. Unsupported server discovery
+fails before sending an encrypted password. Clear an override with
+`updateProps({ EncryptionProfile: undefined })` to restore the v5 default;
+restart any pending password operation after changing profiles.
 
 Additional qualification (2026-11-09): the browser build passed Data/Admin TOTP
 login, invalid reset-code rejection and login after an operator-managed test
@@ -253,13 +268,12 @@ delivery. The managed password change is not a public password-reset test.
 
 This source adds `password-rsa-oaep-sha256-v1` on existing v2 routes. Availability
 is environment-specific: the SDK requires matching server discovery and never
-falls back if an older server ignores the selector. Existing configuration keeps
-the legacy profile. After server policy activation, new tenants must select the
+falls back if an older server ignores the selector. New tenants require the
 new profile; grandfathered tenants can use either profile, including new accounts.
 
 ```ts
-import { WSChannel, PASSWORD_ENCRYPTION_PROFILE } from "isecure-ts-client";
-const client = new WSChannel({ ...settings, EncryptionProfile: PASSWORD_ENCRYPTION_PROFILE });
+import { WSChannel } from "isecure-ts-client";
+const client = new WSChannel(settings); // v5 uses the stronger profile by default.
 const reset = await client.initPasswordReset();
 await client.passwordReset(recoveryCode, newPassword, reset.Challenge!);
 ```

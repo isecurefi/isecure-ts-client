@@ -74,6 +74,7 @@ async function client(provider: CredentialProvider, data: unknown = {}, base = "
   const sdk = new WSChannel(
     {
       Bank: provider,
+      EncryptionProfile: "legacy",
       BaseUrl: base,
       Email: "synthetic@example.invalid",
       Mode: "admin",

@@ -14,6 +14,7 @@ function props(): IWSChannel {
     Password: "Example-password-123!",
     Phone: "+358401234567",
     PublicKey: publicKey,
+    EncryptionProfile: "legacy",
     BaseUrl: "https://ws-api.test.isecure.fi/v2",
     Email: "user@example.test",
     Mode: "admin",

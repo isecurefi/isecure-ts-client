@@ -49,6 +49,7 @@ async function client(data: unknown, mode = "admin") {
   const sdk = new WSChannel(
     {
       Bank: "holvi",
+      EncryptionProfile: "legacy",
       BaseUrl: "https://ws-api.test.isecure.fi/v2",
       Email: "synthetic@example.invalid",
       Mode: mode,
