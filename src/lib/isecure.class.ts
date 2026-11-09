@@ -144,8 +144,8 @@ export interface IWSChannel {
   Mode: Mode;
   Phone: string;
   PublicKey: string;
-  /** Explicit opt-in; never falls back when the server lacks support. */
-  EncryptionProfile?: typeof PASSWORD_ENCRYPTION_PROFILE;
+  /** Defaults to the stronger profile. Select "legacy" explicitly for older servers. */
+  EncryptionProfile?: typeof PASSWORD_ENCRYPTION_PROFILE | "legacy";
   BaseUrl: string;
   Bank: string;
   ApiKey?: string;
@@ -289,7 +289,7 @@ export class WSChannel {
     this.resetDiscovery = undefined;
     const data = await this.call<InitPasswordResetResponse>("GET", this.profileUrl(this.urls.password()));
     this.assertPasswordIdentity(identity);
-    if (this.props.EncryptionProfile) {
+    if (this.usesPasswordProfile) {
       const value = requirePasswordDiscovery(data);
       this.resetDiscovery = { value, identity };
     }
@@ -313,7 +313,7 @@ export class WSChannel {
               requireValue(challenge, "challenge"),
               requireValue(newPassword, "newPassword"),
             ),
-            ...(this.props.EncryptionProfile
+            ...(this.usesPasswordProfile
               ? this.profileFields(this.requireResetDiscovery(requireValue(challenge, "challenge")))
               : {}),
           }
@@ -321,7 +321,7 @@ export class WSChannel {
 
     this.assertPasswordIdentity(identity);
     if (
-      this.props.EncryptionProfile &&
+      this.usesPasswordProfile &&
       (request.EncryptionProfile !== PASSWORD_ENCRYPTION_PROFILE ||
         request.KeyId !== this.requireResetDiscovery(request.ChResp).KeyId)
     ) {
@@ -1079,10 +1079,15 @@ export class WSChannel {
     throw new ISecureError("ISECure session has expired; re-authenticate before calling authenticated operations");
   }
 
+  private get usesPasswordProfile(): boolean {
+    const profile = this.props.EncryptionProfile;
+    if (profile === undefined || profile === PASSWORD_ENCRYPTION_PROFILE) return true;
+    if (profile === "legacy") return false;
+    throw new ISecureError("Unsupported password encryption profile");
+  }
+
   private profileUrl(raw: string, registration = false): string {
-    if (!this.props.EncryptionProfile) return raw;
-    if (this.props.EncryptionProfile !== PASSWORD_ENCRYPTION_PROFILE)
-      throw new ISecureError("Unsupported password encryption profile");
+    if (!this.usesPasswordProfile) return raw;
     const url = new URL(raw);
     if (url.protocol !== "https:" || url.username || url.password)
       throw new ISecureError("Password profile requires HTTPS");
@@ -1094,19 +1099,19 @@ export class WSChannel {
     const identity = this.passwordIdentity();
     const data = await this.call<InitLoginResponse>("GET", this.profileUrl(url, registration));
     this.assertPasswordIdentity(identity);
-    if (this.props.EncryptionProfile) return { ...data, ...requirePasswordDiscovery(data) };
+    if (this.usesPasswordProfile) return { ...data, ...requirePasswordDiscovery(data) };
     return data;
   }
   private profileFields(discovery: InitLoginResponse | PasswordDiscovery): {
     EncryptionProfile?: typeof PASSWORD_ENCRYPTION_PROFILE;
     KeyId?: string;
   } {
-    if (!this.props.EncryptionProfile) return {};
+    if (!this.usesPasswordProfile) return {};
     const value = requirePasswordDiscovery(discovery);
     return { EncryptionProfile: value.EncryptionProfile, KeyId: value.KeyId };
   }
   private encryptDiscovery(discovery: InitLoginResponse | PasswordDiscovery, password: string): Promise<string> {
-    return this.props.EncryptionProfile
+    return this.usesPasswordProfile
       ? encryptProfilePassword(requirePasswordDiscovery(discovery), password)
       : this.encryptPasswordChallenge(discovery.Challenge, password);
   }
@@ -1115,7 +1120,7 @@ export class WSChannel {
       this.props.BaseUrl,
       this.props.Email,
       this.props.Mode,
-      this.props.EncryptionProfile,
+      this.usesPasswordProfile ? PASSWORD_ENCRYPTION_PROFILE : "legacy",
       this.props.ApiKey,
       this.props.PublicKey,
     ]);
@@ -1131,7 +1136,7 @@ export class WSChannel {
     return pending.value;
   }
   private encryptResetPassword(challenge: string, password: string): Promise<string> {
-    return this.props.EncryptionProfile
+    return this.usesPasswordProfile
       ? encryptProfilePassword(this.requireResetDiscovery(challenge), password)
       : this.encryptPasswordChallenge(challenge, password);
   }

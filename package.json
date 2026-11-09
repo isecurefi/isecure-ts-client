@@ -58,7 +58,8 @@
     "node": ">=24"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "tag": "next"
   },
   "scripts": {
     "clean": "rm -rf dist dist-examples coverage .generated .browser-check docs-api",

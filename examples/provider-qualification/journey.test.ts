@@ -101,6 +101,7 @@ async function fixture(provider: CredentialProvider, brokenDownload = false, con
     });
     const sdk = new WSChannel(
       {
+        EncryptionProfile: "legacy",
         BaseUrl: "https://ws-api.test.isecure.fi/v2",
         Bank: provider,
         Mode: mode,

@@ -19,6 +19,7 @@ describe("policy-aware account administration", () => {
         Password: "unused",
         Phone: "+12025550100",
         PublicKey: publicKey,
+        EncryptionProfile: "legacy",
         BaseUrl: "https://example.invalid/gpgtest-rust",
       },
       { transport, logger: { debug: (...args) => logs.push(args), info() {}, warn() {}, error() {} } },

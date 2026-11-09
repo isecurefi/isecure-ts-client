@@ -67,6 +67,7 @@ async function setup(base: string, capabilities?: unknown) {
   });
   const client = new WSChannel(
     {
+      EncryptionProfile: "legacy",
       BaseUrl: base,
       PublicKey: publicKey,
       Email: "user@example.test",
