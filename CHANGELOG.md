@@ -42,6 +42,13 @@
 - Keep provider availability limited to the test API and separately admitted production RC until live promotion.
 
 
+## [5.0.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v5.0.0...isecure-ts-client-v5.0.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* publish stable v5 authentication releases to latest ([#110](https://github.com/isecurefi/isecure-ts-client/issues/110)) ([4e3891d](https://github.com/isecurefi/isecure-ts-client/commit/4e3891d47029e75843351b9adc6be0ef72314887))
+
 ## [5.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.8.0...isecure-ts-client-v5.0.0) (2026-11-09)
 
 
