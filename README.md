@@ -11,7 +11,7 @@ Bank Simulator workspaces and scenarios. Each service checks the signed-in accou
 Requires Node.js 24 or later. Modern browser bundlers are also supported; see [Runtime support](#runtime-support).
 
 ```sh
-npm install isecure-ts-client@next
+npm install isecure-ts-client
 ```
 
 ## Choose a client
@@ -241,19 +241,20 @@ Qualification (2026-11-08): this implementation passed local checks and
 bounded hosted registration/login tests on ordinary gpgtest, including Admin MFA
 and 283-byte UTF-8 passwords. RSA-3072 and RSA-4096 login were exercised.
 Version 5 defaults to `password-rsa-oaep-sha256-v1` for registration, login and
-password reset. The stronger profile is currently available on gpgtest only.
-Version 5 is distributed under npm's `next` tag; `latest` remains version 4.8.0.
+password reset. The stronger profile is available on gpgtest and production V2.
+Stable v5 releases use npm's `latest` tag. Existing installations pinned to v4
+keep their legacy defaults.
 
 Omit `EncryptionProfile` for the v5 default, or explicitly supply
-`PASSWORD_ENCRYPTION_PROFILE`. To use current production or an older server,
-select legacy authentication explicitly:
+`PASSWORD_ENCRYPTION_PROFILE`. For a grandfathered tenant that still needs
+legacy authentication, select it explicitly:
 
 ```ts
-const productionClient = new WSChannel({ ...productionSettings, EncryptionProfile: "legacy" });
+const legacyClient = new WSChannel({ ...settings, EncryptionProfile: "legacy" });
 ```
 
 Legacy authentication still requires a compatible tenant policy where policy is
-active. It cannot create new gpgtest tenants. The SDK never infers the profile
+active. It cannot create new tenants on gpgtest or production. The SDK never infers the profile
 from the endpoint URL and never silently falls back. Unsupported server discovery
 fails before sending an encrypted password. Clear an override with
 `updateProps({ EncryptionProfile: undefined })` to restore the v5 default;
