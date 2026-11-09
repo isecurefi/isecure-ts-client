@@ -236,12 +236,14 @@ permission. Missing policy and malformed/unavailable policy are distinct.
 contract overlay; neither SDK nor API documentation has been published by this change.
 
 
-## Opt-in password profile (unpublished preview)
+## Opt-in password profile (gpgtest)
 
-Qualification (2026-11-08): this unpublished source passed local checks and
+Qualification (2026-11-08): this implementation passed local checks and
 bounded hosted registration/login tests on ordinary gpgtest, including Admin MFA
 and 283-byte UTF-8 passwords. RSA-3072 and RSA-4096 login were exercised.
-Production authentication deployment and SDK publication remain excluded.
+The stronger profile is currently available on gpgtest only. Existing configuration
+keeps legacy authentication for production; SDK installation does not activate
+the new profile.
 
 Additional qualification (2026-11-09): the browser build passed Data/Admin TOTP
 login, invalid reset-code rejection and login after an operator-managed test
@@ -268,5 +270,5 @@ label. The binary envelope binds the exact challenge and preserves 1–283 UTF-8
 password bytes without normalization. Discovery is not authorization. Admin MFA
 still applies. Do not log password envelopes, tokens, codes or raw auth bodies.
 Reset uses its own discovery; never substitute an InitLogin challenge or
-automatically retry code delivery/password mutation. This preview is not a
-production availability or NIST/FIPS certification claim.
+automatically retry code delivery/password mutation. This feature does not establish
+production availability or NIST/FIPS certification.
