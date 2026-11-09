@@ -1084,7 +1084,8 @@ export class WSChannel {
     if (this.props.EncryptionProfile !== PASSWORD_ENCRYPTION_PROFILE)
       throw new ISecureError("Unsupported password encryption profile");
     const url = new URL(raw);
-    if (url.protocol !== "https:" || url.username || url.password) throw new ISecureError("Password profile requires HTTPS");
+    if (url.protocol !== "https:" || url.username || url.password)
+      throw new ISecureError("Password profile requires HTTPS");
     url.searchParams.set("EncryptionProfile", PASSWORD_ENCRYPTION_PROFILE);
     if (registration) url.searchParams.set("ApiKey", this.props.ApiKey ?? "0");
     return url.toString();

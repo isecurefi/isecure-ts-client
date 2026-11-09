@@ -235,7 +235,6 @@ permission. Missing policy and malformed/unavailable policy are distinct.
 `wsapi_v2.source.json` records the public upstream and the unpublished candidate
 contract overlay; neither SDK nor API documentation has been published by this change.
 
-
 ## Opt-in password profile (gpgtest)
 
 Qualification (2026-11-08): this implementation passed local checks and
