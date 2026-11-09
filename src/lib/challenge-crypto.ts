@@ -165,3 +165,83 @@ function encodeBase64(binary: string): string {
 
   return output;
 }
+
+export const PASSWORD_ENCRYPTION_PROFILE = "password-rsa-oaep-sha256-v1" as const;
+export interface PasswordDiscovery {
+  Challenge: string;
+  EncryptionProfile: typeof PASSWORD_ENCRYPTION_PROFILE;
+  KeyId: string;
+  PublicKey: string;
+}
+
+export function requirePasswordDiscovery(value: unknown): PasswordDiscovery {
+  const v = value as Partial<PasswordDiscovery> | null;
+  if (
+    v?.EncryptionProfile !== PASSWORD_ENCRYPTION_PROFILE ||
+    typeof v.KeyId !== "string" ||
+    !/^[A-Za-z0-9_-]{1,64}$/.test(v.KeyId) ||
+    typeof v.Challenge !== "string" ||
+    v.Challenge.length > 3072 ||
+    !/^p1\.[A-Za-z0-9_-]{1,64}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/.test(v.Challenge) ||
+    typeof v.PublicKey !== "string" ||
+    v.PublicKey.length > 2048 ||
+    pemLabel(v.PublicKey) !== "PUBLIC KEY"
+  ) {
+    throw new Error("The server did not provide the requested password encryption profile");
+  }
+  return {
+    Challenge: v.Challenge,
+    EncryptionProfile: PASSWORD_ENCRYPTION_PROFILE,
+    KeyId: v.KeyId,
+    PublicKey: v.PublicKey,
+  };
+}
+
+export async function encryptProfilePassword(discovery: PasswordDiscovery, password: string): Promise<string> {
+  const d = requirePasswordDiscovery(discovery);
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) throw new Error("WebCrypto is not available in this runtime");
+  const key = await subtle.importKey(
+    "spki",
+    arrayBufferFromBytes(publicKeyDerFromPem(d.PublicKey)),
+    { name: "RSA-OAEP", hash: "SHA-256" },
+    false,
+    ["encrypt"],
+  );
+  const algorithm = key.algorithm as RsaHashedKeyAlgorithm;
+  if (
+    ![3072, 4096].includes(algorithm.modulusLength) ||
+    algorithm.publicExponent.length !== 3 ||
+    algorithm.publicExponent[0] !== 1 ||
+    algorithm.publicExponent[1] !== 0 ||
+    algorithm.publicExponent[2] !== 1
+  ) {
+    throw new Error("Unsupported password encryption key parameters");
+  }
+  // TextEncoder replaces unpaired surrogates; reject them instead of changing a password.
+  if (
+    Array.from(password).some((character) => {
+      const code = character.codePointAt(0) ?? 0;
+      return code >= 0xd800 && code <= 0xdfff;
+    })
+  )
+    throw new Error("Password must be valid Unicode");
+  const encoded = new TextEncoder().encode(password);
+  if (encoded.length === 0 || encoded.length > 283) throw new Error("Password must contain 1–283 UTF-8 bytes");
+  const plain = new Uint8Array(35 + encoded.length);
+  try {
+    plain[0] = 1;
+    plain.set(new Uint8Array(await subtle.digest("SHA-256", new TextEncoder().encode(d.Challenge))), 1);
+    plain[33] = encoded.length >>> 8;
+    plain[34] = encoded.length & 255;
+    plain.set(encoded, 35);
+    return bytesToBase64(
+      new Uint8Array(
+        await subtle.encrypt({ name: "RSA-OAEP", label: new Uint8Array() }, key, arrayBufferFromBytes(plain)),
+      ),
+    );
+  } finally {
+    plain.fill(0);
+    encoded.fill(0);
+  }
+}

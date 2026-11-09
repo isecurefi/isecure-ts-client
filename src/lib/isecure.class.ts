@@ -69,7 +69,6 @@ import {
   type ImportCertResponse,
   type InitLoginResponse,
   type InitPasswordResetResponse,
-  type InitRegisterResponse,
   type ListAccountsResponse,
   type ListAuditEventsQuery,
   type ListAuditEventsResponse,
@@ -116,7 +115,13 @@ import {
   type VerifyTotpRequest,
   type VerifyTotpResponse,
 } from "./api-types.js";
-import { encryptPasswordChallenge } from "./challenge-crypto.js";
+import {
+  encryptPasswordChallenge,
+  encryptProfilePassword,
+  requirePasswordDiscovery,
+  PASSWORD_ENCRYPTION_PROFILE,
+  type PasswordDiscovery,
+} from "./challenge-crypto.js";
 import { ISecureError } from "./errors.js";
 import { validateRegistrationPassword } from "./registration-password.js";
 import type { RedactionMode } from "./redact.js";
@@ -139,6 +144,8 @@ export interface IWSChannel {
   Mode: Mode;
   Phone: string;
   PublicKey: string;
+  /** Explicit opt-in; never falls back when the server lacks support. */
+  EncryptionProfile?: typeof PASSWORD_ENCRYPTION_PROFILE;
   BaseUrl: string;
   Bank: string;
   ApiKey?: string;
@@ -200,6 +207,7 @@ export class WSChannel {
   private expiresAt: number | undefined;
   /** ChallengeName from the last login response, echoed back on the mfacode call. */
   private lastChallengeName: string | undefined;
+  private resetDiscovery: { value: PasswordDiscovery; identity: string } | undefined;
 
   constructor(
     public props: IWSChannel,
@@ -253,18 +261,22 @@ export class WSChannel {
 
   /** Checks the published password requirements before fetching a registration challenge. */
   async register(): Promise<RegisterResponse> {
+    const identity = this.passwordIdentity();
     const password = this.props.Password;
     validateRegistrationPassword(password);
-    const ChResp = await this.getRegistrationChallenge();
+    const discovery = await this.passwordDiscovery(this.urls.account(), true);
+    const ChResp = discovery.Challenge;
     const request: RegisterRequest = {
       ApiKey: this.props.ApiKey ?? "0",
       ChResp,
       Company: this.props.Company,
-      Encrypted: await this.encryptPasswordChallenge(ChResp, password),
+      Encrypted: await this.encryptDiscovery(discovery, password),
+      ...this.profileFields(discovery),
       Name: this.props.Name,
       Phone: this.props.Phone,
     };
 
+    this.assertPasswordIdentity(identity);
     const data = await this.call<RegisterResponse, RegisterRequest>("PUT", this.urls.account(), { body: request });
 
     this.tokens = { ...this.tokens, apiKey: data.ApiKey };
@@ -273,7 +285,15 @@ export class WSChannel {
   }
 
   async initPasswordReset(): Promise<InitPasswordResetResponse> {
-    return this.call<InitPasswordResetResponse>("GET", this.urls.password());
+    const identity = this.passwordIdentity();
+    this.resetDiscovery = undefined;
+    const data = await this.call<InitPasswordResetResponse>("GET", this.profileUrl(this.urls.password()));
+    this.assertPasswordIdentity(identity);
+    if (this.props.EncryptionProfile) {
+      const value = requirePasswordDiscovery(data);
+      this.resetDiscovery = { value, identity };
+    }
+    return data;
   }
 
   async passwordReset(request: PasswordResetRequest): Promise<PasswordResetResponse>;
@@ -283,28 +303,45 @@ export class WSChannel {
     newPassword?: string,
     challenge?: string,
   ): Promise<PasswordResetResponse> {
+    const identity = this.passwordIdentity();
     const request: PasswordResetRequest =
       typeof requestOrCode === "string"
         ? {
             ChResp: requireValue(challenge, "challenge"),
             Code: requestOrCode,
-            Encrypted: await this.encryptPasswordChallenge(
+            Encrypted: await this.encryptResetPassword(
               requireValue(challenge, "challenge"),
               requireValue(newPassword, "newPassword"),
             ),
+            ...(this.props.EncryptionProfile
+              ? this.profileFields(this.requireResetDiscovery(requireValue(challenge, "challenge")))
+              : {}),
           }
         : requestOrCode;
 
+    this.assertPasswordIdentity(identity);
+    if (
+      this.props.EncryptionProfile &&
+      (request.EncryptionProfile !== PASSWORD_ENCRYPTION_PROFILE ||
+        request.KeyId !== this.requireResetDiscovery(request.ChResp).KeyId)
+    ) {
+      throw new ISecureError("Password reset profile does not match its initialization");
+    }
+    this.resetDiscovery = undefined;
     return this.call<PasswordResetResponse, PasswordResetRequest>("POST", this.urls.password(), { body: request });
   }
 
   async login(): Promise<AuthState> {
-    const ChResp = await this.getSessionChallenge();
+    const identity = this.passwordIdentity();
+    const discovery = await this.passwordDiscovery(this.urls.session());
+    const ChResp = discovery.Challenge;
     const request: LoginRequest = {
       ChResp,
-      Encrypted: await this.encryptPasswordChallenge(ChResp),
+      Encrypted: await this.encryptDiscovery(discovery, this.props.Password),
+      ...this.profileFields(discovery),
     };
 
+    this.assertPasswordIdentity(identity);
     const data = await this.call<LoginResponse, LoginRequest>("POST", this.urls.session(), { body: request });
     return this.applyAuthResponse(data);
   }
@@ -1042,14 +1079,61 @@ export class WSChannel {
     throw new ISecureError("ISECure session has expired; re-authenticate before calling authenticated operations");
   }
 
-  private async getRegistrationChallenge(): Promise<string> {
-    const data = await this.call<InitRegisterResponse>("GET", this.urls.account());
-    return data.Challenge;
+  private profileUrl(raw: string, registration = false): string {
+    if (!this.props.EncryptionProfile) return raw;
+    if (this.props.EncryptionProfile !== PASSWORD_ENCRYPTION_PROFILE)
+      throw new ISecureError("Unsupported password encryption profile");
+    const url = new URL(raw);
+    if (url.protocol !== "https:" || url.username || url.password)
+      throw new ISecureError("Password profile requires HTTPS");
+    url.searchParams.set("EncryptionProfile", PASSWORD_ENCRYPTION_PROFILE);
+    if (registration) url.searchParams.set("ApiKey", this.props.ApiKey ?? "0");
+    return url.toString();
   }
-
-  private async getSessionChallenge(): Promise<string> {
-    const data = await this.call<InitLoginResponse>("GET", this.urls.session());
-    return data.Challenge;
+  private async passwordDiscovery(url: string, registration = false): Promise<InitLoginResponse> {
+    const identity = this.passwordIdentity();
+    const data = await this.call<InitLoginResponse>("GET", this.profileUrl(url, registration));
+    this.assertPasswordIdentity(identity);
+    if (this.props.EncryptionProfile) return { ...data, ...requirePasswordDiscovery(data) };
+    return data;
+  }
+  private profileFields(discovery: InitLoginResponse | PasswordDiscovery): {
+    EncryptionProfile?: typeof PASSWORD_ENCRYPTION_PROFILE;
+    KeyId?: string;
+  } {
+    if (!this.props.EncryptionProfile) return {};
+    const value = requirePasswordDiscovery(discovery);
+    return { EncryptionProfile: value.EncryptionProfile, KeyId: value.KeyId };
+  }
+  private encryptDiscovery(discovery: InitLoginResponse | PasswordDiscovery, password: string): Promise<string> {
+    return this.props.EncryptionProfile
+      ? encryptProfilePassword(requirePasswordDiscovery(discovery), password)
+      : this.encryptPasswordChallenge(discovery.Challenge, password);
+  }
+  private passwordIdentity(): string {
+    return JSON.stringify([
+      this.props.BaseUrl,
+      this.props.Email,
+      this.props.Mode,
+      this.props.EncryptionProfile,
+      this.props.ApiKey,
+      this.props.PublicKey,
+    ]);
+  }
+  private assertPasswordIdentity(identity: string): void {
+    if (identity !== this.passwordIdentity())
+      throw new ISecureError("Client configuration changed during password operation");
+  }
+  private requireResetDiscovery(challenge: string): PasswordDiscovery {
+    const pending = this.resetDiscovery;
+    if (pending?.identity !== this.passwordIdentity() || pending.value.Challenge !== challenge)
+      throw new ISecureError("Initialize password reset again before submitting a new-profile response");
+    return pending.value;
+  }
+  private encryptResetPassword(challenge: string, password: string): Promise<string> {
+    return this.props.EncryptionProfile
+      ? encryptProfilePassword(this.requireResetDiscovery(challenge), password)
+      : this.encryptPasswordChallenge(challenge, password);
   }
 
   private applyAuthResponse(response: LoginResponse | LoginMfaResponse): AuthState {

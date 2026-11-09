@@ -234,3 +234,40 @@ through the API. `Account.PgpAuthorization` is descriptive server state, not cli
 permission. Missing policy and malformed/unavailable policy are distinct.
 `wsapi_v2.source.json` records the public upstream and the unpublished candidate
 contract overlay; neither SDK nor API documentation has been published by this change.
+
+## Opt-in password profile (gpgtest)
+
+Qualification (2026-11-08): this implementation passed local checks and
+bounded hosted registration/login tests on ordinary gpgtest, including Admin MFA
+and 283-byte UTF-8 passwords. RSA-3072 and RSA-4096 login were exercised.
+The stronger profile is currently available on gpgtest only. Existing configuration
+keeps legacy authentication for production; SDK installation does not activate
+the new profile.
+
+Additional qualification (2026-11-09): the browser build passed Data/Admin TOTP
+login, invalid reset-code rejection and login after an operator-managed test
+password change in Moli 1.1.20 against gpgtest Login 28. The earlier TypeScript
+Node real-code reset passed; successful browser reset with a delivered code is
+still unqualified. Synthetic email/phone confirmation does not establish message
+delivery. The managed password change is not a public password-reset test.
+
+This source adds `password-rsa-oaep-sha256-v1` on existing v2 routes. Availability
+is environment-specific: the SDK requires matching server discovery and never
+falls back if an older server ignores the selector. Existing configuration keeps
+the legacy profile. After server policy activation, new tenants must select the
+new profile; grandfathered tenants can use either profile, including new accounts.
+
+```ts
+import { WSChannel, PASSWORD_ENCRYPTION_PROFILE } from "isecure-ts-client";
+const client = new WSChannel({ ...settings, EncryptionProfile: PASSWORD_ENCRYPTION_PROFILE });
+const reset = await client.initPasswordReset();
+await client.passwordReset(recoveryCode, newPassword, reset.Challenge!);
+```
+
+The profile uses direct RSA-3072/4096 OAEP with SHA-256/MGF1-SHA-256 and an empty
+label. The binary envelope binds the exact challenge and preserves 1–283 UTF-8
+password bytes without normalization. Discovery is not authorization. Admin MFA
+still applies. Do not log password envelopes, tokens, codes or raw auth bodies.
+Reset uses its own discovery; never substitute an InitLogin challenge or
+automatically retry code delivery/password mutation. This feature does not establish
+production availability or NIST/FIPS certification.

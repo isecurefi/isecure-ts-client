@@ -160,3 +160,5 @@ export type { UploadedCiphertext } from "./lib/transfer-s3.js";
 export type { TransferExecutionInput } from "./lib/transfer-execution.js";
 export type { TransferFileResult, SavedUploadData } from "./lib/transfer-session.js";
 export type { SavedUpload } from "./lib/transfer-upload-state.js";
+
+export { PASSWORD_ENCRYPTION_PROFILE } from "./lib/challenge-crypto.js";
