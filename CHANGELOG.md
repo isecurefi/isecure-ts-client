@@ -42,6 +42,13 @@
 - Keep provider availability limited to the test API and separately admitted production RC until live promotion.
 
 
+## [4.8.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.7.0...isecure-ts-client-v4.8.0) (2026-11-09)
+
+
+### Features
+
+* add opt-in v2 password authentication profile ([e3834f1](https://github.com/isecurefi/isecure-ts-client/commit/e3834f18feeed734cada0a74e288ee83cea2cc87))
+
 ## [4.7.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.6.0...isecure-ts-client-v4.7.0) (2026-11-05)
 
 
