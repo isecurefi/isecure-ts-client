@@ -243,6 +243,13 @@ bounded hosted registration/login tests on ordinary gpgtest, including Admin MFA
 and 283-byte UTF-8 passwords. RSA-3072 and RSA-4096 login were exercised.
 Production authentication deployment and SDK publication remain excluded.
 
+Additional qualification (2026-11-09): the browser build passed Data/Admin TOTP
+login, invalid reset-code rejection and login after an operator-managed test
+password change in Moli 1.1.20 against gpgtest Login 28. The earlier TypeScript
+Node real-code reset passed; successful browser reset with a delivered code is
+still unqualified. Synthetic email/phone confirmation does not establish message
+delivery. The managed password change is not a public password-reset test.
+
 This source adds `password-rsa-oaep-sha256-v1` on existing v2 routes. Availability
 is environment-specific: the SDK requires matching server discovery and never
 falls back if an older server ignores the selector. Existing configuration keeps
