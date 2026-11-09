@@ -42,6 +42,17 @@
 - Keep provider availability limited to the test API and separately admitted production RC until live promotion.
 
 
+## [5.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.8.0...isecure-ts-client-v5.0.0) (2026-11-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* omitted EncryptionProfile selects password-rsa-oaep-sha256-v1; current production requires EncryptionProfile: "legacy".
+
+### Features
+
+* default to the stronger password profile in v5 next ([a0b9f8a](https://github.com/isecurefi/isecure-ts-client/commit/a0b9f8a7a69e48cfba8e0c939a20e80fd79de69b))
+
 ## [4.8.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.7.0...isecure-ts-client-v4.8.0) (2026-11-09)
 
 
