@@ -177,8 +177,7 @@ export interface PasswordDiscovery {
 export function requirePasswordDiscovery(value: unknown): PasswordDiscovery {
   const v = value as Partial<PasswordDiscovery> | null;
   if (
-    !v ||
-    v.EncryptionProfile !== PASSWORD_ENCRYPTION_PROFILE ||
+    v?.EncryptionProfile !== PASSWORD_ENCRYPTION_PROFILE ||
     typeof v.KeyId !== "string" ||
     !/^[A-Za-z0-9_-]{1,64}$/.test(v.KeyId) ||
     typeof v.Challenge !== "string" ||
@@ -222,7 +221,7 @@ export async function encryptProfilePassword(discovery: PasswordDiscovery, passw
   // TextEncoder replaces unpaired surrogates; reject them instead of changing a password.
   if (
     Array.from(password).some((character) => {
-      const code = character.codePointAt(0)!;
+      const code = character.codePointAt(0) ?? 0;
       return code >= 0xd800 && code <= 0xdfff;
     })
   )

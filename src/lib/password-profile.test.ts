@@ -2,13 +2,25 @@ import { readFileSync } from "node:fs";
 import { createHash, privateDecrypt, constants } from "node:crypto";
 import { describe, it, expect } from "vitest";
 import { encryptProfilePassword, requirePasswordDiscovery } from "./challenge-crypto.js";
+interface ProfileVectors {
+  Keys: { KeyId: string; PublicKey: string; PrivateKey: string }[];
+  Cases: {
+    Name: string;
+    KeyId: string;
+    Challenge: string;
+    EncryptionProfile: typeof PASSWORD_ENCRYPTION_PROFILE;
+    Password: string;
+    FrameHex: string;
+  }[];
+}
 const vectors = JSON.parse(
   readFileSync(new URL("../../test-vectors/password-profile/vectors.json", import.meta.url), "utf8"),
-);
+) as ProfileVectors;
 describe("explicit password profile interoperability", () => {
   for (const v of vectors.Cases)
     it(v.Name, async () => {
       const key = vectors.Keys.find((k: { KeyId: string }) => k.KeyId === v.KeyId);
+      if (!key) throw new Error("Missing vector key");
       const discovery = requirePasswordDiscovery({ ...v, PublicKey: key.PublicKey });
       const encrypted = await encryptProfilePassword(discovery, v.Password);
       const plain = privateDecrypt(
@@ -94,14 +106,13 @@ it("keeps registration tenant binding and reset discovery on the correct routes"
 });
 it("refuses a configuration change during discovery before sending a password", async () => {
   const transport = new FakeTransport();
-  let client: WSChannel;
   let calls = 0;
   transport.respond(() => {
     calls++;
     client.updateProps({ EncryptionProfile: undefined });
     return { status: 200, statusText: "OK", data: discovery };
   });
-  client = new WSChannel({ ...settings }, { transport });
+  const client = new WSChannel({ ...settings }, { transport });
   await expect(client.login()).rejects.toThrow("configuration changed");
   expect(calls).toBe(1);
 });

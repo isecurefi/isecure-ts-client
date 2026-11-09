@@ -1126,7 +1126,7 @@ export class WSChannel {
   }
   private requireResetDiscovery(challenge: string): PasswordDiscovery {
     const pending = this.resetDiscovery;
-    if (!pending || pending.identity !== this.passwordIdentity() || pending.value.Challenge !== challenge)
+    if (pending?.identity !== this.passwordIdentity() || pending.value.Challenge !== challenge)
       throw new ISecureError("Initialize password reset again before submitting a new-profile response");
     return pending.value;
   }
