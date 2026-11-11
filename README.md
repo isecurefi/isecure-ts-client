@@ -285,3 +285,12 @@ still applies. Do not log password envelopes, tokens, codes or raw auth bodies.
 Reset uses its own discovery; never substitute an InitLogin challenge or
 automatically retry code delivery/password mutation. This feature does not establish
 production availability or NIST/FIPS certification.
+
+### Bank read timeouts
+
+The default Axios transport timeout is 70 seconds, allowing the WS API's 60-second
+bank-read Gateway window plus network overhead. An explicit `timeoutMs` remains
+unchanged, including `0` to disable the client timer. Existing SDK installations
+can opt in without an API change using `new AxiosTransport({ timeoutMs: 70_000 })`
+and passing that transport to `WSChannel`. Client cancellation or timeout does not
+prove that the bank operation did not happen; it must not trigger payment resends.

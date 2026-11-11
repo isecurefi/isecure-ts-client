@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Allow the 60-second WS bank-read window with a 70-second default Axios timeout; preserve explicit caller timeouts and retry policy.
+
+## Unreleased
+
 - Add the Admin-only Holvi SFTP connection methods `getHolviConnection`, `enrollHolviConnection`, `disableHolviConnection` and `checkHolviConnection` from the synchronized provider contract. The server generates the Ed25519 key and returns only the OpenSSH public key; changes require the current `Version` and are never replayed. Existing file methods serve `Bank: "holvi"` unchanged. Unpublished; routes require the separately authorized deployment.
 - Connection replies carry `KeyType` (`sftp-public-key`), `Created` and `SourceAddresses` (the fixed public IPv4 addresses Holvi must allow-list). `listCerts()` adds the optional `SftpKeys` list (`SftpKeyDescriptor`) beside the X.509 certificates, recorded as the unpublished `sftpKeyOverlay` in `wsapi_v2.source.json`.
 
