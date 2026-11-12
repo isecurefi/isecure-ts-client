@@ -65,7 +65,7 @@ describe("transport adapters", () => {
       params: { Status: "ALL" },
       headers: { Authorization: "token", "User-Agent": USER_AGENT },
       data: { value: "body" },
-      timeout: 30_000,
+      timeout: 70_000,
     });
     expect(typeof client.calls[0]?.config.validateStatus).toBe("function");
   });
@@ -262,6 +262,13 @@ describe("transport adapters", () => {
 
     await expect(transport.request(request)).rejects.toThrow("No fake transport response for GET");
     expect(transport.requests).toEqual([request]);
+  });
+
+  it("preserves an explicit shorter timeout", async () => {
+    const client = recordingClient(() => ok);
+    const transport = new AxiosTransport({ client: client as never, timeoutMs: 12_345 });
+    await transport.request({ method: "GET", url: "https://example.test/files/nordea" });
+    expect(client.calls[0]?.config.timeout).toBe(12_345);
   });
 
   it("disables the timeout when timeoutMs is 0", async () => {
