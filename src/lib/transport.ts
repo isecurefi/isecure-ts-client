@@ -42,7 +42,7 @@ function isNodeRuntime(): boolean {
 export interface AxiosTransportOptions {
   /** Custom axios instance. Defaults to a fresh `axios.create()`. */
   client?: AxiosInstance;
-  /** Per-request timeout in milliseconds. Defaults to 30000. Use 0 to disable. */
+  /** Per-request timeout in milliseconds. Defaults to 70000, allowing a 60-second Gateway response plus network overhead. Use 0 to disable. */
   timeoutMs?: number;
   /** Max retry attempts for transient failures (network/429/5xx). Defaults to 2. */
   retries?: number;
@@ -62,7 +62,7 @@ export interface AxiosTransportOptions {
   random?: () => number;
 }
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 70_000;
 const DEFAULT_RETRIES = 2;
 const DEFAULT_RETRY_BASE_MS = 300;
 const DEFAULT_MAX_RETRY_MS = 5_000;
