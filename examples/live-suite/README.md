@@ -25,7 +25,11 @@ The operator first registers and verifies the temporary account through the WS A
 then uses the platform's existing `run-processing-onboard-tenant` command to admit its
 payment-only entitlement, usage-plan key and tenant placement. Give the entitlement a
 bounded expiry. Never reuse a customer's account. MFA is prompted through the existing
-SDK authentication helper. Credentials stay in private files/memory, outside Git.
+SDK authentication helper. For an unattended run, an operator may provision TOTP on
+the exact synthetic identity using the existing fixture-bootstrap pattern, then supply
+a fresh `ISECURE_ADMIN_MFA_CODE`; the SDK must still complete the ordinary MFA login.
+Do not change pool policy or a customer identity. Credentials stay in private
+files/memory, outside Git.
 
 Production checks cover Gateway denials, real Processing session exchange, Nordea
 unstructured payment preparation, profile readback, duplicate draft creation, repeated
@@ -40,9 +44,15 @@ The report includes check outcomes, safe HTTP/request-ID metadata and the suppli
 release identity. It never contains credentials, response bodies or generated XML.
 `cleanup: required` means the checks are finished but lifecycle qualification is not:
 revoke the temporary Processing tenant access, suspend its entitlement, remove its
-Processing usage-plan association, and delete the temporary WS account through the
-supported account API with fresh MFA. Preserve independent audit history and record
-the cleanup result. Retained synthetic database records are not customer data, but
+Processing usage-plan association, and retire the temporary WS account. A customer
+fixture uses the supported deletion API with fresh MFA. A newly registered tenant's
+root owner is deliberately not deletable through that API: its owner-authorized
+operator teardown must verify the exact fixture identity, creation time and API key,
+refuse linked accounts or PGP material, remove its Cognito identity/key/private usage
+plan, and retain a disabled account tombstone with the established 30-day TTL. Detach
+the fixture's API-stage association before removing its private usage plan; do not
+delete the API stage. Preserve independent audit history and record the cleanup
+result. Retained synthetic database records are not customer data, but
 must be disclosed in the run receipt; do not drop a database through an ad-hoc command.
 If interrupted, inspect the private receipt and complete cleanup before another run.
 
