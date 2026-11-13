@@ -1,4 +1,11 @@
-# Processing approval to manual ISECure upload
+# Historical Processing approval and upload example
+
+**Not a current hosted quick start.** The Processing gpgtest service used by this example was
+retired on 17 October 2026. Production uses the generation flow described in the
+[Processing guide](../../docs/processing.md); it has no configured Processing approval workflow.
+Do not substitute the production URL here. This example uploads a file and needs a separately
+qualified deployment, two authorized identities and an explicitly approved destination.
+For generation without upload, use the [generation example](../processing-generate-file/README.md).
 
 This Node example creates one payment batch through the hosted Processing API, validates and
 finalizes it, obtains a decision from a separately authenticated approver, releases and
@@ -13,13 +20,14 @@ example until an authorized operator has reconciled an uncertain result with ISE
 ## Required configuration
 
 Use two separately authenticated ISECure modes. Processing authority is server-owned: the WS
-`admin`/`data` mode names do not themselves grant approval. The defaults match the synthetic gpgtest
+`admin`/`data` mode names do not themselves grant approval. The defaults match the historical synthetic gpgtest
 assignment (`admin` submits and `data` approves); deployments can swap them, but they cannot be the
 same identity.
 
 ```sh
-export ISECURE_PROCESSING_BASE_URL='https://processing-api.test.isecure.fi'
-export ISECURE_PROCESSING_AUDIENCE='isecure-processing-gpgtest-v1'
+# Retired deployment: these placeholders must come from a separately qualified fixture.
+export ISECURE_PROCESSING_BASE_URL='https://processing-fixture.example.invalid'
+export ISECURE_PROCESSING_AUDIENCE='replace-with-fixture-audience'
 export ISECURE_PROCESSING_SUBMITTER_MODE='admin'
 export ISECURE_PROCESSING_APPROVER_MODE='data'
 
@@ -51,9 +59,9 @@ export ISECURE_DEBTOR_IBAN='FI2112345600000785'
 export ISECURE_DEBTOR_COUNTRY='FI'
 export ISECURE_DEBTOR_AGENT_BIC='NDEAFIHH'
 export ISECURE_DEBTOR_NAME='Invented Debtor Oy'
-export ISECURE_DEBTOR_BANK_AGREEMENT_ID='invented-agreement'
+export ISECURE_DEBTOR_BANK_AGREEMENT_ID='9600158260'
 export ISECURE_INITIATING_PARTY_NAME='Invented Initiating Party Oy'
-export ISECURE_INITIATING_PARTY_CUSTOMER_ID='invented-customer-id'
+export ISECURE_INITIATING_PARTY_CUSTOMER_ID='5780860238'
 
 export ISECURE_PAYMENT_AMOUNT='12.34'
 export ISECURE_CREDITOR_NAME='Invented Creditor Oy'
@@ -65,7 +73,7 @@ export ISECURE_CREDITOR_AGENT_BIC='NDEAFIHH'
 export ISECURE_REMITTANCE_TEXT='Synthetic invoice 1'
 export ISECURE_APPROVAL_REASON_CODE='manual_example_approval'
 
-# gpgtest currently publishes experimental profiles. This is never a production claim.
+# Use only if the separately qualified fixture admits this experimental profile.
 export ISECURE_CONFIRM_EXPERIMENTAL_PROFILE='1'
 export ISECURE_CONFIRM_MANUAL_UPLOAD='I-understand-upload-is-not-idempotent'
 

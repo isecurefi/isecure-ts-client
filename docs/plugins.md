@@ -43,7 +43,9 @@ approval, activation, pause/revoke and active-connector resolution. Hosted setup
 operation's generated contract version independently of the application or plugin version.
 These operations still require `Iso20022HttpTransport` from `isecure-ts-client/iso20022` and a
 separately deployed Processing API. `PluginHttpTransport` refuses them. These client methods do
-not establish deployment availability or provider qualification.
+not establish deployment availability or provider qualification. Hosted Integration setup is not
+part of the production Processing route set checked on 12 November 2026; see the
+[Processing availability guide](processing.md#service-availability) before using the example below.
 
 ```ts
 import { Iso20022HttpTransport } from "isecure-ts-client/iso20022";

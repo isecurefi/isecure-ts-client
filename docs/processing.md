@@ -1,229 +1,187 @@
-# Experimental Processing API
+# Processing API
 
 [Back to the README](../README.md)
 
-These clients require a separately deployed Processing API and its own access permissions.
-SDK methods and examples do not establish that a hosted service is available. The independent
-[Simulator administration API](simulator-administration.md) uses a different transport and needs
-no Processing deployment.
+Use Processing to prepare and validate payments, then generate the payment XML. Uploading that
+file to a bank is a separate step through the WS Channel/File Exchange API.
 
-The separate `isecure-ts-client/iso20022` entry point exposes the platform's generated observation,
-payment-batch, payment-submission and payment-outcome operations. It does not change the permanent
-WS Channel/File Exchange client above.
+The published SDK includes Processing through `isecure-ts-client/iso20022`. This part of the SDK
+is **experimental**: its generated types can change with the platform contract. See
+[API stability](../STABILITY.md). SDK method availability does not mean every method is deployed.
+
+## Service availability
+
+Deployment checked on **12 November 2026**:
+
+| Setting             | Production value                    |
+| ------------------- | ----------------------------------- |
+| Processing URL      | `https://processing-api.isecure.fi` |
+| Processing audience | `isecure-processing-production-v1`  |
+| WS login URL        | `https://ws-api.isecure.fi/v2`      |
+
+Processing currently runs only in production. Its former gpgtest deployment was retired on
+17 October 2026; do not use `processing-api.test.isecure.fi`. The independent Bank Simulator,
+[Simulator administration](simulator-administration.md) and [Plugin API](plugins.md) are separate
+services. Their test environments do not provide a Processing test endpoint.
+
+The deployed Processing API contains payment profile, capability, draft, validation, finalization
+and file-generation routes. The standard generation flow passed a synthetic production check on
+27 October 2026. This is historical qualification, not proof that a newly onboarded tenant or every
+later SDK release has been tested end to end.
+
+Statement/transaction observations, submission tracking, outcomes, Verification of Payee (VoP),
+Processing simulation, hosted Integration setup and event streaming have SDK interfaces but are
+not part of the deployed payment-generation route set checked above. Approval/export routes are
+present, but the current production workflow has no configured Processing approval policy. Start
+with generation; do not assume the older approval examples are ready to run in production.
+
+## Before you connect
+
+Ask ISECure to provision your production Processing access. You need:
+
+- A registered production WS account and its API key.
+- An active Processing subscription with the capabilities you will use.
+- A provisioned Processing tenant database, account permissions and API Gateway usage-plan access.
+
+Registration alone does not enable Processing. A test account cannot authenticate to production,
+and Plugin catalogue access does not grant Processing access.
+
+## Connect and list payment profiles
+
+First complete the normal WS login, including any requested MFA. In this example, `channel` is
+that authenticated `WSChannel` instance. Processing uses its **ID token**, not its access token.
+The exchange creates a separate Processing session.
 
 ```ts
-import {
-  createIso20022Client,
-  Iso20022HttpTransport,
-  ProcessingEntitlementDeniedError,
-} from "isecure-ts-client/iso20022";
+import { createIso20022Client, Iso20022HttpTransport } from "isecure-ts-client/iso20022";
 
 const transport = new Iso20022HttpTransport({
-  baseUrl: "https://release-selected-processing-api.example/",
-  processingAudience: "isecure-processing-example-v1",
-  bootstrapAuthentication: async () => ({
-    apiKey: await currentApiKey(),
-    idToken: await currentIdToken(),
-  }),
+  baseUrl: "https://processing-api.isecure.fi",
+  processingAudience: "isecure-processing-production-v1",
+  bootstrapAuthentication: () => {
+    const { apiKey, idToken } = channel.session;
+    if (!apiKey || !idToken || channel.isSessionExpired()) {
+      throw new Error("Sign in to ISECure before opening Processing.");
+    }
+    return { apiKey, idToken };
+  },
 });
 await transport.exchangeProcessingSession();
-const iso20022 = createIso20022Client(transport);
-
-try {
-  const page = await iso20022.statements.list({
-    bank_account_id: "00000000-0000-4000-8000-000000000001",
-    page_size: 50,
-  });
-  console.log(page.statements);
-
-  const capabilities = await iso20022.paymentCapabilities.list({
-    connected_account_id: "00000000-0000-4000-8000-000000000002",
-    page: { page_size: 50 },
-  });
-  console.log(capabilities.capabilities);
-} catch (error) {
-  if (error instanceof ProcessingEntitlementDeniedError) {
-    // Authentication succeeded, but this tenant has no active entitlement for the operation.
-  }
-}
+const processing = createIso20022Client(transport);
+const profiles = await processing.paymentExportProfiles.list();
+// Display the profiles to the signed-in user; do not log account data or tokens.
 ```
 
-This surface is an experimental adapter over the digest-pinned platform contract, not an ISO
-standard implementation or a support claim. Exact ISO syntax and validation remain upstream and
-server-side. The SDK adds no bank profile, qualification, financial validation, policy, workflow,
-retry, approval, execution, or authority semantics. Generated command methods require the exact
-idempotency and expected-resource-version options declared by their operation; the client forwards
-them and performs no local replay or state transition. Every call sends the operation's explicit
-generated contract version; request URLs, JSON request/response bytes, and duration are bounded,
-and responses must be JSON. The HTTP adapter never retries a request and rejects plaintext
-non-loopback endpoints.
+Use the server's profile catalogue and account capabilities to choose a supported format.
+The SDK contains no bank rules and cannot determine which services your bank agreement allows.
+Clear the Processing session with `transport.clearProcessingSession()` on sign-out, account
+changes or revoked access. After expiry, sign in again as needed and explicitly exchange a new
+Processing session. The transport does not refresh it automatically.
 
-## Processing simulation operations
+## Prepare and generate a payment file
 
-The same experimental entry point also exposes the generated Bank Simulation control plane under
-plain-English namespaces: `simulationCapabilities`, `simulationWorkspaces`, `simulationScenarios`,
-`simulationRuns`, `simulationClocks`, `simulationCheckpoints`, `simulationBranches`,
-`simulationEvents`, and `simulationArtifacts`. These methods expose only the public Processing
-operations. They do not expose the private simulator Module transition, checkpoint bytes, AWS
-resources, or a second File Exchange client. Artifact results are exact references; callers use the
-unchanged File Exchange surface for authorized bytes. The control API is qualified only for governed
-synthetic testing in non-production `gpgtest`; no RC/production route or real-bank support is
-implied. The generated operation metadata records the dedicated `manage_simulation` permission and
-exact public audiences; the server remains the sole authority for authentication, permission
-assignments, entitlement, and revocation.
+The standard path is:
+
+1. Select and configure an export profile for your bank agreement.
+2. Create a payment draft and add the transfer details.
+3. Validate it, resolve any issues and finalize the draft.
+4. Generate XML for that exact finalized order and profile revision.
+5. Separately authorize, sign and upload the unchanged bytes through File Exchange when intended.
+
+The [generation example](../examples/processing-generate-file/README.md) implements steps 1–4.
+It creates Processing records but sends nothing to a bank. For an already finalized order:
 
 ```ts
-const capabilities = await iso20022.simulationCapabilities.list({ page: { page_size: 25 } });
-
-const page = await iso20022.simulationWorkspaces.list({
-  state: "active",
-  page: { page_size: 25 },
-});
-
-await iso20022.simulationClocks.control(
-  {
-    workspace_reference: {
-      resource_type: "simulation_workspace",
-      resource_id: workspaceId,
-      resource_version: "7",
-      revision_id: workspaceRevisionId,
-    },
-    expected_clock_revision: "11",
-    control_kind: "step_event",
-  },
-  {
-    idempotencyKey: "clock-step-11",
-    expectedResourceVersion: '"7"',
-  },
-);
-```
-
-The client forwards exact resource references and snapshot cursors. It does not cache tenant state,
-deduplicate commands, retry mutations, infer revisions, or execute simulator rules locally. Clear
-the separate Processing session with `transport.clearProcessingSession()` when access is revoked or
-the integration signs out.
-
-The same transport can open one finite authenticated SSE lease without exposing its private
-Processing token. Stream items are bounded `event` or `task` notification objects plus heartbeats.
-The SDK deliberately does not interpret their payload, reconnect, or treat them as complete
-evidence. Retain the last completely handled opaque cursor, reconnect explicitly, tolerate
-duplicates, and reconcile through generated list/get operations after every gap, expired cursor, or
-indeterminate command.
-
-```ts
-const controller = new AbortController();
-
-for await (const item of transport.streamProcessingEvents({
-  lastEventId: previousCursor,
-  signal: controller.signal,
-})) {
-  if (item.kind === "heartbeat") continue;
-  previousCursor = item.id;
-  // Refresh the exact authorized Run, task, event, and Artifact resources.
-}
-```
-
-Each server lease is intentionally finite. Cancel it on sign-out, permission/entitlement loss, or
-when the consuming view is no longer active. A notification is not payment approval, bank
-acceptance, settlement, or a replacement for the cursor-paged event resource.
-
-The plain-English payment surface separates four concepts:
-
-- `paymentBatches` builds, validates, finalizes, reviews and downloads a batch containing multiple
-  payments;
-- `paymentSubmissions` creates and observes one authorized attempt to send an exact approved file;
-- `paymentOutcomes` exposes conclusions derived by the server from retained bank evidence; and
-- the unchanged File Exchange client remains the separate channel upload boundary.
-
-For generation without an approval workflow, use `paymentBatches.generateFile` with the exact
-finalized order revision and configured profile revision:
-
-```ts
-const content = await iso20022.paymentBatches.generateFile({
+const content = await processing.paymentBatches.generateFile({
   payment_order_id: paymentOrderId,
   order_revision_id: orderRevisionId,
   payment_export_profile_id: profileId,
   profile_revision: profileRevision,
 });
-// content.bytes contains integrity-checked XML; save it only in an authorized destination.
+// content.bytes contains the verified XML. Save only to an authorized destination.
 ```
 
-This experimental operation requires deployment availability, a Processing session and read
-entitlement. The SDK checks response bounds, XML media type, artifact identity, byte length,
-SHA-256 and `no-store` before returning bytes. Generation creates no approval, release, retained
-export or bank submission. The existing approved-export download still requires its separate
-artifact authority. Neither path retries or uploads automatically.
+The SDK checks the XML media type, file identity, length, SHA-256 digest, response size and
+`no-store` instruction before returning bytes. Generation does not approve a payment, upload it,
+or prove bank acceptance. File Exchange enforces the account's required PGP signatures at upload.
+An approved-export download is a separate operation with its own authorization requirements.
 
-The experimental `payeeVerifications` namespace exposes the payment-bound VoP v2 contract:
-`capability`, `importInput`, `request`, `list`, `get`, `explain`, `items`, `observations`, `evidence`
-and `review`. This candidate has local contract tests; hosted VoP availability and bank-connected
-qualification remain pending. A method being present does not establish connection eligibility.
+Supply the dates required by the chosen profile. For example, Danske Finland V9 profiles use an
+order option `{ option_type: "proposed_submission_date", proposed_submission_date: "YYYY-MM-DD" }`
+in addition to `requested_execution_date`. The SDK forwards the dates you provide; it does not
+choose them from its clock. Discover profile availability on the server before using it.
 
-Pass the exact order revision, revision digest, export-profile revision and submission date as the
-verification target. `get` and `explain` return the server's usability evaluation for that target,
-including its evaluation time, observation set and policy binding. Work state, match outcomes,
-usability and the human decision remain separate facts. A succeeded task need not mean every
-payee matched. Evidence and suggested names require authorized access.
+## Errors, timeouts and retries
 
-`importInput` admits uploaded V9 bytes through Processing before a verification request; it does
-not accept an arbitrary Artifact ID. `request` and `review` require explicit idempotency and expected
-version metadata. Review requires a human-authenticated session and records a decision against the
-exact target, observation set and policy. It does not approve a payment. Reads never request a new
-verification, and the SDK does not poll, resubmit uncertain work or change payment details
-automatically. Generate independently with `generateFile`; generation success makes no claim about
-verification freshness. The complete hosted discover/request/read/review/generate journey remains
-subject to the platform's combined-service acceptance.
+- `ProcessingEntitlementDeniedError` means the service refused Processing entitlement. Check the
+  tenant's subscription, validity and required capabilities; successful WS login is not enough.
+- `Iso20022HttpError` reports an HTTP failure. A missing route may mean the operation is not
+  deployed. Inspect the status and safe diagnostic fields without logging the raw response body.
+- `Iso20022TransportError` reports a transport or response-validation failure. Do not assume a
+  timed-out command failed before changing server state.
 
-The [payment verification example](../examples/payment-verification/README.md) shows explicit
-request preparation, paged results, human review and exact-target re-evaluation around generation.
-Capability discovery returns availability and reasons even when no capability is available.
-The server owns disclosure authorization; the request accepts no caller-supplied authorization
-or consent reference. The example's local HTTP-double tests do not qualify a hosted bank connection.
+Processing's default timeout is **30 seconds**, configured by `Iso20022HttpTransport.timeoutMs`
+(1–300,000 milliseconds). The WS Channel client's 70-second default does not change this setting.
+Increasing a client timeout does not increase the server's timeout.
 
-For compatibility, `paymentOrders` retains aliases over the same generated operations. In
-particular, its older `execute` name creates an attempt only; it does not sign, upload or contact a
-bank. The clearer equivalent is `paymentSubmissions.createAttempt`.
+Request and response limits default to 1 MiB each. Set `maxRequestBytes` or `maxResponseBytes`
+explicitly when needed, up to 16 MiB each. These SDK limits do not increase the deployed service's
+payload limits.
 
-A local Connector uses `paymentSubmissions.claim`, downloads the exact attempt-bound file through
-`paymentSubmissions.download`, signs those unchanged bytes inside its protected local key boundary,
-uploads through its separately qualified channel client, and calls
-`paymentSubmissions.reportUpload`. The Processing client accepts no private key, password or
-detached-signature field and performs no automatic retry or upload orchestration. An upload report
-never proves bank acceptance.
+The Processing transport never retries automatically. Commands require the idempotency key and,
+where specified, the expected resource version declared by their types. Preserve the original input
+and key for an explicit retry of the same command. After an uncertain result, read the current
+resource before deciding what to do; do not create a new key just to bypass uncertainty. For a stale
+revision, read the latest state before preparing a new command. A File Exchange upload has separate
+retry rules: a Processing idempotency key does not make a bank upload safe to repeat.
 
-There is deliberately no `paymentFeedbacks` client namespace yet. The current Processing contract
-exposes evidence references and derived `paymentOutcomes`, but no independently addressable bank-
-feedback resource. The SDK does not rename an outcome as feedback or invent a client-only contract.
+Keep passwords, tokens, MFA codes, private keys, signed links and payment contents out of logs.
+Retain only safe error metadata needed for support.
 
-The runnable [manual Processing-to-ISECure upload example](../examples/processing-manual-upload/README.md)
-shows the currently available bridge: two separately authenticated users create and approve a
-Processing payment export, the SDK integrity-verifies the generated `pain.001.001.09`, and the
-example detached-OpenPGP-signs and uploads those exact in-memory bytes through the unchanged
-`WSChannel`. This is an explicit, non-retried manual upload—not `paymentOrders.execute`, automatic
-bank orchestration, feedback reconciliation, bank acceptance, or production qualification.
+## Other SDK interfaces
 
-The local experimental contract includes Danske Finland's ordinary V9 SEPA payment profiles.
-Discover the current deployment's availability with `paymentExportProfiles.list()`; the SDK
-contains no bank catalog or bank rules. Danske's account capability requires a
-`{ option_type: "proposed_submission_date", proposed_submission_date: "YYYY-MM-DD" }`
-order option, separate from `requested_execution_date`. Processing seals it in the order revision
-and returns it in export metadata. The SDK forwards the authored date without deriving it from
-its clock. Feedback, statements and notifications retain the same generated observation interfaces;
-financial interpretation, service selection and qualification remain platform responsibilities.
-This local adoption does not assert deployment, bank agreement or production acceptance.
+These interfaces are available in the package, but require a separately qualified server release
+and permissions. They are not additional promises about the current production deployment.
 
-The source pin and artifact hashes are recorded in `platform-contracts.lock.json`. With a compatible
-`bankfiles-platform` checkout next to this repository, maintainers update and verify the generated
-surface using:
+| Interface                                 | Purpose                                                                                                                      |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `paymentBatches`                          | Create, validate and finalize payments; generate files. Its approval methods need a configured approval workflow.            |
+| `paymentSubmissions`                      | Track an authorized attempt to submit a particular file. The SDK does not sign or upload it automatically.                   |
+| `paymentOutcomes`                         | Read server conclusions from bank evidence. An upload report alone does not prove acceptance.                                |
+| Observation methods, such as `statements` | Read structured observations where the service provides them. Use WS Channel for current bank file exchange.                 |
+| `payeeVerifications`                      | Request and review VoP results for an exact payment target. Hosted bank qualification remains separate.                      |
+| `simulation*`                             | Control the historical Processing simulation workflow. These are distinct from the independent Simulator administration API. |
 
-```sh
-npm run sync:platform-contracts
-npm run check:platform-contracts
-```
+`paymentOrders` keeps compatibility aliases. In particular, its older `execute` method means
+`paymentSubmissions.createAttempt`; it does not contact a bank. A Connector using the submission
+workflow claims an attempt, downloads its exact file, signs/uploads through its own File Exchange
+client, and reports the result. Processing accepts no private signing key through these methods.
+There is no separate `paymentFeedbacks` namespace.
 
-For a release candidate, pin the exact platform commit explicitly so a concurrent platform `HEAD`
-change cannot alter the generated bytes:
+The [VoP example](../examples/payment-verification/README.md) explains exact revision binding,
+paged results, human review and rechecking evidence. A completed verification task does not mean
+every payee matched, and a human VoP review is not payment approval. Imported V9 verification input
+is separate from a finalized order; it cannot be passed off as a generated payment file.
+
+`streamProcessingEvents` supports a finite SSE connection where deployed. It does not reconnect
+automatically. Keep the last handled cursor, tolerate duplicates and refresh authoritative resources
+after a gap. Stop the stream on sign-out or lost permissions. Notifications do not replace resource
+reads or prove payment acceptance. No event-stream route was present in the deployment checked above.
+
+The [manual approval/upload](../examples/processing-manual-upload/README.md) and
+[Processing-to-Simulator](../examples/processing-simulator-journey/README.md) examples document
+historical qualification flows. Neither is a current production quick start. Do not change their
+URLs to production and run them: they perform uploads and require separately configured authority.
+
+## Maintaining the generated contract
+
+`platform-contracts.lock.json` records the platform revision and artifact hashes. With a compatible
+`bankfiles-platform` checkout beside this repository, maintainers can synchronize and check it:
 
 ```sh
 npm run sync:platform-contracts -- --revision <full-platform-commit>
+npm run check:platform-contracts
 ```
+
+Pin the exact revision so a concurrent platform change cannot alter the generated files.
+Contract checks and local tests do not replace qualification against the intended deployed release.

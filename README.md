@@ -21,7 +21,7 @@ npm install isecure-ts-client
 | Bank file exchange       | `WSChannel`                                       | `isecure-ts-client`          | WS account and bank enrollment                         |
 | Simulator administration | `createSimulationAdminClient`                     | `isecure-ts-client/iso20022` | Separate administration subscription and manager grant |
 | Plugin catalogue         | `createPlatformClient` with `PluginHttpTransport` | `isecure-ts-client/platform` | Catalogue subscription and applicable grants           |
-| Experimental Processing  | `createIso20022Client`                            | `isecure-ts-client/iso20022` | Separate deployment and Processing access              |
+| Experimental Processing  | `createIso20022Client`                            | `isecure-ts-client/iso20022` | Production service; separately provisioned access      |
 
 The `iso20022` entry point is experimental. A method being present in the SDK does not grant access
 or mean that its service is deployed. See [API stability](STABILITY.md).
@@ -176,9 +176,12 @@ Use `PluginHttpTransport` to list permitted plugins and request signed download 
 current WS login. See the [Plugin API guide](docs/plugins.md). Catalogue access does not grant
 permission to every plugin.
 
-The [experimental Processing guide](docs/processing.md) covers payment generation, observations
-and hosted workflows. These require a separately deployed Processing service. The independent
-Plugin and Simulator administration APIs do not require that service.
+The [Processing guide](docs/processing.md) shows how to connect to production, prepare payments and
+generate payment XML. Processing is included in the published SDK through the experimental
+`isecure-ts-client/iso20022` entry point and requires separately provisioned tenant access.
+As checked on 12 November 2026, Processing runs only in production; its former test deployment is
+retired. The guide distinguishes deployed operations from other methods included in the SDK.
+The independent Plugin and Simulator administration APIs do not require Processing.
 
 ## Errors and retries
 
