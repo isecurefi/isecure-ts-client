@@ -235,8 +235,8 @@ export async function runProductionChecks(
     await check("stale-profile-revision", () =>
       refuses(() => client.paymentOrders.generateFile({ ...query, profile_revision: "999999" }), 412),
     );
-    await check("missing-order", () =>
-      refuses(() => client.paymentOrders.get({ payment_order_id: randomUUID() }), 404),
+    await check("unknown-order-authorization-denial", () =>
+      refuses(() => client.paymentOrders.get({ payment_order_id: randomUUID() }), 403),
     );
     await check("generation-preserves-finalized-state", async () => {
       const order = await client.paymentOrders.get({ payment_order_id: query.payment_order_id });
