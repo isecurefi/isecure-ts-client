@@ -30,6 +30,13 @@ async function command(script: string, args: string[], milliseconds: number): Pr
 async function main(): Promise<void> {
   if (process.versions.node.split(".")[0] !== "24") throw new Error("Node.js 24 is required");
   const args = process.argv.slice(2);
+  if (args[0] === "production") {
+    if (args.length !== 3 || !args[1] || !args[2] || !path.isAbsolute(args[1]) || !path.isAbsolute(args[2]))
+      throw new Error("Usage: test:live production <private-fixture.json> <new-report.json>");
+    const { productionMain } = await import("./production.js");
+    await productionMain(args[1], args[2]);
+    return;
+  }
   const recover = args[0] === "cleanup";
   const scheduled = args[0] === "scheduled";
   const values = recover || scheduled ? args.slice(1) : args;

@@ -130,13 +130,10 @@ export async function processingClient(channel: WSChannel): Promise<Iso20022Clie
 
 /**
  * Configure the profile, draft one transfer, validate, finalize and generate the exact file.
- * Nothing is approved, released, stored or uploaded; signing and the bank submission happen on
- * the File Exchange API afterwards.
+ * Drafts and revisions are stored by Processing. Nothing is approved, released or uploaded;
+ * signing and bank submission happen on the File Exchange API afterwards.
  */
-export async function generateFinalizedFile(
-  client: Iso20022Client,
-  inputs: GenerationInputs,
-): Promise<GeneratedPaymentFileContent> {
+export async function prepareFinalizedFile(client: Iso20022Client, inputs: GenerationInputs) {
   const catalog = await client.paymentExportProfiles.list();
   const admitted = catalog.profiles.find((profile) => profile.bank_profile_id === inputs.bankProfileId);
   if (admitted?.availability_status !== "available") {
@@ -170,34 +167,34 @@ export async function generateFinalizedFile(
   });
   if (capability.outcome !== "resolved" || !capability.selected)
     throw new Error("No exact payment capability was resolved");
-  const created = await client.paymentOrders.createDraft(
-    {
-      capability: capability.selected,
-      external_id: inputs.runId,
-      requested_execution_date: inputs.requestedExecutionDate,
-      options: [],
-      transfers: [
-        {
-          external_id: transferExternalId(inputs.runId),
-          money: { amount: inputs.amount, currency: "EUR" },
-          creditor: {
-            name: inputs.creditor.name,
-            identifiers: [],
-            postal_address: {
-              country_code: inputs.creditor.countryCode,
-              town_name: inputs.creditor.townName,
-              address_lines: [inputs.creditor.addressLine],
-            },
+  const draftInput: Parameters<Iso20022Client["paymentOrders"]["createDraft"]>[0] = {
+    capability: capability.selected,
+    external_id: inputs.runId,
+    requested_execution_date: inputs.requestedExecutionDate,
+    options: [],
+    transfers: [
+      {
+        external_id: transferExternalId(inputs.runId),
+        money: { amount: inputs.amount, currency: "EUR" },
+        creditor: {
+          name: inputs.creditor.name,
+          identifiers: [],
+          postal_address: {
+            country_code: inputs.creditor.countryCode,
+            town_name: inputs.creditor.townName,
+            address_lines: [inputs.creditor.addressLine],
           },
-          creditor_account: { account_type: "iban", iban: inputs.creditor.iban },
-          creditor_agent: { agent_type: "bic", bic: inputs.creditor.agentBic },
-          remittance: { remittance_type: "unstructured", text_lines: [inputs.remittanceText] },
-          options: [],
         },
-      ],
-    },
-    { idempotencyKey: `${inputs.runId}-create-draft` },
-  );
+        creditor_account: { account_type: "iban", iban: inputs.creditor.iban },
+        creditor_agent: { agent_type: "bic", bic: inputs.creditor.agentBic },
+        remittance: { remittance_type: "unstructured", text_lines: [inputs.remittanceText] },
+        options: [],
+      },
+    ],
+  };
+  const created = await client.paymentOrders.createDraft(draftInput, {
+    idempotencyKey: `${inputs.runId}-create-draft`,
+  });
   const paymentOrderId = created.payment_order_reference.resource_id;
   const validated = await client.paymentOrders.validate({
     payment_order_id: paymentOrderId,
@@ -208,7 +205,15 @@ export async function generateFinalizedFile(
     { payment_order_id: paymentOrderId },
     { idempotencyKey: `${inputs.runId}-finalize`, expectedResourceVersion: JSON.stringify(created.resource_version) },
   );
-  const content = await client.paymentOrders.generateFile(generationQuery(paymentOrderId, finalized, profile));
+  return { profile, created, finalized, draftInput, query: generationQuery(paymentOrderId, finalized, profile) };
+}
+
+export async function generateFinalizedFile(
+  client: Iso20022Client,
+  inputs: GenerationInputs,
+): Promise<GeneratedPaymentFileContent> {
+  const prepared = await prepareFinalizedFile(client, inputs);
+  const content = await client.paymentOrders.generateFile(prepared.query);
   requireVerifiedPain001(content);
   return content;
 }

@@ -1,5 +1,53 @@
 # Live payment and simulator suite
 
+## Current production qualification
+
+The former Processing test deployment was retired on 17 October 2026. The test-mode
+suite described below is retained for historical evidence; it cannot qualify today's
+production release.
+
+Use the explicit production mode with an operator-created **temporary synthetic
+account**, its own API key, and a temporary Processing entitlement/database placement:
+
+```sh
+yarn test:live production /absolute/private/fixture.json /absolute/private/new-report.json
+```
+
+The fixture file must have mode `0600`. It contains `account` (the ordinary WS SDK
+configuration), `release` (`sourceRevision`, `codeSha256`, `gatewayDeploymentId`,
+`sdkRevision`), and `acknowledgement` set to
+`temporary-production-fixture-no-bank-submission`. The account must use the production
+WS URL and company label `ISECure Synthetic Processing Qualification`. Record release
+metadata from AWS immediately before running, then confirm it is unchanged afterwards;
+the suite does not independently attest operator-supplied release metadata.
+
+The operator first registers and verifies the temporary account through the WS API,
+then uses the platform's existing `run-processing-onboard-tenant` command to admit its
+payment-only entitlement, usage-plan key and tenant placement. Give the entitlement a
+bounded expiry. Never reuse a customer's account. MFA is prompted through the existing
+SDK authentication helper. Credentials stay in private files/memory, outside Git.
+
+Production checks cover Gateway denials, real Processing session exchange, Nordea
+unstructured payment preparation, profile readback, duplicate draft creation, repeated
+integrity-checked XML generation, stale revisions, unknown orders, preserved finalized
+state and cancellation of a separate draft. This is **one bank-profile journey**, not
+all 27 operations, all bank profiles, cross-tenant qualification or bank acceptance.
+The traffic boundary allows only these operations, refuses redirects and limits the
+run to 100 Processing requests. It never approves, releases, executes or uploads a
+payment. A failed request is not automatically retried.
+
+The report includes check outcomes, safe HTTP/request-ID metadata and the supplied
+release identity. It never contains credentials, response bodies or generated XML.
+`cleanup: required` means the checks are finished but lifecycle qualification is not:
+revoke the temporary Processing tenant access, suspend its entitlement, remove its
+Processing usage-plan association, and delete the temporary WS account through the
+supported account API with fresh MFA. Preserve independent audit history and record
+the cleanup result. Retained synthetic database records are not customer data, but
+must be disclosed in the run receipt; do not drop a database through an ad-hoc command.
+If interrupted, inspect the private receipt and complete cleanup before another run.
+
+## Historical test and simulator mode
+
 `yarn test:live` performs **one run**. It does not repeat a run or retry a payment upload.
 It reuses the Processing-to-simulator journey, including its exact-byte integrity checks,
 feedback correlation, exact decimal statement assertions and upload checkpoint.
