@@ -1,6 +1,11 @@
-# Processing payment to Bank Simulator
+# Historical Processing payment to Bank Simulator
 
-This runnable Node example proves the current synthetic, bank-channel-independent journey:
+The Processing gpgtest deployment was retired on 17 October 2026. This example is retained for
+reference and local development; it cannot run against that retired service. The independent
+Bank Simulator remains separate. Do not point this upload workflow at production as a replacement.
+See the [Processing guide](../../docs/processing.md) for current availability.
+
+This Node example implements the historically qualified synthetic journey:
 
 1. Two separately authenticated Processing identities select the admitted profile, create and
    validate one payment batch, finalize it, submit it for review and independently approve it.
@@ -18,7 +23,7 @@ This is synthetic `gpgtest` evidence, not a real bank, settlement, production-ch
 feedback-reconciliation claim. The example does not add server-side signing, upload orchestration,
 retry, simulator-specific SDK methods or unattended execution.
 
-## Run
+## Run only with a separately qualified fixture
 
 Set the Processing identities, Admin-paired Data uploader, payment profile, debtor, creditor and
 local OpenPGP variables listed by the

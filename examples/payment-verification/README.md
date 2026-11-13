@@ -3,7 +3,9 @@
 This candidate example uses the public SDK against an already configured Processing API. It is
 not a payment uploader. Local HTTP-double tests cover client behavior; acceptance against the
 actual API, generated database permissions and bank integrations remains pending in the platform's
-PAYMENTEXPORT-002 task. Presence of these methods does not establish deployed availability.
+PAYMENTEXPORT-002 task. Presence of these methods does not establish deployed availability. The production Processing
+route set checked on 12 November 2026 does not include VoP. See the
+[Processing guide](../../docs/processing.md#service-availability) before attempting a hosted run.
 
 Use separately authenticated clients where the requester, human reviewer and file reader differ.
 The server checks current permissions on every operation. A service token cannot perform human

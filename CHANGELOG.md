@@ -46,6 +46,20 @@
 - Keep provider availability limited to the test API and separately admitted production RC until live promotion.
 
 
+## [5.0.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v5.0.1...isecure-ts-client-v5.0.2) (2026-11-12)
+
+
+### Bug Fixes
+
+* allow the qualified bank read window with a 70-second timeout ([#112](https://github.com/isecurefi/isecure-ts-client/issues/112)) ([1f9ece7](https://github.com/isecurefi/isecure-ts-client/commit/1f9ece731b2974f12f52f709f74974ced065ea1e))
+
+## [5.0.1](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v5.0.0...isecure-ts-client-v5.0.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* publish stable v5 authentication releases to latest ([#110](https://github.com/isecurefi/isecure-ts-client/issues/110)) ([4e3891d](https://github.com/isecurefi/isecure-ts-client/commit/4e3891d47029e75843351b9adc6be0ef72314887))
+
 ## [5.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v4.8.0...isecure-ts-client-v5.0.0) (2026-11-09)
 
 
