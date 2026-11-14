@@ -41,6 +41,7 @@ describe("UrlBuilder", () => {
     expect(urls.audit()).toBe("https://ws-api.test.isecure.fi/v2/audit");
     expect(urls.workspaceAuthority()).toBe("https://ws-api.test.isecure.fi/v2/desktop/workspace-authority");
     expect(urls.accountUsage()).toBe("https://ws-api.test.isecure.fi/v2/usage/accounts");
+    expect(urls.analyticsAccess()).toBe("https://ws-api.test.isecure.fi/v2/analytics/access");
     expect(urls.pgp()).toBe("https://ws-api.test.isecure.fi/v2/pgp");
   });
 

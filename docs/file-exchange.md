@@ -131,6 +131,22 @@ daily `Issues`, and an absent `UniqueAccounts` preserve missing coverage. The ba
 covers accounts observed in supported CAMT files, not all contracted or idle accounts.
 Payment rows and invoice issuance are outside this operation.
 
+## Analytics files (unpublished)
+
+`client.readAnalyticsAccess()` requests short-lived read access to the caller's analytics
+files where the API offers it. The returned `AnalyticsReader` lists and reads Parquet files; it
+never exposes the temporary storage access itself. Ask for a new reader after `expiresAt`.
+
+```ts
+const analytics = await client.readAnalyticsAccess();
+for (const file of await analytics.list({ tier: "detail" })) {
+  const bytes = await analytics.read(file); // one day of one tenant, as Parquet
+}
+```
+
+Pass `{ fetch }` to route the storage requests through another HTTP client. See
+[stability](../STABILITY.md#analytics-access-unpublished).
+
 ## Errors and Resilience
 
 Logical failures returned by the API as HTTP 200 with `ResponseCode !== "00"` surface through the typed auth/verification states described above. Transport-level failures throw a typed error hierarchy instead of raw `AxiosError`s:

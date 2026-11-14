@@ -39,6 +39,11 @@ const SENSITIVE_FIELDS = new Set(
     "vendorapikey",
     "clientid",
     "clientsecret",
+    // temporary analytics storage access
+    "analyticsaccess",
+    "accesskeyid",
+    "secretaccesskey",
+    "sessiontoken",
     "recipienthandle",
     "ledgerid",
     "companyuuid",

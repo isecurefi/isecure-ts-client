@@ -107,6 +107,10 @@ export class UrlBuilder {
     return this.url("usage", "accounts");
   }
 
+  analyticsAccess(): string {
+    return this.url("analytics", "access");
+  }
+
   integratorAccounts(): string {
     return this.url("integrator", "accounts");
   }

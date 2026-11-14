@@ -1,3 +1,4 @@
+import { AnalyticsReader, type AnalyticsAccessQuery, type AnalyticsEffects } from "./analytics.js";
 import { TransferSession, createTransferRequestId } from "./transfer-session.js";
 import {
   checkTransferBudget,
@@ -990,6 +991,28 @@ export class WSChannel {
   /** Daily and monthly distinct observed accounts; authority and coverage are server-decided. */
   async listAccountUsage(query: ListAccountUsageQuery = {}): Promise<ListAccountUsageResponse> {
     return this.call<ListAccountUsageResponse>("GET", this.urls.accountUsage(), { auth: true, query: { ...query } });
+  }
+
+  /**
+   * Requests short-lived read access to the caller's analytics files. Unpublished and
+   * available only where the API offers it; the server decides which tenant data the
+   * caller may read. Never retried: every call issues new temporary access.
+   */
+  async readAnalyticsAccess(
+    query: AnalyticsAccessQuery = {},
+    options: Pick<AnalyticsEffects, "fetch"> & { signal?: AbortSignal } = {},
+  ): Promise<AnalyticsReader> {
+    const { Tenant } = query;
+    if (Tenant !== undefined && !/^[\x21-\x7e]{1,128}$/.test(Tenant)) {
+      throw new ISecureError("Invalid analytics tenant");
+    }
+    const response = await this.call<unknown>("GET", this.urls.analyticsAccess(), {
+      auth: true,
+      retry: false,
+      ...(Tenant === undefined ? {} : { query: { Tenant } }),
+      ...(options.signal ? { signal: options.signal } : {}),
+    });
+    return new AnalyticsReader(response, options.fetch ? { fetch: options.fetch } : {});
   }
 
   /**

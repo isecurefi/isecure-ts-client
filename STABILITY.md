@@ -75,3 +75,11 @@ Node `>= 24` and modern browser bundlers are supported (see the README "Runtime 
 ## Deprecation
 
 Before removal in a major release, an export is marked `@deprecated` in a minor release with a documented replacement wherever practical.
+
+## Analytics access (unpublished)
+
+`readAnalyticsAccess` and `AnalyticsReader` consume an unpublished contract that is not part of
+`wsapi_v2.json` and is offered only where the API enables it. Their request, file naming and
+result shapes can change before publication without a major release. The server alone decides
+which analytics files a caller may read; method availability establishes neither deployment nor
+permission. The reader keeps its temporary storage access private and is not serializable.
