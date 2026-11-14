@@ -29,7 +29,7 @@ The error hierarchy (`ISecureError` and subclasses) is part of the public API. N
 surface. `ProcessingEntitlementDeniedError` is its typed commercial-entitlement refusal. These do
 not replace or change the permanent WS Channel error hierarchy.
 
-The unreleased Processing transport validates successful JSON responses against the pinned generated
+The Processing transport in 5.0.3 validates successful JSON responses against the pinned generated
 contract. Malformed results previously accepted by a TypeScript cast now fail with `malformed_response`.
 HTTP failures retain their status even when the body is unreadable; optional `requestId`, `retryAfter`
 and `bodyError` diagnostics do not contain the raw invalid body. Clearing or replacing a session aborts
