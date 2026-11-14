@@ -50,6 +50,8 @@ import {
   type PaymentExportProfileCatalogListInput,
   type PaymentExportProfileCatalogListResult,
   type PaymentExportProfileGetInput,
+  type PaymentExportProfileListInput,
+  type PaymentExportProfileListResult,
   type PaymentExportProfileResult,
   type PaymentExportReleaseResult,
   type PaymentExecutionAttemptGetInput,
@@ -390,8 +392,13 @@ export function createIso20022Client(transport: Iso20022Transport) {
     /** Supported bank formats; these are not the customer's configured export profiles. */
     paymentExportProfileCatalog: { list: listProfileCatalog },
     paymentExportProfiles: {
-      /** @deprecated Use paymentExportProfileCatalog.list() to browse supported bank formats. */
-      list: listProfileCatalog,
+      /** Saved configurations for this tenant, including independently configured accounts and formats. */
+      list: (input: PaymentExportProfileListInput = {}) =>
+        invoke<PaymentExportProfileListInput, PaymentExportProfileListResult>(
+          transport,
+          "payment_export_profiles.list",
+          input,
+        ),
       configure: (input: ConfigurePaymentExportProfileInput, options: ProcessingCommandOptions) =>
         invoke<ConfigurePaymentExportProfileInput, PaymentExportProfileResult>(
           transport,
@@ -399,7 +406,7 @@ export function createIso20022Client(transport: Iso20022Transport) {
           input,
           options,
         ),
-      get: (input: PaymentExportProfileGetInput = {}) =>
+      get: (input: PaymentExportProfileGetInput) =>
         invoke<PaymentExportProfileGetInput, PaymentExportProfileResult>(
           transport,
           "payment_export_profiles.get",

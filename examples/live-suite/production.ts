@@ -205,7 +205,9 @@ export async function runProductionChecks(
     assert.ok(prepared);
     const { query, created, draftInput, profile } = prepared;
     await check("profile-readback", async () => {
-      const p = await client.paymentExportProfiles.get();
+      const p = await client.paymentExportProfiles.get({
+        payment_export_profile_id: profile.payment_export_profile_id,
+      });
       assert.equal(p.payment_export_profile.payment_export_profile_id, profile.payment_export_profile_id);
     });
     await check("draft-idempotent-replay", async () => {

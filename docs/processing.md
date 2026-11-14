@@ -172,9 +172,27 @@ workflow claims an attempt, downloads its exact file, signs/uploads through its 
 client, and reports the result. Processing accepts no private signing key through these methods.
 There is no separate `paymentFeedbacks` namespace.
 
+The following multiple-configuration contract requires the matching unreleased server migration.
+The currently published SDK 5.0.3 and hosted release do not yet provide it.
+
 Use `paymentExportProfileCatalog.list()` to browse supported bank formats, then
-`paymentExportProfiles.configure()` and `.get()` for your account's configuration. The older
-`paymentExportProfiles.list()` is a deprecated catalogue alias; it never listed account configurations.
+`paymentExportProfiles.configure()` to create an independent saved configuration. Reuse its
+`capability` when creating each payment batch. `paymentExportProfiles.list()` lists saved
+configurations; `.get({ payment_export_profile_id })` reads one exact configuration.
+
+Several configurations can coexist, including several for the same bank and account. To revise
+one, supply its `payment_export_profile_id` and `expected_resource_version` to `configure()`.
+Only that configuration is revised. The SDK sends configure/get contract version 2 automatically.
+The conditional update version belongs in the configure input; ordinary batch edits still use
+`expectedResourceVersion` in command options. Existing batches retain their exact original binding; an
+obsolete or revoked binding must not be used for new generation.
+
+Draft batches can be built throughout the day with `addPayments`, `updatePayment`, and
+`removePayments`. Each command targets one batch and checks its resource version. Finalize only
+when ready: a finalized revision cannot be edited. Bank selection happens at draft creation;
+`generateFile` checks the requested profile against that binding. It never moves payments between
+batches or submits anything to a bank. Stored batches do not automatically expire or disappear
+because their generated XML was not submitted.
 
 The [VoP example](../examples/payment-verification/README.md) explains exact revision binding,
 paged results, human review and rechecking evidence. A completed verification task does not mean

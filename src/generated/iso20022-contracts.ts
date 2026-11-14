@@ -1,7 +1,7 @@
 // GENERATED FILE: DO NOT EDIT.
-// source: isecurefi/bankfiles-platform@3cdc3791833cc9a22b9577ced4bc4cd3995c0095
-// model: Bankfiles@0.139.0
-// source-digest: sha256:7f980e488f827a1e68ec8d12af07cdf4f77fbb877f091748f87973fb756f4de2
+// source: isecurefi/bankfiles-platform@97396d97c74b26849305aa3e484109e207c3c57a
+// model: Bankfiles@0.140.0
+// source-digest: sha256:97037dcf73997379dad776da6e488ea0c42b1ba2e1426ab724bad132f7be297c
 // Exact decimals and 64-bit integers are JSON decimal strings.
 
 export type ApprovalDecisionKind = 'approve' | 'reject';
@@ -1336,16 +1336,18 @@ export interface ClearingMemberPaymentAgent {
 }
 
 export interface ConfigurePaymentExportProfileInput {
+    readonly payment_export_profile_id?: string;
+    readonly expected_resource_version?: string;
     readonly bank_profile_id: string;
     readonly debtor_account_identifier: string;
-    readonly debtor_account_scheme: PaymentAccountScheme;
+    readonly debtor_account_scheme?: PaymentAccountScheme;
     readonly debtor_account_currency?: string;
     readonly initiating_party_name: string;
-    readonly initiating_party_customer_id: string;
+    readonly initiating_party_customer_id?: string;
     readonly debtor_name: string;
     readonly debtor_bank_agreement_id: string;
-    readonly debtor_country_code: string;
-    readonly debtor_agent_bic: string;
+    readonly debtor_country_code?: string;
+    readonly debtor_agent_bic?: string;
 }
 
 export interface DecidePaymentApprovalRequestInput {
@@ -1682,11 +1684,23 @@ export interface PaymentExportProfileCatalogListResult {
 }
 
 export interface PaymentExportProfileGetInput {
+    readonly payment_export_profile_id: string;
+}
 
+export interface PaymentExportProfileListInput {
+    readonly after_profile_id?: string;
+    readonly page_size?: number;
+}
+
+export interface PaymentExportProfileListResult {
+    readonly context: OperationContext;
+    readonly payment_export_profiles: readonly PaymentExportProfileResource[];
+    readonly next_after_profile_id?: string;
 }
 
 export interface PaymentExportProfileResource {
     readonly payment_export_profile_id: string;
+    readonly capability: PaymentCapabilityHandle;
     readonly profile_revision: string;
     readonly resource_version: string;
     readonly debtor_account_id: string;
@@ -1694,7 +1708,7 @@ export interface PaymentExportProfileResource {
     readonly debtor_account_scheme: PaymentAccountScheme;
     readonly debtor_account_currency?: string;
     readonly initiating_party_name: string;
-    readonly initiating_party_customer_id: string;
+    readonly initiating_party_customer_id?: string;
     readonly debtor_name: string;
     readonly debtor_bank_agreement_id: string;
     readonly debtor_country_code: string;
@@ -4581,8 +4595,8 @@ export const iso20022Operations = {
   "payment_export_profiles.configure": {
     "method": "POST",
     "path": "/v1/payment-export-profiles:configure",
-    "version": 1,
-    "contractDigest": "sha256:d1dfea42aaa194db43101014f3aba331aca6a0e44ef05f06d85c7078d8c7790b",
+    "version": 2,
+    "contractDigest": "sha256:ee0c2b9d0ad38ba1e24e0f5640de390b240eeab86b494710f956b39769623427",
     "permission": "approve",
     "audiences": [
       "admin",
@@ -4612,9 +4626,9 @@ export const iso20022Operations = {
   },
   "payment_export_profiles.get": {
     "method": "GET",
-    "path": "/v1/payment-export-profiles",
-    "version": 1,
-    "contractDigest": "sha256:2e29d42f293d6a5dc4ca041424c2965612edc24a95eff13ac526026d3cabf064",
+    "path": "/v1/payment-export-profiles/{payment_export_profile_id}",
+    "version": 2,
+    "contractDigest": "sha256:716da9ccbd611dec32713d74392403445055222ec69bd9284e0f0d34ab397688",
     "permission": "read",
     "audiences": [
       "admin",
@@ -4636,7 +4650,61 @@ export const iso20022Operations = {
       "status": 200,
       "mediaType": "application/json"
     },
-    "parameters": []
+    "parameters": [
+      {
+        "name": "payment_export_profile_id",
+        "location": "path",
+        "inputField": "payment_export_profile_id",
+        "required": true,
+        "style": "simple",
+        "objectFields": []
+      }
+    ]
+  },
+  "payment_export_profiles.list": {
+    "method": "GET",
+    "path": "/v1/payment-export-profiles",
+    "version": 1,
+    "contractDigest": "sha256:4efe895d4eeefd2341a4d684067b2a37f41081818d583f066de7edd003c6fb9c",
+    "permission": "read",
+    "audiences": [
+      "admin",
+      "cli",
+      "rest",
+      "runtime_mcp",
+      "typescript"
+    ],
+    "input": "isecure.bankfiles.payments_api.PaymentExportProfileListInput",
+    "result": "isecure.bankfiles.payments_api.PaymentExportProfileListResult",
+    "issues": "isecure.bankfiles.payments_api.PaymentIssues",
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "idempotencyKeySchema": null,
+    "expectedResourceVersionSchema": null,
+    "requestBody": false,
+    "successResponse": {
+      "kind": "json",
+      "status": 200,
+      "mediaType": "application/json"
+    },
+    "parameters": [
+      {
+        "name": "after_profile_id",
+        "location": "query",
+        "inputField": "after_profile_id",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      },
+      {
+        "name": "page_size",
+        "location": "query",
+        "inputField": "page_size",
+        "required": false,
+        "style": "form",
+        "objectFields": []
+      }
+    ]
   },
   "payment_export_profiles.revoke": {
     "method": "POST",

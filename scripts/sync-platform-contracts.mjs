@@ -64,6 +64,7 @@ const operationIds = [
   "payment_export_profile_catalog.list",
   "payment_export_profiles.configure",
   "payment_export_profiles.get",
+  "payment_export_profiles.list",
   "payment_export_profiles.revoke",
   "payment_exports.download_content",
   "payment_exports.get",

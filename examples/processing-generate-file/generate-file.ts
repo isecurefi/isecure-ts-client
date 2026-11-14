@@ -25,7 +25,7 @@ export interface GenerationInputs {
     readonly countryCode: string;
     readonly bankAgreementId: string;
     readonly initiatingPartyName: string;
-    readonly initiatingPartyCustomerId: string;
+    readonly initiatingPartyCustomerId?: string;
   };
   readonly creditor: {
     readonly iban: string;
@@ -58,7 +58,9 @@ export function inputsFromEnv(): GenerationInputs {
       countryCode: requiredEnv("ISECURE_DEBTOR_COUNTRY"),
       bankAgreementId: requiredEnv("ISECURE_DEBTOR_BANK_AGREEMENT_ID"),
       initiatingPartyName: requiredEnv("ISECURE_INITIATING_PARTY_NAME"),
-      initiatingPartyCustomerId: requiredEnv("ISECURE_INITIATING_PARTY_CUSTOMER_ID"),
+      ...(process.env.ISECURE_INITIATING_PARTY_CUSTOMER_ID
+        ? { initiatingPartyCustomerId: process.env.ISECURE_INITIATING_PARTY_CUSTOMER_ID }
+        : {}),
     },
     creditor: {
       iban: requiredEnv("ISECURE_CREDITOR_IBAN"),
@@ -147,7 +149,11 @@ export async function prepareFinalizedFile(client: Iso20022Client, inputs: Gener
       debtor_account_scheme: "iban",
       debtor_account_currency: "EUR",
       initiating_party_name: inputs.debtor.initiatingPartyName,
-      initiating_party_customer_id: inputs.debtor.initiatingPartyCustomerId,
+      ...(inputs.debtor.initiatingPartyCustomerId === undefined
+        ? {}
+        : {
+            initiating_party_customer_id: inputs.debtor.initiatingPartyCustomerId,
+          }),
       debtor_name: inputs.debtor.name,
       debtor_bank_agreement_id: inputs.debtor.bankAgreementId,
       debtor_country_code: inputs.debtor.countryCode,
@@ -156,20 +162,10 @@ export async function prepareFinalizedFile(client: Iso20022Client, inputs: Gener
     { idempotencyKey: `${inputs.runId}-configure-profile` },
   );
   const profile = configured.payment_export_profile;
-  const capability = await client.paymentCapabilities.resolve({
-    connected_account_id: profile.debtor_account_id,
-    business_type: "credit_transfer",
-    currency: "EUR",
-    destination_country_code: inputs.creditor.countryCode,
-    requested_execution_date: inputs.requestedExecutionDate,
-    transfer_count: 1,
-    total_money: { amount: inputs.amount, currency: "EUR" },
-    required_option_kinds: [],
-  });
-  if (capability.outcome !== "resolved" || !capability.selected)
-    throw new Error("No exact payment capability was resolved");
+  // The server returns the capability bound to this exact configuration revision.
+  // Account-only resolution can be ambiguous when several profiles share an account.
   const draftInput: Parameters<Iso20022Client["paymentBatches"]["createDraft"]>[0] = {
-    capability: capability.selected,
+    capability: profile.capability,
     external_id: inputs.runId,
     requested_execution_date: inputs.requestedExecutionDate,
     options: [],

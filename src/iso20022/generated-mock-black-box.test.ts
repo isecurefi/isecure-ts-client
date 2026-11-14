@@ -233,8 +233,10 @@ function invoke(
       return client.paymentExportProfileCatalog.list(input);
     case "payment_export_profiles.configure":
       return client.paymentExportProfiles.configure(input as never, commandOptions(operationId));
+    case "payment_export_profiles.list":
+      return client.paymentExportProfiles.list(input);
     case "payment_export_profiles.get":
-      return client.paymentExportProfiles.get(input);
+      return client.paymentExportProfiles.get(input as never);
     case "payment_export_profiles.revoke":
       return client.paymentExportProfiles.revoke(input as never, revisionOptions(operationId));
     case "payment_exports.download_content":

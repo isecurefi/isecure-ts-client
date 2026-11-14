@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "source": {
     "repository": "isecurefi/bankfiles-platform",
-    "revision": "3cdc3791833cc9a22b9577ced4bc4cd3995c0095",
-    "model": "Bankfiles@0.139.0",
-    "sourceDigest": "sha256:7f980e488f827a1e68ec8d12af07cdf4f77fbb877f091748f87973fb756f4de2",
+    "revision": "97396d97c74b26849305aa3e484109e207c3c57a",
+    "model": "Bankfiles@0.140.0",
+    "sourceDigest": "sha256:97037dcf73997379dad776da6e488ea0c42b1ba2e1426ab724bad132f7be297c",
     "fixedClock": "2040-01-02T03:04:05.000Z",
     "safety": {
       "syntheticOnly": true,
@@ -13847,9 +13847,9 @@
     },
     {
       "operationId": "payment_export_profiles.configure",
-      "version": 1,
-      "contractDigest": "sha256:d1dfea42aaa194db43101014f3aba331aca6a0e44ef05f06d85c7078d8c7790b",
-      "eventClosureDigest": "sha256:8a8a179ab8efd6c38f1f5ddeb9f1953a6356fe9ff5f33d709fafd58475d5e6a7",
+      "version": 2,
+      "contractDigest": "sha256:ee0c2b9d0ad38ba1e24e0f5640de390b240eeab86b494710f956b39769623427",
+      "eventClosureDigest": "sha256:077fc302cb5379698e4cd5bc139c59f5818f744cbcbc7240cccd50ae1803296c",
       "inputContract": "isecure.bankfiles.payments_api.ConfigurePaymentExportProfileInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
@@ -13895,13 +13895,9 @@
           "input": {
             "bank_profile_id": "payment_export_profiles.configur",
             "debtor_account_identifier": "payment_export_profiles.configur",
-            "debtor_account_scheme": "iban",
             "initiating_party_name": "payment_export_profiles.configur",
-            "initiating_party_customer_id": "payment_export_profiles.configur",
             "debtor_name": "payment_export_profiles.configur",
-            "debtor_bank_agreement_id": "payment_export_profiles.configur",
-            "debtor_country_code": "pa",
-            "debtor_agent_bic": "payment_exp"
+            "debtor_bank_agreement_id": "payment_export_profiles.configur"
           },
           "outcome": {
             "kind": "result",
@@ -13910,7 +13906,7 @@
               "context": {
                 "request_id": "e7111584-4f47-49cf-9ce8-108c97c028e4",
                 "operation_id": "payment_export_profiles.configure",
-                "contract_version": "1",
+                "contract_version": "2",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "4a61a7da-1ac7-4618-b088-d68452685127",
@@ -13923,13 +13919,17 @@
               },
               "payment_export_profile": {
                 "payment_export_profile_id": "5dee9872-e2cd-4327-906e-aff9b441528d",
+                "capability": {
+                  "account_capability_id": "0daa154a-5356-4f45-8e55-bb0c3b10bc14",
+                  "capability_revision": "1",
+                  "connected_account_id": "45778069-0cd6-4150-9a70-046f30c85ce6"
+                },
                 "profile_revision": "1",
                 "resource_version": "1",
                 "debtor_account_id": "ebceee2f-93b1-4ae8-838c-a15ac02a1f5e",
                 "debtor_account_identifier": "payment_export_profiles.configur",
                 "debtor_account_scheme": "iban",
                 "initiating_party_name": "payment_export_profiles.configur",
-                "initiating_party_customer_id": "payment_export_profiles.configur",
                 "debtor_name": "payment_export_profiles.configur",
                 "debtor_bank_agreement_id": "payment_export_profiles.configur",
                 "debtor_country_code": "pa",
@@ -14007,13 +14007,9 @@
           "input": {
             "bank_profile_id": "payment_export_profiles.configur",
             "debtor_account_identifier": "payment_export_profiles.configur",
-            "debtor_account_scheme": "iban",
             "initiating_party_name": "payment_export_profiles.configur",
-            "initiating_party_customer_id": "payment_export_profiles.configur",
             "debtor_name": "payment_export_profiles.configur",
-            "debtor_bank_agreement_id": "payment_export_profiles.configur",
-            "debtor_country_code": "pa",
-            "debtor_agent_bic": "payment_exp"
+            "debtor_bank_agreement_id": "payment_export_profiles.configur"
           },
           "outcome": {
             "kind": "issues",
@@ -14054,13 +14050,9 @@
           "input": {
             "bank_profile_id": "payment_export_profiles.configur",
             "debtor_account_identifier": "payment_export_profiles.configur",
-            "debtor_account_scheme": "iban",
             "initiating_party_name": "payment_export_profiles.configur",
-            "initiating_party_customer_id": "payment_export_profiles.configur",
             "debtor_name": "payment_export_profiles.configur",
-            "debtor_bank_agreement_id": "payment_export_profiles.configur",
-            "debtor_country_code": "pa",
-            "debtor_agent_bic": "payment_exp"
+            "debtor_bank_agreement_id": "payment_export_profiles.configur"
           },
           "outcome": {
             "kind": "issues",
@@ -14105,13 +14097,9 @@
           "input": {
             "bank_profile_id": "payment_export_profiles.configur",
             "debtor_account_identifier": "payment_export_profiles.configur",
-            "debtor_account_scheme": "iban",
             "initiating_party_name": "payment_export_profiles.configur",
-            "initiating_party_customer_id": "payment_export_profiles.configur",
             "debtor_name": "payment_export_profiles.configur",
-            "debtor_bank_agreement_id": "payment_export_profiles.configur",
-            "debtor_country_code": "pa",
-            "debtor_agent_bic": "payment_exp"
+            "debtor_bank_agreement_id": "payment_export_profiles.configur"
           },
           "outcome": {
             "kind": "result",
@@ -14120,7 +14108,7 @@
               "context": {
                 "request_id": "e7111584-4f47-49cf-9ce8-108c97c028e4",
                 "operation_id": "payment_export_profiles.configure",
-                "contract_version": "1",
+                "contract_version": "2",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "4a61a7da-1ac7-4618-b088-d68452685127",
@@ -14134,13 +14122,17 @@
               },
               "payment_export_profile": {
                 "payment_export_profile_id": "5dee9872-e2cd-4327-906e-aff9b441528d",
+                "capability": {
+                  "account_capability_id": "0daa154a-5356-4f45-8e55-bb0c3b10bc14",
+                  "capability_revision": "1",
+                  "connected_account_id": "45778069-0cd6-4150-9a70-046f30c85ce6"
+                },
                 "profile_revision": "1",
                 "resource_version": "1",
                 "debtor_account_id": "ebceee2f-93b1-4ae8-838c-a15ac02a1f5e",
                 "debtor_account_identifier": "payment_export_profiles.configur",
                 "debtor_account_scheme": "iban",
                 "initiating_party_name": "payment_export_profiles.configur",
-                "initiating_party_customer_id": "payment_export_profiles.configur",
                 "debtor_name": "payment_export_profiles.configur",
                 "debtor_bank_agreement_id": "payment_export_profiles.configur",
                 "debtor_country_code": "pa",
@@ -14178,13 +14170,9 @@
           "input": {
             "bank_profile_id": "payment_export_profiles.configur",
             "debtor_account_identifier": "payment_export_profiles.configur",
-            "debtor_account_scheme": "iban",
             "initiating_party_name": "payment_export_profiles.configur",
-            "initiating_party_customer_id": "payment_export_profiles.configur",
             "debtor_name": "payment_export_profiles.configur",
-            "debtor_bank_agreement_id": "payment_export_profiles.configur",
-            "debtor_country_code": "pa",
-            "debtor_agent_bic": "payment_exp"
+            "debtor_bank_agreement_id": "payment_export_profiles.configur"
           },
           "outcome": {
             "kind": "issues",
@@ -14229,13 +14217,9 @@
           "input": {
             "bank_profile_id": "payment_export_profiles.configur",
             "debtor_account_identifier": "payment_export_profiles.configur",
-            "debtor_account_scheme": "iban",
             "initiating_party_name": "payment_export_profiles.configur",
-            "initiating_party_customer_id": "payment_export_profiles.configur",
             "debtor_name": "payment_export_profiles.configur",
-            "debtor_bank_agreement_id": "payment_export_profiles.configur",
-            "debtor_country_code": "pa",
-            "debtor_agent_bic": "payment_exp"
+            "debtor_bank_agreement_id": "payment_export_profiles.configur"
           },
           "outcome": {
             "kind": "issues",
@@ -14277,13 +14261,9 @@
           "input": {
             "bank_profile_id": "payment_export_profiles.configur",
             "debtor_account_identifier": "payment_export_profiles.configur",
-            "debtor_account_scheme": "iban",
             "initiating_party_name": "payment_export_profiles.configur",
-            "initiating_party_customer_id": "payment_export_profiles.configur",
             "debtor_name": "payment_export_profiles.configur",
-            "debtor_bank_agreement_id": "payment_export_profiles.configur",
-            "debtor_country_code": "pa",
-            "debtor_agent_bic": "payment_exp"
+            "debtor_bank_agreement_id": "payment_export_profiles.configur"
           },
           "outcome": {
             "kind": "issues",
@@ -14320,16 +14300,16 @@
     },
     {
       "operationId": "payment_export_profiles.get",
-      "version": 1,
-      "contractDigest": "sha256:2e29d42f293d6a5dc4ca041424c2965612edc24a95eff13ac526026d3cabf064",
-      "eventClosureDigest": "sha256:eb117b6e7331547a1bd25128766e919b493b6269c89e52a3ac66f71eae351dc9",
+      "version": 2,
+      "contractDigest": "sha256:716da9ccbd611dec32713d74392403445055222ec69bd9284e0f0d34ab397688",
+      "eventClosureDigest": "sha256:cfa28e615cd1d1be731d05451b1c7c6210bc244b6e64bc365b84b19505f24a86",
       "inputContract": "isecure.bankfiles.payments_api.PaymentExportProfileGetInput",
       "resultContract": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
       "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
       "bindings": [
         {
           "adapter": "rest",
-          "identifier": "GET /v1/payment-export-profiles",
+          "identifier": "GET /v1/payment-export-profiles/{payment_export_profile_id}",
           "responseStatuses": [
             200,
             400,
@@ -14368,7 +14348,9 @@
           "scenario": "success",
           "inputContract": "isecure.bankfiles.payments_api.PaymentExportProfileGetInput",
           "outcomeContract": "isecure.bankfiles.payments_api.PaymentExportProfileResult",
-          "input": {},
+          "input": {
+            "payment_export_profile_id": "fe4545b0-cc7e-4c0f-b9d4-4a8157a0f81b"
+          },
           "outcome": {
             "kind": "result",
             "status": 200,
@@ -14376,7 +14358,7 @@
               "context": {
                 "request_id": "1fbb3cc2-27f0-4f7c-88dd-9ac718935b10",
                 "operation_id": "payment_export_profiles.get",
-                "contract_version": "1",
+                "contract_version": "2",
                 "accepted_at": "2040-01-02T03:04:05.000Z",
                 "authorization": {
                   "authorization_decision_id": "b3cc7753-ad84-48d3-a54d-73a509537448",
@@ -14385,13 +14367,17 @@
               },
               "payment_export_profile": {
                 "payment_export_profile_id": "5dee9872-e2cd-4327-906e-aff9b441528d",
+                "capability": {
+                  "account_capability_id": "bbc1a19d-83ea-420f-8ea3-1d41365b41b7",
+                  "capability_revision": "1",
+                  "connected_account_id": "b036fc47-13d2-4ff7-83a2-7d2dced73fb8"
+                },
                 "profile_revision": "1",
                 "resource_version": "1",
                 "debtor_account_id": "8348971e-d39a-4a4d-9bf9-93a1f6ab4cd5",
                 "debtor_account_identifier": "payment_export_profiles.get-resu",
                 "debtor_account_scheme": "iban",
                 "initiating_party_name": "payment_export_profiles.get-resu",
-                "initiating_party_customer_id": "payment_export_profiles.get-resu",
                 "debtor_name": "payment_export_profiles.get-resu",
                 "debtor_bank_agreement_id": "payment_export_profiles.get-resu",
                 "debtor_country_code": "pa",
@@ -14466,7 +14452,9 @@
           "scenario": "unauthorized",
           "inputContract": "isecure.bankfiles.payments_api.PaymentExportProfileGetInput",
           "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
-          "input": {},
+          "input": {
+            "payment_export_profile_id": "fe4545b0-cc7e-4c0f-b9d4-4a8157a0f81b"
+          },
           "outcome": {
             "kind": "issues",
             "status": 403,
@@ -14503,7 +14491,9 @@
           "scenario": "not_found",
           "inputContract": "isecure.bankfiles.payments_api.PaymentExportProfileGetInput",
           "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
-          "input": {},
+          "input": {
+            "payment_export_profile_id": "fe4545b0-cc7e-4c0f-b9d4-4a8157a0f81b"
+          },
           "outcome": {
             "kind": "issues",
             "status": 404,
@@ -14541,7 +14531,9 @@
           "scenario": "retryable",
           "inputContract": "isecure.bankfiles.payments_api.PaymentExportProfileGetInput",
           "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
-          "input": {},
+          "input": {
+            "payment_export_profile_id": "fe4545b0-cc7e-4c0f-b9d4-4a8157a0f81b"
+          },
           "outcome": {
             "kind": "issues",
             "status": 400,
@@ -14569,6 +14561,231 @@
                   "next_operations": [
                     {
                       "operation_id": "payment_export_profiles.get"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "operationId": "payment_export_profiles.list",
+      "version": 1,
+      "contractDigest": "sha256:4efe895d4eeefd2341a4d684067b2a37f41081818d583f066de7edd003c6fb9c",
+      "eventClosureDigest": "sha256:0010558b44313029fa96f86f41f73fcf67f0f426098363b491a8f7e754f8c0f8",
+      "inputContract": "isecure.bankfiles.payments_api.PaymentExportProfileListInput",
+      "resultContract": "isecure.bankfiles.payments_api.PaymentExportProfileListResult",
+      "issueContract": "isecure.bankfiles.payments_api.PaymentIssues",
+      "bindings": [
+        {
+          "adapter": "rest",
+          "identifier": "GET /v1/payment-export-profiles",
+          "responseStatuses": [
+            200,
+            400,
+            401,
+            403,
+            404,
+            500,
+            503
+          ]
+        },
+        {
+          "adapter": "typescript",
+          "identifier": "payment_export_profiles.list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "cli",
+          "identifier": "payment-export-profiles list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "runtime_mcp",
+          "identifier": "payment_export_profiles_list",
+          "responseStatuses": []
+        },
+        {
+          "adapter": "admin",
+          "identifier": "payment_export_profiles-list",
+          "responseStatuses": []
+        }
+      ],
+      "fixtures": [
+        {
+          "fixtureId": "payment_export_profiles.list.success",
+          "operationId": "payment_export_profiles.list",
+          "scenario": "success",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExportProfileListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentExportProfileListResult",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "result",
+            "status": 200,
+            "body": {
+              "context": {
+                "request_id": "11d8bf8b-9860-46a4-9946-9e3cbaea33e3",
+                "operation_id": "payment_export_profiles.list",
+                "contract_version": "1",
+                "accepted_at": "2040-01-02T03:04:05.000Z",
+                "authorization": {
+                  "authorization_decision_id": "171aeb4f-cbaa-4930-9013-09d4c8ac0ef2",
+                  "decided_at": "2040-01-02T03:04:05.000Z"
+                }
+              },
+              "payment_export_profiles": [
+                {
+                  "payment_export_profile_id": "5dee9872-e2cd-4327-906e-aff9b441528d",
+                  "capability": {
+                    "account_capability_id": "c3ce9b8f-8b72-43a3-a9d8-b78cc3932a52",
+                    "capability_revision": "1",
+                    "connected_account_id": "4d2fba31-db0f-439c-88da-5bcef2ee0221"
+                  },
+                  "profile_revision": "1",
+                  "resource_version": "1",
+                  "debtor_account_id": "f64680d6-77c9-4654-86c7-44ddcf65122a",
+                  "debtor_account_identifier": "payment_export_profiles.list-res",
+                  "debtor_account_scheme": "iban",
+                  "initiating_party_name": "payment_export_profiles.list-res",
+                  "debtor_name": "payment_export_profiles.list-res",
+                  "debtor_bank_agreement_id": "payment_export_profiles.list-res",
+                  "debtor_country_code": "pa",
+                  "debtor_agent_bic": "payment_exp",
+                  "bank_profile_id": "payment_export_profiles.list-res",
+                  "renderer_profile_id": "payment_export_profiles.list-res",
+                  "renderer_profile_version": 1,
+                  "renderer_catalog_digest": "payment_export_profiles.list-res",
+                  "qualification_contract_digest": "payment_export_profiles.list-res",
+                  "message_definition": "payment_export_profiles.list-res",
+                  "xml_namespace": "payment_export_profiles.list-res",
+                  "exact_revision_digest": "payment_export_profiles.list-res",
+                  "state": "active",
+                  "effective_from": "2040-01-02T03:04:05.000Z",
+                  "approved_at": "2040-01-02T03:04:05.000Z"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_export_profiles.list.invalid_request",
+          "operationId": "payment_export_profiles.list",
+          "scenario": "invalid_request",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExportProfileListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "mock_invalid_field": "synthetic-invalid"
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_INVALID_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request does not match the operation contract.",
+                  "retryable": false,
+                  "field_path": "mock_invalid_field"
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_export_profiles.list-inv",
+                    "resource_id": "2e081a75-63dd-44b3-9e5a-40134acc4450"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_export_profiles.list"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_export_profiles.list.unauthorized",
+          "operationId": "payment_export_profiles.list",
+          "scenario": "unauthorized",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExportProfileListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 403,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_NOT_AUTHORIZED",
+                  "category": "authorization",
+                  "severity": "error",
+                  "safe_message": "The synthetic caller is not authorized for this operation.",
+                  "retryable": false
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_export_profiles.list-una",
+                    "resource_id": "85a7f6bb-d61a-49b1-8ad3-0b6a336bdcad"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_export_profiles.list"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "fixtureId": "payment_export_profiles.list.retryable",
+          "operationId": "payment_export_profiles.list",
+          "scenario": "retryable",
+          "inputContract": "isecure.bankfiles.payments_api.PaymentExportProfileListInput",
+          "outcomeContract": "isecure.bankfiles.payments_api.PaymentIssues",
+          "input": {
+            "page_size": 1
+          },
+          "outcome": {
+            "kind": "issues",
+            "status": 400,
+            "body": {
+              "issues": [
+                {
+                  "issue_code": "MOCK_RETRY_REQUEST",
+                  "category": "validation",
+                  "severity": "error",
+                  "safe_message": "The synthetic request may be retried after one second.",
+                  "retryable": true,
+                  "required_action": {
+                    "action_type": "retry_later",
+                    "retry_after_seconds": 1
+                  }
+                }
+              ],
+              "recovery": [
+                {
+                  "recovery_kind": "select_capability",
+                  "subject_reference": {
+                    "resource_type": "payment_export_profiles.list-ret",
+                    "resource_id": "95c6cb07-3683-4a48-8ec7-cb0f4451b270"
+                  },
+                  "next_operations": [
+                    {
+                      "operation_id": "payment_export_profiles.list"
                     }
                   ]
                 }
@@ -14650,13 +14867,17 @@
               },
               "payment_export_profile": {
                 "payment_export_profile_id": "5dee9872-e2cd-4327-906e-aff9b441528d",
+                "capability": {
+                  "account_capability_id": "70c9ff28-dda0-4b88-b656-488320ef3148",
+                  "capability_revision": "1",
+                  "connected_account_id": "1d6c2f88-5921-4066-9ef3-67429b929baf"
+                },
                 "profile_revision": "1",
                 "resource_version": "1",
                 "debtor_account_id": "47b472c1-f8d6-41b6-9810-0509ba72f128",
                 "debtor_account_identifier": "payment_export_profiles.revoke-r",
                 "debtor_account_scheme": "iban",
                 "initiating_party_name": "payment_export_profiles.revoke-r",
-                "initiating_party_customer_id": "payment_export_profiles.revoke-r",
                 "debtor_name": "payment_export_profiles.revoke-r",
                 "debtor_bank_agreement_id": "payment_export_profiles.revoke-r",
                 "debtor_country_code": "pa",
@@ -14840,13 +15061,17 @@
               },
               "payment_export_profile": {
                 "payment_export_profile_id": "5dee9872-e2cd-4327-906e-aff9b441528d",
+                "capability": {
+                  "account_capability_id": "70c9ff28-dda0-4b88-b656-488320ef3148",
+                  "capability_revision": "1",
+                  "connected_account_id": "1d6c2f88-5921-4066-9ef3-67429b929baf"
+                },
                 "profile_revision": "1",
                 "resource_version": "1",
                 "debtor_account_id": "47b472c1-f8d6-41b6-9810-0509ba72f128",
                 "debtor_account_identifier": "payment_export_profiles.revoke-r",
                 "debtor_account_scheme": "iban",
                 "initiating_party_name": "payment_export_profiles.revoke-r",
-                "initiating_party_customer_id": "payment_export_profiles.revoke-r",
                 "debtor_name": "payment_export_profiles.revoke-r",
                 "debtor_bank_agreement_id": "payment_export_profiles.revoke-r",
                 "debtor_country_code": "pa",

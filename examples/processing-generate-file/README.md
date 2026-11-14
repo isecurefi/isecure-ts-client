@@ -1,5 +1,9 @@
 # Processing: generate the exact payment file
 
+This checkout uses the unreleased independent-profile contract. It requires the matching server
+release and data-preserving migration; the current hosted release and published SDK 5.0.3 do not
+provide that contract yet.
+
 This Node example drives the standard Processing path with the public SDK: configure an export
 profile, draft one credit transfer, validate and finalize it, and generate the exact
 `pain.001.001.09` bytes for that finalized revision. It verifies the bytes against the integrity
@@ -70,3 +74,11 @@ yarn example:processing-generate-file
 
 The unit tests cover the pure helpers only: the end-to-end identifier, the generation query and the
 integrity check. Running the example against a deployment is a separate, credentialed step.
+
+Each example run creates an independent saved configuration. In an application, configure once,
+retain its ID, and reuse the exact returned `capability` for multiple draft batches. Use
+`paymentExportProfiles.get({ payment_export_profile_id })` to read it again. Account-only capability
+resolution may be ambiguous when several configurations use the same account.
+
+`ISECURE_INITIATING_PARTY_CUSTOMER_ID` may be omitted for OP; other bank profiles still require it.
+Use the bank-issued debtor payment identifier in `ISECURE_DEBTOR_BANK_AGREEMENT_ID`.

@@ -170,7 +170,8 @@ describe("experimental ISO 20022 client", () => {
       ),
       client.paymentExportProfileCatalog.list(),
       client.paymentExportProfiles.configure({} as never, { idempotencyKey: "synthetic-profile" }),
-      client.paymentExportProfiles.get(),
+      client.paymentExportProfiles.get({ payment_export_profile_id: profileId }),
+      client.paymentExportProfiles.list(),
       client.paymentExportProfiles.revoke(
         { payment_export_profile_id: profileId, profile_revision: "1" },
         { idempotencyKey: "synthetic-revoke", expectedResourceVersion: '"1"' },
@@ -296,7 +297,7 @@ describe("experimental ISO 20022 client", () => {
       client.validations.list({ run_kind: "validate" }),
     ]);
 
-    expect(transport.calls).toHaveLength(84);
+    expect(transport.calls).toHaveLength(85);
     const platform: readonly string[] = platformOperationIds;
     expect(transport.calls.map((call) => call.operationId)).toEqual(
       Object.keys(iso20022Operations).filter((operationId) => !platform.includes(operationId)),
@@ -353,12 +354,23 @@ describe("experimental ISO 20022 client", () => {
     ]);
   });
 
+  it("lists saved configurations separately from bank formats and gets one exact configuration", async () => {
+    const transport = new RecordingTransport();
+    const client = createIso20022Client(transport);
+    const id = "00000000-0000-0000-0000-000000000001";
+    await client.paymentExportProfiles.list({ page_size: 20, after_profile_id: id });
+    await client.paymentExportProfiles.get({ payment_export_profile_id: id });
+    expect(transport.calls.map(({ operationId, input }) => ({ operationId, input }))).toEqual([
+      { operationId: "payment_export_profiles.list", input: { page_size: 20, after_profile_id: id } },
+      { operationId: "payment_export_profiles.get", input: { payment_export_profile_id: id } },
+    ]);
+  });
+
   it("uses plain-English namespaces without duplicating contracts or inventing bank feedback", () => {
     const client = createIso20022Client(new RecordingTransport());
 
     expect(client.paymentOrders.createDraft).toBe(client.paymentBatches.createDraft);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Verify the retained compatibility alias.
-    expect(client.paymentExportProfiles.list).toBe(client.paymentExportProfileCatalog.list);
+    expect(client.paymentExportProfiles.list).not.toBe(client.paymentExportProfileCatalog.list);
     expect(client.paymentOrders.execute).toBe(client.paymentSubmissions.createAttempt);
     expect(client.paymentOrders.finalizeDraft).toBe(client.paymentBatches.finalize);
     expect(client.paymentOrders.reviseDraft).toBe(client.paymentBatches.replaceDraft);

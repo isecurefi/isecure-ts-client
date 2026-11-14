@@ -88,3 +88,11 @@ have advanced. It is not an ISECure upload idempotency key.
 The uploader variables fall back to the Data approver credentials when they are omitted. Common
 `ISECURE_EMAIL` and `ISECURE_PASSWORD` remain an explicit fallback when both modes intentionally
 share them.
+
+Each example run creates an independent saved configuration. In an application, configure once,
+retain its ID, and reuse the exact returned `capability` for multiple draft batches. Use
+`paymentExportProfiles.get({ payment_export_profile_id })` to read it again. Account-only capability
+resolution may be ambiguous when several configurations use the same account.
+
+`ISECURE_INITIATING_PARTY_CUSTOMER_ID` may be omitted for OP; other bank profiles still require it.
+Use the bank-issued debtor payment identifier in `ISECURE_DEBTOR_BANK_AGREEMENT_ID`.

@@ -193,7 +193,9 @@ export async function createApprovedExport(
       debtor_account_scheme: "iban",
       debtor_account_currency: "EUR",
       initiating_party_name: requiredEnv("ISECURE_INITIATING_PARTY_NAME"),
-      initiating_party_customer_id: requiredEnv("ISECURE_INITIATING_PARTY_CUSTOMER_ID"),
+      ...(process.env.ISECURE_INITIATING_PARTY_CUSTOMER_ID
+        ? { initiating_party_customer_id: process.env.ISECURE_INITIATING_PARTY_CUSTOMER_ID }
+        : {}),
       debtor_name: requiredEnv("ISECURE_DEBTOR_NAME"),
       debtor_bank_agreement_id: requiredEnv("ISECURE_DEBTOR_BANK_AGREEMENT_ID"),
       debtor_country_code: debtorCountry,
@@ -206,25 +208,10 @@ export async function createApprovedExport(
   const requestedExecutionDate = executionDate();
   const amount = exactEnv("ISECURE_PAYMENT_AMOUNT", EXACT_AMOUNT);
   const creditorCountry = exactEnv("ISECURE_CREDITOR_COUNTRY", COUNTRY_CODE);
-  observeStage("capability-resolution");
-  const capability = await submitter.paymentCapabilities.resolve({
-    connected_account_id: configured.payment_export_profile.debtor_account_id,
-    business_type: "credit_transfer",
-    currency: "EUR",
-    destination_country_code: creditorCountry,
-    requested_execution_date: requestedExecutionDate,
-    transfer_count: 1,
-    total_money: { amount, currency: "EUR" },
-    required_option_kinds: [],
-  });
-  if (capability.outcome !== "resolved" || !capability.selected) {
-    throw new Error("No exact payment capability was resolved");
-  }
-
   observeStage("draft-creation");
   const created = await submitter.paymentBatches.createDraft(
     {
-      capability: capability.selected,
+      capability: configured.payment_export_profile.capability,
       external_id: runId,
       requested_execution_date: requestedExecutionDate,
       options: [],
