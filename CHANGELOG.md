@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Harden Processing responses: generate runtime validators from the pinned OpenAPI, retain safe HTTP diagnostics for malformed error bodies, and reject late JSON/download/stream results after session clearing, replacement or expiry. Aborts never imply server rollback or automatic retries. Add `paymentExportProfileCatalog.list()` and keep the ambiguous previous name as a deprecated alias; use `paymentBatches` in the generation example.
+
+- Default the Processing session audience to `isecure-processing-production-v1` for `https://processing-api.isecure.fi`. Other deployment URLs still require an explicit audience; session audience validation remains unchanged.
+
 - Add the Admin-only Holvi SFTP connection methods `getHolviConnection`, `enrollHolviConnection`, `disableHolviConnection` and `checkHolviConnection` from the synchronized provider contract. The server generates the Ed25519 key and returns only the OpenSSH public key; changes require the current `Version` and are never replayed. Existing file methods serve `Bank: "holvi"` unchanged. Unpublished; routes require the separately authorized deployment.
 - Connection replies carry `KeyType` (`sftp-public-key`), `Created` and `SourceAddresses` (the fixed public IPv4 addresses Holvi must allow-list). `listCerts()` adds the optional `SftpKeys` list (`SftpKeyDescriptor`) beside the X.509 certificates, recorded as the unpublished `sftpKeyOverlay` in `wsapi_v2.source.json`.
 

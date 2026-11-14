@@ -1,3 +1,4 @@
+import { successFixture } from "../../test-data/processing-fixtures.js";
 import { describe, expect, it, vi } from "vitest";
 import { iso20022Operations } from "../generated/iso20022-contracts.js";
 import { Iso20022HttpTransport } from "../iso20022/transport.js";
@@ -17,6 +18,7 @@ describe("Platform API client", () => {
     "transports catalogue format %s without app or plugin revision parameters",
     async (format) => {
       const response = {
+        ...successFixture("plugin_catalogue.list").body,
         entries: [],
         ...(format === undefined ? {} : { catalogue_format_version: format, entry_issues: [] }),
       };

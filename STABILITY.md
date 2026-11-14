@@ -29,6 +29,14 @@ The error hierarchy (`ISecureError` and subclasses) is part of the public API. N
 surface. `ProcessingEntitlementDeniedError` is its typed commercial-entitlement refusal. These do
 not replace or change the permanent WS Channel error hierarchy.
 
+The unreleased Processing transport validates successful JSON responses against the pinned generated
+contract. Malformed results previously accepted by a TypeScript cast now fail with `malformed_response`.
+HTTP failures retain their status even when the body is unreadable; optional `requestId`, `retryAfter`
+and `bodyError` diagnostics do not contain the raw invalid body. Clearing or replacing a session aborts
+pending requests and rejects late results; it cannot roll back accepted server commands or revoke a
+server-side session. Existing catalogue and payment-order names remain deprecated aliases; new code
+uses `paymentExportProfileCatalog` and `paymentBatches`.
+
 The Bank Simulation control namespaces also belong only to the experimental `./iso20022` surface.
 Their generated contracts, revisions, and names can evolve with the digest-pinned Processing
 contract; they do not change the permanent WS Channel/File Exchange API.

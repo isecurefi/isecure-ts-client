@@ -173,7 +173,7 @@ export async function createApprovedExport(
 ): Promise<{ readonly authority: PaymentExportContentAuthority; readonly paymentExportId: string }> {
   const bankProfileId = requiredEnv("ISECURE_BANK_PROFILE_ID");
   observeStage("profile-catalog");
-  const catalog = await submitter.paymentExportProfiles.list();
+  const catalog = await submitter.paymentExportProfileCatalog.list();
   const profile = admittedProfile(catalog.profiles, bankProfileId);
   const channelBank = requiredEnv("ISECURE_BANK").toLowerCase();
   if (

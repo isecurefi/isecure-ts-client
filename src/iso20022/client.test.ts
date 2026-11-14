@@ -168,7 +168,7 @@ describe("experimental ISO 20022 client", () => {
         },
         { idempotencyKey: "synthetic-report" },
       ),
-      client.paymentExportProfiles.list(),
+      client.paymentExportProfileCatalog.list(),
       client.paymentExportProfiles.configure({} as never, { idempotencyKey: "synthetic-profile" }),
       client.paymentExportProfiles.get(),
       client.paymentExportProfiles.revoke(
@@ -357,6 +357,8 @@ describe("experimental ISO 20022 client", () => {
     const client = createIso20022Client(new RecordingTransport());
 
     expect(client.paymentOrders.createDraft).toBe(client.paymentBatches.createDraft);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- Verify the retained compatibility alias.
+    expect(client.paymentExportProfiles.list).toBe(client.paymentExportProfileCatalog.list);
     expect(client.paymentOrders.execute).toBe(client.paymentSubmissions.createAttempt);
     expect(client.paymentOrders.finalizeDraft).toBe(client.paymentBatches.finalize);
     expect(client.paymentOrders.reviseDraft).toBe(client.paymentBatches.replaceDraft);

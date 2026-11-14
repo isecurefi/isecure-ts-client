@@ -190,7 +190,7 @@ export async function runProductionChecks(
     await check("processing-session", async () => {
       await transport.exchangeProcessingSession();
     });
-    const catalog = await client.paymentExportProfiles.list();
+    const catalog = await client.paymentExportProfileCatalog.list();
     // Match the current published generation path. Other banks are reported separately as scope.
     const profileId = "nordea-ca-v9-finland-sepa-unstructured";
     await check("available-bank-profile", () => {

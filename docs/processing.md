@@ -13,11 +13,10 @@ is **experimental**: its generated types can change with the platform contract. 
 
 Deployment checked on **12 November 2026**:
 
-| Setting             | Production value                    |
-| ------------------- | ----------------------------------- |
-| Processing URL      | `https://processing-api.isecure.fi` |
-| Processing audience | `isecure-processing-production-v1`  |
-| WS login URL        | `https://ws-api.isecure.fi/v2`      |
+| Setting        | Production value                    |
+| -------------- | ----------------------------------- |
+| Processing URL | `https://processing-api.isecure.fi` |
+| WS login URL   | `https://ws-api.isecure.fi/v2`      |
 
 Processing currently runs only in production. Its former gpgtest deployment was retired on
 17 October 2026; do not use `processing-api.test.isecure.fi`. The independent Bank Simulator,
@@ -57,7 +56,6 @@ import { createIso20022Client, Iso20022HttpTransport } from "isecure-ts-client/i
 
 const transport = new Iso20022HttpTransport({
   baseUrl: "https://processing-api.isecure.fi",
-  processingAudience: "isecure-processing-production-v1",
   bootstrapAuthentication: () => {
     const { apiKey, idToken } = channel.session;
     if (!apiKey || !idToken || channel.isSessionExpired()) {
@@ -68,14 +66,22 @@ const transport = new Iso20022HttpTransport({
 });
 await transport.exchangeProcessingSession();
 const processing = createIso20022Client(transport);
-const profiles = await processing.paymentExportProfiles.list();
-// Display the profiles to the signed-in user; do not log account data or tokens.
+const profiles = await processing.paymentExportProfileCatalog.list();
+// These are supported bank formats, not this customer's configured export profiles.
 ```
+
+For this production URL, the SDK automatically expects the session audience
+`isecure-processing-production-v1`; no `processingAudience` setting is needed. Other deployment
+URLs require an explicit `processingAudience`. An explicit value overrides the default, and the
+SDK always checks the returned session against the expected audience.
 
 Use the server's profile catalogue and account capabilities to choose a supported format.
 The SDK contains no bank rules and cannot determine which services your bank agreement allows.
 Clear the Processing session with `transport.clearProcessingSession()` on sign-out, account
-changes or revoked access. After expiry, sign in again as needed and explicitly exchange a new
+changes or revoked access. This aborts pending requests and rejects late results from that session,
+including downloads and stream events. It does not undo a command already accepted by the server,
+revoke the server-side session, or erase data already delivered to your application or download sink.
+Clear your application's displayed data when switching accounts. After expiry, sign in again as needed and explicitly exchange a new
 Processing session. The transport does not refresh it automatically.
 
 ## Prepare and generate a payment file
@@ -116,9 +122,17 @@ choose them from its clock. Discover profile availability on the server before u
 - `ProcessingEntitlementDeniedError` means the service refused Processing entitlement. Check the
   tenant's subscription, validity and required capabilities; successful WS login is not enough.
 - `Iso20022HttpError` reports an HTTP failure. A missing route may mean the operation is not
-  deployed. Inspect the status and safe diagnostic fields without logging the raw response body.
+  deployed. `status` remains available even if the response is not JSON. Optional `requestId` and
+  `retryAfter` fields retain bounded diagnostic headers; `bodyError` describes unreadable or
+  oversized error content. In those cases `body` is undefined. Never log raw response bodies.
 - `Iso20022TransportError` reports a transport or response-validation failure. Do not assume a
   timed-out command failed before changing server state.
+
+Successful JSON responses must match the pinned generated response schema and expected HTTP status,
+including required fields, nested types and closed choices. Invalid responses produce
+`Iso20022TransportError` with code `malformed_response`; customer values are not included in the
+message. Session expiry or replacement during a request produces `invalid_session`. Neither error
+proves a submitted command had no effect: reconcile its state before retrying.
 
 Processing's default timeout is **30 seconds**, configured by `Iso20022HttpTransport.timeoutMs`
 (1–300,000 milliseconds). The WS Channel client's 70-second default does not change this setting.
@@ -158,6 +172,10 @@ workflow claims an attempt, downloads its exact file, signs/uploads through its 
 client, and reports the result. Processing accepts no private signing key through these methods.
 There is no separate `paymentFeedbacks` namespace.
 
+Use `paymentExportProfileCatalog.list()` to browse supported bank formats, then
+`paymentExportProfiles.configure()` and `.get()` for your account's configuration. The older
+`paymentExportProfiles.list()` is a deprecated catalogue alias; it never listed account configurations.
+
 The [VoP example](../examples/payment-verification/README.md) explains exact revision binding,
 paged results, human review and rechecking evidence. A completed verification task does not mean
 every payee matched, and a human VoP review is not payment approval. Imported V9 verification input
@@ -184,4 +202,6 @@ npm run check:platform-contracts
 ```
 
 Pin the exact revision so a concurrent platform change cannot alter the generated files.
+The same synchronization generates self-contained response validators from that revision's OpenAPI,
+and records their digest in the source lock. Validators require no runtime schema compiler.
 Contract checks and local tests do not replace qualification against the intended deployed release.

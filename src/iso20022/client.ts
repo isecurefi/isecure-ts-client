@@ -128,6 +128,12 @@ import type {
  * optimistic-concurrency metadata.
  */
 export function createIso20022Client(transport: Iso20022Transport) {
+  const listProfileCatalog = (input: PaymentExportProfileCatalogListInput = {}) =>
+    invoke<PaymentExportProfileCatalogListInput, PaymentExportProfileCatalogListResult>(
+      transport,
+      "payment_export_profile_catalog.list",
+      input,
+    );
   const simulationConfiguration = createSimulationAdminClient(transport);
   const paymentFileDownload = {
     download: (
@@ -381,13 +387,11 @@ export function createIso20022Client(transport: Iso20022Transport) {
           input,
         ),
     },
+    /** Supported bank formats; these are not the customer's configured export profiles. */
+    paymentExportProfileCatalog: { list: listProfileCatalog },
     paymentExportProfiles: {
-      list: (input: PaymentExportProfileCatalogListInput = {}) =>
-        invoke<PaymentExportProfileCatalogListInput, PaymentExportProfileCatalogListResult>(
-          transport,
-          "payment_export_profile_catalog.list",
-          input,
-        ),
+      /** @deprecated Use paymentExportProfileCatalog.list() to browse supported bank formats. */
+      list: listProfileCatalog,
       configure: (input: ConfigurePaymentExportProfileInput, options: ProcessingCommandOptions) =>
         invoke<ConfigurePaymentExportProfileInput, PaymentExportProfileResult>(
           transport,
@@ -423,7 +427,7 @@ export function createIso20022Client(transport: Iso20022Transport) {
         ),
     },
     paymentOutcomes,
-    /** Compatibility aliases; prefer the plain-English paymentBatches and paymentSubmissions namespaces. */
+    /** Compatibility aliases. Prefer paymentBatches and paymentSubmissions; execute never uploads. */
     paymentOrders: {
       ...paymentBatches,
       execute: paymentSubmissions.createAttempt,

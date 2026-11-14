@@ -6,10 +6,12 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import { generateResponseValidators } from "./processing-response-validators.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const generatedPath = resolve(repositoryRoot, "src/generated/iso20022-contracts.ts");
 const generatedMockPath = resolve(repositoryRoot, "test-data/generated/iso20022-scenarios.json");
+const validatorsPath = resolve(repositoryRoot, "src/generated/processing-response-validators.ts");
 const lockPath = resolve(repositoryRoot, "platform-contracts.lock.json");
 const sourcePaths = {
   client: "generated/typescript/processing-client.ts",
@@ -151,12 +153,15 @@ const sourceMock = JSON.parse(sourceMockText);
 const generated = generateContract(sourceClient, sourceOpenApi, sourceRevision);
 const generatedMock = generateMock(sourceMock, sourceRevision);
 const lock = createLock(sourceClient, sourceOpenApiText, sourceMockText, sourceRevision, generated, generatedMock);
+const validators = await generateResponseValidators(sourceOpenApi, operationIds, sourceRevision);
+lock.generatedValidators = { path: "src/generated/processing-response-validators.ts", sha256: sha256(validators) };
 
 if (mode === "write") {
   await mkdir(dirname(generatedMockPath), { recursive: true });
   await Promise.all([
     writeFile(generatedPath, generated, "utf8"),
     writeFile(generatedMockPath, generatedMock, "utf8"),
+    writeFile(validatorsPath, validators, "utf8"),
     writeFile(lockPath, `${JSON.stringify(lock, undefined, 2)}\n`, "utf8"),
   ]);
   console.log(`Synchronized ${operationIds.length} ISO client operations from ${sourceRevision}.`);
@@ -167,6 +172,7 @@ if (mode === "write") {
     readFile(lockPath, "utf8"),
   ]);
   if (
+    (await readFile(validatorsPath, "utf8")) !== validators ||
     actualGenerated !== generated ||
     actualMock !== generatedMock ||
     actualLock !== `${JSON.stringify(lock, undefined, 2)}\n`

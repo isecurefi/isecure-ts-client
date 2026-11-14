@@ -230,7 +230,7 @@ function invoke(
     case "payment_execution_observations.report":
       return client.paymentSubmissions.reportUpload(input as never, commandOptions(operationId));
     case "payment_export_profile_catalog.list":
-      return client.paymentExportProfiles.list(input);
+      return client.paymentExportProfileCatalog.list(input);
     case "payment_export_profiles.configure":
       return client.paymentExportProfiles.configure(input as never, commandOptions(operationId));
     case "payment_export_profiles.get":

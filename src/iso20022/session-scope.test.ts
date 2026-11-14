@@ -1,3 +1,4 @@
+import { fixtureFetch } from "../../test-data/processing-fixtures.js";
 import { describe, expect, it, vi } from "vitest";
 import { Iso20022HttpTransport } from "./transport.js";
 
@@ -129,6 +130,7 @@ describe("opt-in authenticated Processing account scope", () => {
   it("uses the admitted scoped session for normal operations without sending scope as request authority", async () => {
     const { adapter, fetch } = transport(() => response());
     await adapter.exchangeProcessingSession({ schemaVersion: 2 });
+    fetch.mockImplementationOnce(fixtureFetch);
     await adapter.invoke("plugin_catalogue.list", {}, { contractVersion: 1 });
     const request = fetch.mock.calls[1];
     expect(request?.[0]).toEqual(new URL("https://processing.example.test/v1/plugin-catalogue"));

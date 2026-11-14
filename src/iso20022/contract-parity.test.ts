@@ -69,6 +69,7 @@ interface PlatformContractLock {
     path: string;
     sha256: string;
   };
+  generatedValidators: { path: string; sha256: string };
   generated: {
     path: string;
     sha256: string;
@@ -97,6 +98,8 @@ describe("generated platform contract parity", () => {
     expect(lock.generatedMock.sha256).toMatch(/^[0-9a-f]{64}$/u);
     expect(createHash("sha256").update(generated).digest("hex")).toBe(lock.generated.sha256);
     expect(createHash("sha256").update(generatedMock).digest("hex")).toBe(lock.generatedMock.sha256);
+    const validators = await readFile(resolve(root, lock.generatedValidators.path));
+    expect(createHash("sha256").update(validators).digest("hex")).toBe(lock.generatedValidators.sha256);
     expect(JSON.parse(generatedMock.toString("utf8"))).toMatchObject({
       source: {
         safety: {

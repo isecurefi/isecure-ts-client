@@ -29,7 +29,6 @@ and choose a valid requested execution date. Do not paste real passwords into sh
 ```sh
 export ISECURE_BASE_URL='https://ws-api.isecure.fi/v2'
 export ISECURE_PROCESSING_BASE_URL='https://processing-api.isecure.fi'
-export ISECURE_PROCESSING_AUDIENCE='isecure-processing-production-v1'
 export ISECURE_API_KEY='...'
 export ISECURE_COMPANY='Invented Test Company'
 export ISECURE_NAME='Invented Test User'
@@ -57,6 +56,9 @@ export ISECURE_CREDITOR_TOWN='Helsinki'
 export ISECURE_CREDITOR_ADDRESS_LINE='Synthetic Street 1'
 export ISECURE_REMITTANCE_TEXT='Synthetic invoice 1'
 ```
+
+The SDK sets the audience automatically for the production Processing URL above. For another
+deployment, also set `ISECURE_PROCESSING_AUDIENCE` to its expected audience.
 
 The Nordea profile needs numeric agreement and customer identifiers; free-text identifiers are
 refused at generation. Admin logins ask for an SMS or TOTP code; the shared prompt adapter reads it

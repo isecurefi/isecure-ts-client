@@ -4,6 +4,7 @@ import {
   type PaymentExportResource,
   type ProcessingRequestMetadata,
 } from "../generated/iso20022-contracts.js";
+import { isProcessingResult } from "../generated/processing-response-validators.js";
 
 const DEFAULT_MAX_REQUEST_BYTES = 1024 * 1024;
 const DEFAULT_MAX_RESPONSE_BYTES = 1024 * 1024;
@@ -117,8 +118,8 @@ export interface Iso20022HttpTransportOptions {
   baseUrl: string | URL;
   /** Reads current WSChannel authentication only while exchanging a separate Processing session. */
   bootstrapAuthentication: ProcessingBootstrapAuthenticationProvider;
-  /** Exact deployment-owned audience expected in the Processing session response. */
-  processingAudience: string;
+  /** Expected session audience. Defaults for https://processing-api.isecure.fi; required for other URLs. */
+  processingAudience?: string;
   /** Optional fetch implementation for non-browser runtimes and tests. */
   fetch?: typeof globalThis.fetch;
   /** Maximum serialized request bytes. Defaults to 1 MiB and cannot exceed 16 MiB. */
@@ -153,15 +154,27 @@ export class Iso20022TransportError extends Error {
 }
 
 /** A non-success Processing API response carrying its generated issue envelope. */
+export interface ProcessingHttpDiagnostics {
+  readonly retryAfter?: string;
+  readonly requestId?: string;
+  readonly bodyError?: Iso20022TransportErrorCode;
+}
+
 export class Iso20022HttpError extends Error {
   readonly status: number;
   readonly body: unknown;
+  readonly retryAfter: string | undefined;
+  readonly requestId: string | undefined;
+  readonly bodyError: Iso20022TransportErrorCode | undefined;
 
-  constructor(status: number, body: unknown) {
+  constructor(status: number, body: unknown, diagnostics: ProcessingHttpDiagnostics = {}) {
     super(`ISECure Processing API request failed with HTTP ${String(status)}`);
     this.name = "Iso20022HttpError";
     this.status = status;
     this.body = body;
+    this.retryAfter = diagnostics.retryAfter;
+    this.requestId = diagnostics.requestId;
+    this.bodyError = diagnostics.bodyError;
   }
 }
 
@@ -169,8 +182,8 @@ export class Iso20022HttpError extends Error {
 export class ProcessingEntitlementDeniedError extends Iso20022HttpError {
   readonly code = "processing_entitlement_denied" as const;
 
-  constructor(body: unknown) {
-    super(403, body);
+  constructor(body: unknown, diagnostics: ProcessingHttpDiagnostics = {}) {
+    super(403, body, diagnostics);
     this.name = "ProcessingEntitlementDeniedError";
   }
 }
@@ -190,11 +203,24 @@ export class Iso20022HttpTransport implements Iso20022Transport {
   private readonly timeoutMs: number;
   private processingSession: ProcessingSessionCredential | undefined;
   private sessionExchangeAttempt: symbol | undefined;
+  private readonly pendingRequests = new Set<AbortController>();
+
+  private requestController(): AbortController {
+    const controller = new AbortController();
+    this.pendingRequests.add(controller);
+    return controller;
+  }
+
+  private requireCurrentSession(session: ProcessingSessionCredential): void {
+    if (this.processingSession !== session || session.expiresAtEpochSeconds <= Math.floor(Date.now() / 1000)) {
+      throw new Iso20022TransportError("invalid_session", "The Processing request session is no longer current");
+    }
+  }
 
   constructor(options: Iso20022HttpTransportOptions) {
     this.baseUrl = parseBaseUrl(options.baseUrl);
     this.bootstrapAuthentication = options.bootstrapAuthentication;
-    this.processingAudience = parseProcessingAudience(options.processingAudience);
+    this.processingAudience = parseProcessingAudience(options.processingAudience, this.baseUrl);
     const fetchImplementation = options.fetch ?? globalThis.fetch;
     if (typeof fetchImplementation !== "function") {
       throw new Iso20022TransportError("invalid_configuration", "A fetch implementation is required");
@@ -230,7 +256,7 @@ export class Iso20022HttpTransport implements Iso20022Transport {
     }
     const authentication = await resolveBootstrapAuthentication(this.bootstrapAuthentication);
     this.requireCurrentSessionExchange(attempt);
-    const controller = new AbortController();
+    const controller = this.requestController();
     const timer = abortAfter(controller, this.timeoutMs);
     try {
       const response = await this.fetchImplementation(new URL("session", this.baseUrl), {
@@ -244,17 +270,18 @@ export class Iso20022HttpTransport implements Iso20022Transport {
         redirect: "error",
         signal: controller.signal,
       });
-      const body = await parseResponse(response, this.maxResponseBytes);
-      if (!response.ok) throw processingHttpError(response.status, body);
+      const body = await readJsonResponse(response, this.maxResponseBytes);
       const session = parseProcessingSession(body, authentication.apiKey, this.processingAudience, schemaVersion);
       this.requireCurrentSessionExchange(attempt);
       this.processingSession = session;
       return sessionMetadata(session);
     } catch (cause) {
+      this.requireCurrentSessionExchange(attempt);
       if (cause instanceof Iso20022TransportError || cause instanceof Iso20022HttpError) throw cause;
       throw requestFailure(controller);
     } finally {
       clearTimeout(timer);
+      this.pendingRequests.delete(controller);
       if (this.sessionExchangeAttempt === attempt) this.sessionExchangeAttempt = undefined;
     }
   }
@@ -269,6 +296,8 @@ export class Iso20022HttpTransport implements Iso20022Transport {
   clearProcessingSession(): void {
     this.sessionExchangeAttempt = undefined;
     this.processingSession = undefined;
+    for (const controller of this.pendingRequests) controller.abort();
+    this.pendingRequests.clear();
   }
 
   get processingSessionMetadata(): ProcessingSessionInformation | undefined {
@@ -284,7 +313,7 @@ export class Iso20022HttpTransport implements Iso20022Transport {
     const lastEventId = parseStreamCursor(options.lastEventId);
     if (options.signal?.aborted === true) return;
     const session = this.requireProcessingSession();
-    const controller = new AbortController();
+    const controller = this.requestController();
     let callerAborted = false;
     const cancel = (): void => {
       callerAborted = true;
@@ -310,12 +339,17 @@ export class Iso20022HttpTransport implements Iso20022Transport {
         });
       } catch {
         if (callerAborted) return;
+        this.requireCurrentSession(session);
         throw requestFailure(controller);
       }
       if (!response.ok) {
-        const body = await parseResponse(response, this.maxResponseBytes);
-        throw processingHttpError(response.status, body);
+        try {
+          await throwHttpError(response, this.maxResponseBytes);
+        } finally {
+          this.requireCurrentSession(session);
+        }
       }
+      this.requireCurrentSession(session);
       requireEventStreamResponse(response);
       if (response.body === null) {
         throw new Iso20022TransportError("malformed_response", "The Processing event stream has no body");
@@ -329,8 +363,10 @@ export class Iso20022HttpTransport implements Iso20022Transport {
           chunk = await reader.read();
         } catch {
           if (callerAborted) return;
+          this.requireCurrentSession(session);
           throw requestFailure(controller);
         }
+        this.requireCurrentSession(session);
         if (chunk.done) {
           buffered += decoder.decode();
           if (buffered.trim().length !== 0) {
@@ -348,10 +384,14 @@ export class Iso20022HttpTransport implements Iso20022Transport {
         }
         const parsed = splitEventStreamItems(buffered);
         buffered = parsed.remainder;
-        for (const item of parsed.items) yield parseEventStreamItem(item);
+        for (const item of parsed.items) {
+          this.requireCurrentSession(session);
+          yield parseEventStreamItem(item);
+        }
       }
     } finally {
       clearTimeout(timer);
+      this.pendingRequests.delete(controller);
       options.signal?.removeEventListener("abort", cancel);
       controller.abort();
       await reader?.cancel().catch(() => undefined);
@@ -375,7 +415,7 @@ export class Iso20022HttpTransport implements Iso20022Transport {
     const session = this.requireProcessingSession();
     const headers = buildHeaders(session, operation, metadata);
     const requestBody = operation.requestBody ? serializeRequestBody(inputRecord, this.maxRequestBytes) : undefined;
-    const controller = new AbortController();
+    const controller = this.requestController();
     const timer = abortAfter(controller, this.timeoutMs);
     try {
       const request: RequestInit = {
@@ -387,20 +427,27 @@ export class Iso20022HttpTransport implements Iso20022Transport {
       if (requestBody !== undefined) request.body = requestBody;
       try {
         const response = await this.fetchImplementation(url, request);
-        const responseBody = await parseResponse(response, this.maxResponseBytes);
-        if (!response.ok) throw processingHttpError(response.status, responseBody);
+        const responseBody = await readJsonResponse(response, this.maxResponseBytes);
+        this.requireCurrentSession(session);
+        if (response.status !== operation.successResponse.status || !isProcessingResult(operationId, responseBody)) {
+          throw new Iso20022TransportError("malformed_response", "The Processing response does not match its contract");
+        }
         return responseBody as Result;
       } catch (cause) {
+        this.requireCurrentSession(session);
         if (cause instanceof Iso20022TransportError || cause instanceof Iso20022HttpError) throw cause;
         throw requestFailure(controller);
       }
     } finally {
       clearTimeout(timer);
+      this.pendingRequests.delete(controller);
     }
   }
 
   async generatePaymentFile(input: unknown, metadata: ProcessingRequestMetadata): Promise<GeneratedPaymentFileContent> {
+    const session = this.requireProcessingSession();
     const verified = await this.downloadVerified("payment_orders.generate_file", input, metadata);
+    this.requireCurrentSession(session);
     return { ...verified.metadata, bytes: verified.bytes };
   }
 
@@ -409,7 +456,9 @@ export class Iso20022HttpTransport implements Iso20022Transport {
     metadata: ProcessingRequestMetadata,
     authority: PaymentExportContentAuthority,
   ): Promise<VerifiedPaymentExportContent> {
+    const session = this.requireProcessingSession();
     const verified = await this.downloadVerified("payment_exports.download_content", input, metadata, authority);
+    this.requireCurrentSession(session);
     return { ...verified.metadata, bytes: verified.bytes };
   }
 
@@ -419,15 +468,18 @@ export class Iso20022HttpTransport implements Iso20022Transport {
     authority: PaymentExportContentAuthority,
     sink: PaymentExportContentSink,
   ): Promise<VerifiedPaymentExportContentMetadata> {
+    const session = this.requireProcessingSession();
     if (typeof sink !== "function") {
       throw new Iso20022TransportError("invalid_configuration", "A payment-export content sink is required");
     }
     const verified = await this.downloadVerified("payment_exports.download_content", input, metadata, authority);
+    this.requireCurrentSession(session);
     try {
       await sink(verified.bytes.slice());
     } catch {
       throw new Iso20022TransportError("sink_failed", "The caller-owned payment-export sink failed");
     }
+    this.requireCurrentSession(session);
     return verified.metadata;
   }
 
@@ -467,7 +519,7 @@ export class Iso20022HttpTransport implements Iso20022Transport {
     const session = this.requireProcessingSession();
     const headers = buildHeaders(session, operation, metadata);
     const requestBody = serializeRequestBody(inputRecord, this.maxRequestBytes);
-    const controller = new AbortController();
+    const controller = this.requestController();
     const timer = abortAfter(controller, this.timeoutMs);
     try {
       const response = await this.fetchImplementation(url, {
@@ -478,8 +530,13 @@ export class Iso20022HttpTransport implements Iso20022Transport {
         signal: controller.signal,
       });
       if (!response.ok) {
-        const body = await parseResponse(response, this.maxResponseBytes);
-        throw processingHttpError(response.status, body);
+        await throwHttpError(response, this.maxResponseBytes);
+      }
+      if (response.status !== operation.successResponse.status) {
+        throw new Iso20022TransportError(
+          "malformed_response",
+          "The Processing response status does not match its contract",
+        );
       }
       const verified = await parseVerifiedBinaryResponse(
         response,
@@ -487,12 +544,15 @@ export class Iso20022HttpTransport implements Iso20022Transport {
         operation.successResponse,
         expected ?? generatedContentMetadata(response, operation.successResponse, responseLimit),
       );
+      this.requireCurrentSession(session);
       return verified;
     } catch (cause) {
+      this.requireCurrentSession(session);
       if (cause instanceof Iso20022TransportError || cause instanceof Iso20022HttpError) throw cause;
       throw requestFailure(controller);
     } finally {
       clearTimeout(timer);
+      this.pendingRequests.delete(controller);
     }
   }
 }
@@ -661,7 +721,14 @@ function validCredential(value: unknown): value is string {
   );
 }
 
-function parseProcessingAudience(value: string): string {
+function parseProcessingAudience(value: string | undefined, baseUrl: URL): string {
+  if (value === undefined) {
+    if (baseUrl.href === "https://processing-api.isecure.fi/") return "isecure-processing-production-v1";
+    throw new Iso20022TransportError(
+      "invalid_configuration",
+      "processingAudience is required for this Processing API base URL",
+    );
+  }
   if (
     typeof value !== "string" ||
     value.length === 0 ||
@@ -984,11 +1051,42 @@ export async function parseResponse(response: Response, maxBytes: number): Promi
   return body as Record<string, unknown>;
 }
 
-function processingHttpError(status: number, body: Record<string, unknown>): Iso20022HttpError {
-  if (status === 403 && hasIssueCode(body, "processing_entitlement_denied")) {
-    return new ProcessingEntitlementDeniedError(body);
+async function readJsonResponse(response: Response, maxBytes: number): Promise<Record<string, unknown>> {
+  if (!response.ok) return throwHttpError(response, maxBytes);
+  return parseResponse(response, maxBytes);
+}
+
+async function throwHttpError(response: Response, maxBytes: number): Promise<never> {
+  let body: Record<string, unknown> | undefined;
+  let bodyError: Iso20022TransportErrorCode | undefined;
+  try {
+    body = await parseResponse(response, maxBytes);
+  } catch (cause) {
+    bodyError = cause instanceof Iso20022TransportError ? cause.code : "request_failed";
+    if (!response.body?.locked) void response.body?.cancel().catch(() => undefined);
   }
-  return new Iso20022HttpError(status, body);
+  const retry = response.headers.get("retry-after");
+  const requestId = response.headers.get("x-amzn-requestid") ?? response.headers.get("x-request-id");
+  const diagnostics: ProcessingHttpDiagnostics = {
+    ...(retry !== null &&
+    (/^\d{1,10}$/u.test(retry) || (Number.isFinite(Date.parse(retry)) && new Date(retry).toUTCString() === retry))
+      ? { retryAfter: retry }
+      : {}),
+    ...(requestId !== null && /^[A-Za-z0-9_-]{1,128}$/u.test(requestId) ? { requestId } : {}),
+    ...(bodyError === undefined ? {} : { bodyError }),
+  };
+  throw processingHttpError(response.status, body, diagnostics);
+}
+
+function processingHttpError(
+  status: number,
+  body: Record<string, unknown> | undefined,
+  diagnostics: ProcessingHttpDiagnostics,
+): Iso20022HttpError {
+  if (status === 403 && body !== undefined && hasIssueCode(body, "processing_entitlement_denied")) {
+    return new ProcessingEntitlementDeniedError(body, diagnostics);
+  }
+  return new Iso20022HttpError(status, body, diagnostics);
 }
 
 function hasIssueCode(body: Record<string, unknown>, expected: string): boolean {
@@ -1014,15 +1112,19 @@ async function readBoundedResponse(response: Response, maxBytes: number): Promis
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > maxBytes) {
-      await reader.cancel();
-      throw new Iso20022TransportError("response_too_large", "The Processing API response exceeds the byte limit");
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        throw new Iso20022TransportError("response_too_large", "The Processing API response exceeds the byte limit");
+      }
+      chunks.push(value);
     }
-    chunks.push(value);
+  } finally {
+    reader.releaseLock();
   }
   const combined = new Uint8Array(total);
   let offset = 0;

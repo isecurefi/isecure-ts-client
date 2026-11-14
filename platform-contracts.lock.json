@@ -117,5 +117,9 @@
   "generatedMock": {
     "path": "test-data/generated/iso20022-scenarios.json",
     "sha256": "2f7f7af33837136977fc0a3d38773b8d6ec6f83718de9c80da2e95646189ca1c"
+  },
+  "generatedValidators": {
+    "path": "src/generated/processing-response-validators.ts",
+    "sha256": "3cc396d868a0a05c5441fb12573f7bec0e1427a50e17736e61eeefb92829b66d"
   }
 }

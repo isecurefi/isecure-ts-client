@@ -1,3 +1,4 @@
+import { fixtureFetch, successFixture } from "../../test-data/processing-fixtures.js";
 import { describe, expect, it, vi, type Mock } from "vitest";
 import { createIso20022Client } from "./client.js";
 import {
@@ -34,7 +35,7 @@ function sessionResponse(overrides: Record<string, unknown> = {}): Response {
 }
 
 function transport(
-  operationFetch: typeof globalThis.fetch = vi.fn(async () => jsonResponse({ ok: true })),
+  operationFetch: typeof globalThis.fetch = vi.fn(fixtureFetch),
   options: Partial<Iso20022HttpTransportOptions> = {},
 ): { adapter: Iso20022HttpTransport; fetch: Mock<typeof globalThis.fetch> } {
   const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -80,7 +81,7 @@ async function contentAuthority(bytes: Uint8Array): Promise<PaymentExportContent
 }
 
 function xmlResponse(bytes: Uint8Array, authority: PaymentExportContentAuthority, overrides = {}): Response {
-  return new Response(bytes, {
+  return new Response(new Uint8Array(bytes), {
     status: 200,
     headers: {
       "content-type": authority.artifact_media_type,
@@ -93,6 +94,74 @@ function xmlResponse(bytes: Uint8Array, authority: PaymentExportContentAuthority
 }
 
 describe("ISO 20022 HTTP transport", () => {
+  it.each([
+    "https://processing-api.isecure.fi",
+    "https://processing-api.isecure.fi/",
+    new URL("https://PROCESSING-API.ISECURE.FI:443/"),
+  ])("uses the production audience automatically for %s", async (baseUrl) => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      sessionResponse({ audience: "isecure-processing-production-v1" }),
+    );
+    const adapter = new Iso20022HttpTransport({
+      baseUrl,
+      bootstrapAuthentication: () => ({ apiKey: API_KEY, idToken: ID_TOKEN }),
+      fetch,
+    });
+
+    await expect(adapter.exchangeProcessingSession()).resolves.toMatchObject({
+      audience: "isecure-processing-production-v1",
+    });
+    expect(fetch.mock.calls[0]?.[0]).toEqual(new URL("https://processing-api.isecure.fi/session"));
+  });
+
+  it("still refuses a foreign audience when production configuration is automatic", async () => {
+    const adapter = new Iso20022HttpTransport({
+      baseUrl: "https://processing-api.isecure.fi",
+      bootstrapAuthentication: () => ({ apiKey: API_KEY, idToken: ID_TOKEN }),
+      fetch: vi.fn(async () => sessionResponse()),
+    });
+
+    await expect(adapter.exchangeProcessingSession()).rejects.toMatchObject({ code: "invalid_session" });
+    expect(adapter.processingSessionMetadata).toBeUndefined();
+  });
+
+  it.each(["https://processing-api.isecure.fi", "https://api.example.test/processing/"])(
+    "preserves an explicit audience for %s",
+    async (baseUrl) => {
+      const { adapter } = transport(undefined, { baseUrl, processingAudience: AUDIENCE });
+      await expect(adapter.exchangeProcessingSession()).resolves.toMatchObject({ audience: AUDIENCE });
+    },
+  );
+
+  it.each([
+    "https://api.example.test/processing/",
+    "https://processing-api.test.isecure.fi",
+    "https://processing-api.isecure.fi.example.test",
+    "https://processing-api.isecure.fi:8443",
+    "https://processing-api.isecure.fi/other",
+    "http://localhost:3000",
+  ])("requires an explicit audience outside the production endpoint: %s", (baseUrl) => {
+    const fetch = vi.fn();
+    expect(
+      () =>
+        new Iso20022HttpTransport({
+          baseUrl,
+          bootstrapAuthentication: () => ({ apiKey: API_KEY, idToken: ID_TOKEN }),
+          fetch,
+        }),
+    ).toThrow("processingAudience is required");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(["", " ", " audience", "audience\n"])(
+    "rejects an invalid explicit audience instead of using the production default: %j",
+    (processingAudience) => {
+      expect(() => transport(undefined, { baseUrl: "https://processing-api.isecure.fi", processingAudience })).toThrow(
+        Iso20022TransportError,
+      );
+    },
+  );
+
   it("generates bounded verified XML through the read operation without export or approval authority", async () => {
     const bytes = new TextEncoder().encode("<Document>synthetic generated payment</Document>");
     const authority = await contentAuthority(bytes);
@@ -195,7 +264,7 @@ describe("ISO 20022 HTTP transport", () => {
       country_code: "FI",
       payment_type: paymentType,
       message_definition: "pain.001.001.09",
-      profile_version: "1",
+      profile_version: 1,
       qualification_status: "experimental",
       availability_status: "available",
     };
@@ -219,18 +288,18 @@ describe("ISO 20022 HTTP transport", () => {
       const url = input instanceof Request ? input.url : input.toString();
       if (new URL(url).pathname.endsWith("/payment-export-profile-catalog")) {
         expect(init?.method).toBe("GET");
-        return jsonResponse({ profiles: [profile], catalog_digest: `sha256:${"1".repeat(64)}`, issues: [] });
+        return jsonResponse({ ...successFixture("payment_export_profile_catalog.list").body, profiles: [profile] });
       }
       expect(new URL(url).pathname).toBe("/processing/v1/payment-export-profiles:configure");
       expect(init?.method).toBe("POST");
       if (typeof init?.body !== "string") throw new Error("synthetic configuration body missing");
       expect(JSON.parse(init.body)).toEqual(configuration);
       expect(new Headers(init?.headers).get("Idempotency-Key")).toBe("synthetic-bank-profile-configuration");
-      return jsonResponse({ issues: [] });
+      return fixtureFetch(input, init);
     });
     const { adapter } = await readyTransport(operationFetch);
     const client = createIso20022Client(adapter);
-    const catalog = await client.paymentExportProfiles.list();
+    const catalog = await client.paymentExportProfileCatalog.list();
     const selected = catalog.profiles.find((entry) => entry.bank_profile_id === profileId);
     expect(selected).toEqual(profile);
     expect(selected?.qualification_status).toBe("experimental");
@@ -265,11 +334,13 @@ describe("ISO 20022 HTTP transport", () => {
         expect(new Headers(init?.headers).get("Idempotency-Key")).toBe("synthetic-danske-draft");
         if (typeof init?.body !== "string") throw new Error("synthetic draft body missing");
         expect(JSON.parse(init.body)).toEqual(input);
-        return jsonResponse({ issues: [] });
+        return fixtureFetch(request, init);
       }
       expect(new URL(url).pathname).toBe(`/processing/v1/payment-exports/${RESOURCE_ID}`);
       expect(init?.method).toBe("GET");
-      return jsonResponse({ payment_export: { proposed_submission_date: "2030-04-02" }, issues: [] });
+      const body = successFixture("payment_exports.get").body;
+      Object.assign(body.payment_export as object, { proposed_submission_date: "2030-04-02" });
+      return jsonResponse(body);
     });
     const { adapter } = await readyTransport(operationFetch);
     const client = createIso20022Client(adapter);
@@ -320,7 +391,7 @@ describe("ISO 20022 HTTP transport", () => {
   });
 
   it("serializes generated path, query, JSON, idempotency, and version bindings", async () => {
-    const operationFetch = vi.fn(async () => jsonResponse({ ok: true }));
+    const operationFetch = vi.fn(fixtureFetch);
     const { adapter } = await readyTransport(operationFetch);
     const client = createIso20022Client(adapter);
 
@@ -335,7 +406,7 @@ describe("ISO 20022 HTTP transport", () => {
       expectedResourceVersion: '"7"',
     });
 
-    expect(String(operationFetch.mock.calls[0]?.[0])).toBe(
+    expect(String(operationFetch.mock.calls[0]?.[0] as URL)).toBe(
       "https://api.example.test/processing/v1/statements?bank_account_id=00000000-0000-4000-8000-000000000001&observed_from=2040-01-01T00%3A00%3A00Z&page_size=25&cursor=synthetic+cursor",
     );
     expect(operationFetch.mock.calls[0]?.[1]).not.toHaveProperty("body");
@@ -492,14 +563,10 @@ describe("ISO 20022 HTTP transport", () => {
   });
 
   it("preserves an indeterminate submission without simplifying or retrying it", async () => {
-    const response = {
-      context: { operation_id: "payment_execution_attempts.get" },
-      execution_attempt: {
-        state: "indeterminate",
-        fulfillment: { state: "indeterminate" },
-        bank_outcome_state: "indeterminate",
-      },
-    };
+    const response = successFixture("payment_execution_attempts.get").body;
+    const attempt = response.execution_attempt as Record<string, unknown>;
+    Object.assign(attempt, { state: "indeterminate", bank_outcome_state: "indeterminate" });
+    Object.assign(attempt.fulfillment as object, { state: "indeterminate" });
     const operationFetch = vi.fn(async () => jsonResponse(response));
     const { adapter } = await readyTransport(operationFetch);
 
@@ -515,7 +582,7 @@ describe("ISO 20022 HTTP transport", () => {
   it("downloads and returns only exact, bounded, integrity-verified XML bytes", async () => {
     const bytes = new TextEncoder().encode("<Document>synthetic</Document>");
     const authority = await contentAuthority(bytes);
-    const operationFetch = vi.fn(async () => xmlResponse(bytes, authority));
+    const operationFetch = vi.fn<typeof globalThis.fetch>(async () => xmlResponse(bytes, authority));
     const { adapter } = await readyTransport(operationFetch);
 
     const result = await createIso20022Client(adapter).paymentSubmissions.download(
@@ -539,7 +606,7 @@ describe("ISO 20022 HTTP transport", () => {
   it("calls a sink exactly once and only after complete verification", async () => {
     const bytes = new TextEncoder().encode("<Document>verified</Document>");
     const authority = await contentAuthority(bytes);
-    const operationFetch = vi.fn(async () => xmlResponse(bytes, authority));
+    const operationFetch = vi.fn<typeof globalThis.fetch>(async () => xmlResponse(bytes, authority));
     const { adapter } = await readyTransport(operationFetch);
     const sink = vi.fn(async () => undefined);
 
@@ -598,7 +665,7 @@ describe("ISO 20022 HTTP transport", () => {
     const bytes = new Uint8Array(201).fill(65);
     const authority = await contentAuthority(bytes);
     const tooSmall = await readyTransport(
-      vi.fn(async () => xmlResponse(bytes, authority)),
+      vi.fn<typeof globalThis.fetch>(async () => xmlResponse(bytes, authority)),
       { maxResponseBytes: 200 },
     );
     await expect(
@@ -622,7 +689,7 @@ describe("ISO 20022 HTTP transport", () => {
   it("turns caller sink failure into a privacy-safe local error", async () => {
     const bytes = new TextEncoder().encode("<Document/>");
     const authority = await contentAuthority(bytes);
-    const { adapter } = await readyTransport(vi.fn(async () => xmlResponse(bytes, authority)));
+    const { adapter } = await readyTransport(vi.fn<typeof globalThis.fetch>(async () => xmlResponse(bytes, authority)));
 
     const error = await createIso20022Client(adapter)
       .paymentExports.downloadTo(

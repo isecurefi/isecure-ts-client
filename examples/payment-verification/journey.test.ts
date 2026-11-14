@@ -160,7 +160,7 @@ it("discovers without disclosure, then uses one exact persisted request and expl
   };
   const { client, requests } = await harness(
     json(capability),
-    json(start),
+    json(start, 202),
     json(d.current),
     json(d.items),
     json(d.observations),
@@ -218,7 +218,7 @@ it("encodes an imported target on get and explain without treating it as a gener
     ...d.target,
     target: { target_kind: "imported_payment_artifact" as const, input_admission_id: d.review.payee_verification_id },
   };
-  const { client, requests } = await harness(json(d.current), json({}));
+  const { client, requests } = await harness(json(d.current), json(fixture("payee_verifications.explain")));
   await client.payeeVerifications.get({ payee_verification_id: d.review.payee_verification_id, target });
   await client.payeeVerifications.explain({ payee_verification_id: d.review.payee_verification_id, target });
   expect(requests.map(({ url }) => url.searchParams.get("target[target][input_admission_id]"))).toEqual([
@@ -296,9 +296,9 @@ it.each(["target", "profile", "date", "observations", "projection", "policy"])(
             ...d.target,
             target: {
               target_kind: "payment_order_revision",
-              payment_order_id: "changed",
-              revision_id: "changed",
-              exact_revision_digest: "changed",
+              payment_order_id: "00000000-0000-4000-8000-000000000099",
+              revision_id: "00000000-0000-4000-8000-000000000098",
+              exact_revision_digest: `sha256:${"9".repeat(64)}`,
             },
           },
         };
@@ -312,14 +312,20 @@ it.each(["target", "profile", "date", "observations", "projection", "policy"])(
       case "observations":
         usability = {
           ...usability,
-          observation_set_reference: { ...usability.observation_set_reference, resource_id: "changed" },
+          observation_set_reference: {
+            ...usability.observation_set_reference,
+            resource_id: "00000000-0000-4000-8000-000000000097",
+          },
         };
         break;
       case "projection":
         usability = { ...usability, projection_revision: "2" };
         break;
       case "policy":
-        usability = { ...usability, policy_binding: { ...usability.policy_binding, policy_revision_id: "changed" } };
+        usability = {
+          ...usability,
+          policy_binding: { ...usability.policy_binding, policy_revision_id: "00000000-0000-4000-8000-000000000098" },
+        };
         break;
     }
     const { client, requests } = await harness(json(d.current), xml(), json({ ...d.current, usability }));

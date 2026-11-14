@@ -113,6 +113,7 @@ export function requireVerifiedPain001(content: GeneratedPaymentFileContent): vo
 }
 
 export async function processingClient(channel: WSChannel): Promise<Iso20022Client> {
+  const processingAudience = process.env.ISECURE_PROCESSING_AUDIENCE;
   const transport = new Iso20022HttpTransport({
     baseUrl: requiredEnv("ISECURE_PROCESSING_BASE_URL"),
     bootstrapAuthentication: () => {
@@ -120,7 +121,7 @@ export async function processingClient(channel: WSChannel): Promise<Iso20022Clie
       if (!apiKey || !idToken || channel.isSessionExpired()) throw new Error("The ISECure session is not available");
       return { apiKey, idToken };
     },
-    processingAudience: requiredEnv("ISECURE_PROCESSING_AUDIENCE"),
+    ...(processingAudience === undefined ? {} : { processingAudience }),
     maxResponseBytes: 16 * 1_024 * 1_024,
     timeoutMs: 30_000,
   });
@@ -134,7 +135,7 @@ export async function processingClient(channel: WSChannel): Promise<Iso20022Clie
  * signing and bank submission happen on the File Exchange API afterwards.
  */
 export async function prepareFinalizedFile(client: Iso20022Client, inputs: GenerationInputs) {
-  const catalog = await client.paymentExportProfiles.list();
+  const catalog = await client.paymentExportProfileCatalog.list();
   const admitted = catalog.profiles.find((profile) => profile.bank_profile_id === inputs.bankProfileId);
   if (admitted?.availability_status !== "available") {
     throw new Error("The selected bank profile is not available in the catalogue");
@@ -167,7 +168,7 @@ export async function prepareFinalizedFile(client: Iso20022Client, inputs: Gener
   });
   if (capability.outcome !== "resolved" || !capability.selected)
     throw new Error("No exact payment capability was resolved");
-  const draftInput: Parameters<Iso20022Client["paymentOrders"]["createDraft"]>[0] = {
+  const draftInput: Parameters<Iso20022Client["paymentBatches"]["createDraft"]>[0] = {
     capability: capability.selected,
     external_id: inputs.runId,
     requested_execution_date: inputs.requestedExecutionDate,
@@ -192,16 +193,16 @@ export async function prepareFinalizedFile(client: Iso20022Client, inputs: Gener
       },
     ],
   };
-  const created = await client.paymentOrders.createDraft(draftInput, {
+  const created = await client.paymentBatches.createDraft(draftInput, {
     idempotencyKey: `${inputs.runId}-create-draft`,
   });
   const paymentOrderId = created.payment_order_reference.resource_id;
-  const validated = await client.paymentOrders.validate({
+  const validated = await client.paymentBatches.validate({
     payment_order_id: paymentOrderId,
     revision_id: created.revision_id,
   });
   if (validated.validation.outcome !== "valid") throw new Error("The payment order is not valid");
-  const finalized = await client.paymentOrders.finalizeDraft(
+  const finalized = await client.paymentBatches.finalize(
     { payment_order_id: paymentOrderId },
     { idempotencyKey: `${inputs.runId}-finalize`, expectedResourceVersion: JSON.stringify(created.resource_version) },
   );
@@ -213,7 +214,7 @@ export async function generateFinalizedFile(
   inputs: GenerationInputs,
 ): Promise<GeneratedPaymentFileContent> {
   const prepared = await prepareFinalizedFile(client, inputs);
-  const content = await client.paymentOrders.generateFile(prepared.query);
+  const content = await client.paymentBatches.generateFile(prepared.query);
   requireVerifiedPain001(content);
   return content;
 }

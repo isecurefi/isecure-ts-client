@@ -1,3 +1,4 @@
+import { fixtureFetch, successFixture, requestUrl } from "../../test-data/processing-fixtures.js";
 import { describe, expect, it, vi } from "vitest";
 import type {
   CreateSimulationWorkspaceInput,
@@ -82,14 +83,15 @@ async function readySimulator(operationFetch: typeof globalThis.fetch) {
 
 describe("experimental Bank Simulation Processing client", () => {
   it("uses the exact capability reference returned by discovery to create a workspace", async () => {
-    const discoveredCapability = {
-      capability_reference: capabilityReference,
-    } satisfies Pick<SimulationCapability, "capability_reference">;
-    const operationFetch = vi.fn(async (input: RequestInfo | URL) => {
+    const discoveryBody = successFixture("simulation_capabilities.list").body;
+    const discoveredCapability = (discoveryBody.capabilities as SimulationCapability[])[0];
+    if (!discoveredCapability) throw new Error("Missing synthetic capability");
+    discoveryBody.capabilities = [{ ...discoveredCapability, capability_reference: capabilityReference }];
+    const operationFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = new URL(input instanceof Request ? input.url : input.toString());
       return url.pathname.endsWith("/v1/simulation-capabilities")
-        ? jsonResponse({ capabilities: [discoveredCapability], page: {} })
-        : jsonResponse({ ok: true });
+        ? jsonResponse(discoveryBody)
+        : fixtureFetch(input, init);
     });
     const { client } = await readySimulator(operationFetch);
 
@@ -155,11 +157,11 @@ describe("experimental Bank Simulation Processing client", () => {
         "Idempotency-Key": "workspace-from-discovery",
       },
     });
-    expect(JSON.parse(String(operationFetch.mock.calls[1]?.[1]?.body))).toEqual(workspaceInput);
+    expect(JSON.parse(operationFetch.mock.calls[1]?.[1]?.body as string)).toEqual(workspaceInput);
   });
 
   it("serializes exact revision references and snapshot pagination without reducing either", async () => {
-    const operationFetch = vi.fn(async () => jsonResponse({ ok: true }));
+    const operationFetch = vi.fn(fixtureFetch);
     const { client } = await readySimulator(operationFetch);
 
     await client.simulationWorkspaces.get({ resource_reference: workspaceReference });
@@ -169,10 +171,10 @@ describe("experimental Bank Simulation Processing client", () => {
       page: { page_size: 50, cursor: "snapshot-cursor" },
     });
 
-    expect(String(operationFetch.mock.calls[0]?.[0])).toBe(
+    expect(requestUrl(operationFetch.mock.calls[0]?.[0])).toBe(
       `https://api.example.test/processing/v1/simulation-workspaces/resource_type,simulation_workspace,resource_id,${WORKSPACE_ID},resource_version,7,revision_id,${REVISION_ID}`,
     );
-    const eventUrl = new URL(String(operationFetch.mock.calls[1]?.[0]));
+    const eventUrl = new URL(requestUrl(operationFetch.mock.calls[1]?.[0]));
     expect(Object.fromEntries(eventUrl.searchParams)).toEqual({
       "workspace_reference[resource_type]": "simulation_workspace",
       "workspace_reference[resource_id]": WORKSPACE_ID,
@@ -185,7 +187,7 @@ describe("experimental Bank Simulation Processing client", () => {
   });
 
   it("uses fully typed workspace, scenario, and run references with generated revision options", async () => {
-    const operationFetch = vi.fn(async () => jsonResponse({ ok: true }));
+    const operationFetch = vi.fn(fixtureFetch);
     const { client } = await readySimulator(operationFetch);
 
     await client.simulationScenarios.list({ workspace_reference: workspaceReference, page: {} });
@@ -208,7 +210,7 @@ describe("experimental Bank Simulation Processing client", () => {
   });
 
   it("orders and encodes simple-style path members deterministically", async () => {
-    const operationFetch = vi.fn(async () => jsonResponse({ ok: true }));
+    const operationFetch = vi.fn(fixtureFetch);
     const { client } = await readySimulator(operationFetch);
     const shuffledReference: ResourceReference = {
       revision_id: "revision/with space",
@@ -219,13 +221,13 @@ describe("experimental Bank Simulation Processing client", () => {
 
     await client.simulationWorkspaces.get({ resource_reference: shuffledReference });
 
-    expect(String(operationFetch.mock.calls[0]?.[0])).toBe(
+    expect(requestUrl(operationFetch.mock.calls[0]?.[0])).toBe(
       "https://api.example.test/processing/v1/simulation-workspaces/resource_type,simulation%2Fworkspace,resource_id,resource%2Fwith%20space,resource_version,7,revision_id,revision%2Fwith%20space",
     );
   });
 
   it("rejects empty, unknown, and secret-shaped path members without leaking their names or values", async () => {
-    const operationFetch = vi.fn(async () => jsonResponse({ ok: true }));
+    const operationFetch = vi.fn(fixtureFetch);
     const { client } = await readySimulator(operationFetch);
     const secretField = "private_key";
     const secretValue = "local-private-key-material";
@@ -248,7 +250,7 @@ describe("experimental Bank Simulation Processing client", () => {
 
   it("binds generated contract version, idempotency, and optimistic concurrency exactly once", async () => {
     const stale = { issues: [{ issue_code: "stale_resource_version", safe_message: "Stale revision" }] };
-    const operationFetch = vi.fn(async () => jsonResponse(stale, 409));
+    const operationFetch = vi.fn<typeof globalThis.fetch>(async () => jsonResponse(stale, 409));
     const { client } = await readySimulator(operationFetch);
     const input = {
       workspace_reference: workspaceReference,
@@ -272,12 +274,12 @@ describe("experimental Bank Simulation Processing client", () => {
         "x-api-key": API_KEY,
       },
     });
-    expect(JSON.parse(String(request?.body))).toEqual(input);
+    expect(JSON.parse(request?.body as string)).toEqual(input);
   });
 
   it("forwards substituted references only to the server authority boundary and keeps diagnostics value-free", async () => {
     const refusal = { issues: [{ issue_code: "authorization_denied", safe_message: "Denied" }] };
-    const operationFetch = vi.fn(async () => jsonResponse(refusal, 403));
+    const operationFetch = vi.fn<typeof globalThis.fetch>(async () => jsonResponse(refusal, 403));
     const { client } = await readySimulator(operationFetch);
     const substitutedId = "00000000-0000-4000-8000-000000000099";
 
@@ -292,7 +294,7 @@ describe("experimental Bank Simulation Processing client", () => {
     expect(error).toMatchObject({ status: 403, body: refusal });
     expect(String(error)).not.toContain(substitutedId);
     expect(operationFetch).toHaveBeenCalledTimes(1);
-    expect(String(operationFetch.mock.calls[0]?.[0])).toContain(substitutedId);
+    expect(requestUrl(operationFetch.mock.calls[0]?.[0])).toContain(substitutedId);
   });
 
   it("revokes the separate Processing session without changing or reusing shared authentication", async () => {
@@ -307,7 +309,7 @@ describe("experimental Bank Simulation Processing client", () => {
   });
 
   it("rejects secret-shaped simulator input and over-broad pagination before network access", async () => {
-    const operationFetch = vi.fn(async () => jsonResponse({ ok: true }));
+    const operationFetch = vi.fn(fixtureFetch);
     const { client } = await readySimulator(operationFetch);
     const secret = "local-private-key-material";
 
