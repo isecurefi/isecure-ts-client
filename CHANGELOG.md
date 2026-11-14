@@ -46,6 +46,13 @@
 - Keep provider availability limited to the test API and separately admitted production RC until live promotion.
 
 
+## [5.0.3](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v5.0.2...isecure-ts-client-v5.0.3) (2026-11-14)
+
+
+### Bug Fixes
+
+* simplify Processing setup and harden session responses ([9fd3846](https://github.com/isecurefi/isecure-ts-client/commit/9fd3846969c69b2896fbfdcbcd805d0249dcdb62))
+
 ## [5.0.2](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v5.0.1...isecure-ts-client-v5.0.2) (2026-11-12)
 
 
