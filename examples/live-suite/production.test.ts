@@ -32,9 +32,9 @@ describe("production qualification traffic boundary", () => {
     });
     const observations: Parameters<typeof productionFetch>[0] = [];
     const run = productionFetch(observations, delegate);
-    for (let i = 0; i < 100; i++) await run(`${PRODUCTION_ORIGIN}/session`, { method: "POST" });
+    for (let i = 0; i < 200; i++) await run(`${PRODUCTION_ORIGIN}/session`, { method: "POST" });
     await expect(run(`${PRODUCTION_ORIGIN}/session`, { method: "POST" })).rejects.toThrow("BUDGET");
-    expect(delegate).toHaveBeenCalledTimes(100);
+    expect(delegate).toHaveBeenCalledTimes(200);
     expect(observations[0]).toMatchObject({ operation: "session", status: 200, requestId: "request-123" });
     expect(JSON.stringify(observations)).not.toContain("secret");
   });

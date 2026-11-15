@@ -34,8 +34,11 @@ contract. Malformed results previously accepted by a TypeScript cast now fail wi
 HTTP failures retain their status even when the body is unreadable; optional `requestId`, `retryAfter`
 and `bodyError` diagnostics do not contain the raw invalid body. Clearing or replacing a session aborts
 pending requests and rejects late results; it cannot roll back accepted server commands or revoke a
-server-side session. Existing catalogue and payment-order names remain deprecated aliases; new code
-uses `paymentExportProfileCatalog` and `paymentBatches`.
+server-side session. Payment-order names remain deprecated aliases; new code uses `paymentBatches`.
+The new experimental contract removes the former catalogue alias: `paymentExportProfiles.list()`
+now lists saved configurations, while `paymentExportProfileCatalog.list()` lists bank formats.
+Configuration reads require an explicit ID; revisions require the current resource version.
+These contract-version-2 changes require the matching server migration before SDK adoption.
 
 The Bank Simulation control namespaces also belong only to the experimental `./iso20022` surface.
 Their generated contracts, revisions, and names can evolve with the digest-pinned Processing

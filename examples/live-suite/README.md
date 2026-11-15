@@ -31,17 +31,24 @@ a fresh `ISECURE_ADMIN_MFA_CODE`; the SDK must still complete the ordinary MFA l
 Do not change pool policy or a customer identity. Credentials stay in private
 files/memory, outside Git.
 
-Production checks cover Gateway denials, real Processing session exchange, Nordea
+Production checks cover Gateway denials, real Processing session exchange, Nordea and OP
 unstructured payment preparation, profile readback, duplicate draft creation, repeated
 integrity-checked XML generation, stale revisions, unknown orders, preserved finalized
 state and cancellation of a separate draft. This is **one bank-profile journey**, not
 all 27 operations, all bank profiles, cross-tenant qualification or bank acceptance.
 The traffic boundary allows only these operations, refuses redirects and limits the
-run to 100 Processing requests. It never approves, releases, executes or uploads a
+run to 200 Processing requests. It never approves, releases, executes or uploads a
 payment. A failed request is not automatically retried.
 
 The report includes check outcomes, safe HTTP/request-ID metadata and the supplied
 release identity. It never contains credentials, response bodies or generated XML.
+The concurrent-batch checks create two OP configurations alongside Nordea, then six independent
+batches (two per configuration). They verify optional OP identifiers/defaults, paginated configuration
+listing, payment add/edit/remove isolation, stale writes, immutable finalization, wrong-profile
+refusal, unique XML identifiers, exact repeat generation and scoped configuration updates.
+The production transport uses its built-in audience default. Operator-created identities may supply
+real Cognito tokens directly when testing Processing independently of File Exchange login.
+
 `cleanup: required` means the checks are finished but lifecycle qualification is not:
 revoke the temporary Processing tenant access, suspend its entitlement, remove its
 Processing usage-plan association, and retire the temporary WS account. A customer

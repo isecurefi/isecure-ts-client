@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { checkConcurrentProductionBatches } from "./production-batches.js";
 import { randomUUID } from "node:crypto";
 import { lstat, readFile, writeFile } from "node:fs/promises";
 import { WSChannel, type IWSChannel } from "../../src/index.js";
@@ -16,6 +17,11 @@ const OPERATIONS = [
   "payment_export_profile_catalog.list",
   "payment_export_profiles.configure",
   "payment_export_profiles.get",
+  "payment_export_profiles.list",
+  "payment_orders.append_transfers",
+  "payment_orders.revise_transfer",
+  "payment_orders.remove_transfers",
+  "payment_orders.revise_draft",
   "payment_capabilities.resolve",
   "payment_orders.create_draft",
   "payment_orders.get",
@@ -72,7 +78,7 @@ export function productionFetch(observations: Observation[], delegate: typeof fe
   return async (input, init) => {
     if (input instanceof Request) throw new Error("PRODUCTION_REQUEST_OBJECT_REFUSED");
     const operation = permittedProductionOperation(String(input), init?.method ?? "GET");
-    if (++count > 100) throw new Error("PRODUCTION_REQUEST_BUDGET_EXCEEDED");
+    if (++count > 200) throw new Error("PRODUCTION_REQUEST_BUDGET_EXCEEDED");
     const start = performance.now();
     const deadline = AbortSignal.timeout(60_000);
     const signal = init?.signal ? AbortSignal.any([init.signal, deadline]) : deadline;
@@ -160,7 +166,6 @@ export async function runProductionChecks(
   };
   const transport = new Iso20022HttpTransport({
     baseUrl: PRODUCTION_ORIGIN,
-    processingAudience: "isecure-processing-production-v1",
     bootstrapAuthentication: () => {
       const { apiKey, idToken } = channel.session;
       if (!apiKey || !idToken || channel.isSessionExpired()) throw new Error("SESSION_REQUIRED");
@@ -256,6 +261,7 @@ export async function runProductionChecks(
       );
       assert.equal(cancelled.workflow_state, "cancelled");
     });
+    await checkConcurrentProductionBatches(client, prepared, check);
     report.status = "passed";
   } catch {
     /* Safe stage/status evidence only; never serialize exception bodies or XML. */
