@@ -50,6 +50,13 @@
 - Keep provider availability limited to the test API and separately admitted production RC until live promotion.
 
 
+## [5.1.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v5.0.3...isecure-ts-client-v5.1.0) (2026-11-15)
+
+
+### Features
+
+* qualify concurrent Processing batches and configuration isolation ([b3131f5](https://github.com/isecurefi/isecure-ts-client/commit/b3131f5367a3bd9d2fb3e837c295ff5cbf32867d))
+
 ## [5.0.3](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v5.0.2...isecure-ts-client-v5.0.3) (2026-11-14)
 
 
