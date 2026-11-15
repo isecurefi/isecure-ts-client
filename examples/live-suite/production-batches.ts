@@ -241,6 +241,12 @@ export async function checkConcurrentProductionBatches(
       assert.ok(batch);
       assert.ok(xml.includes(batch.item.marker));
       assert.ok(xml.includes(batch.item.profile.debtor_account_identifier));
+      assert.ok(xml.includes(batch.item.profile.debtor_bank_agreement_id));
+      if (batch.item.profile.bank_profile_id.startsWith("op-")) {
+        const initiatingParty = /<InitgPty>([\s\S]*?)<\/InitgPty>/u.exec(xml)?.[1];
+        assert.ok(initiatingParty);
+        assert.ok(!initiatingParty.includes("<Id>"));
+      }
       for (const other of batches) if (other !== batch) assert.ok(!xml.includes(other.item.marker));
       const messageId = /<MsgId>([^<]+)<\/MsgId>/u.exec(xml)?.[1];
       assert.ok(messageId);
