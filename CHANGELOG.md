@@ -2,13 +2,6 @@
 
 ## Unreleased
 
-- Processing profiles now support multiple saved configurations per tenant, including several for
-  the same account. `paymentExportProfiles.list()` lists those configurations, and `get()` requires
-  an explicit configuration ID. Browse formats with `paymentExportProfileCatalog.list()`.
-- Configuration replies include the exact capability to reuse for independent draft batches.
-  OP's unused initiating-party customer ID may be omitted. Examples bind batches at creation and
-  preserve that binding through generation. These contract changes require the matching server
-  release and data-preserving migration; they are not deployed or published by this change.
 
 - Add the Admin-only Holvi SFTP connection methods `getHolviConnection`, `enrollHolviConnection`, `disableHolviConnection` and `checkHolviConnection` from the synchronized provider contract. The server generates the Ed25519 key and returns only the OpenSSH public key; changes require the current `Version` and are never replayed. Existing file methods serve `Bank: "holvi"` unchanged. Unpublished; routes require the separately authorized deployment.
 - Connection replies carry `KeyType` (`sftp-public-key`), `Created` and `SourceAddresses` (the fixed public IPv4 addresses Holvi must allow-list). `listCerts()` adds the optional `SftpKeys` list (`SftpKeyDescriptor`) beside the X.509 certificates, recorded as the unpublished `sftpKeyOverlay` in `wsapi_v2.source.json`.
@@ -48,6 +41,22 @@
 - Add separate SDK read/lifecycle provider qualification with certificate-free discovery, complete downloads and authenticated denial checks.
 - Redact provider credential fields and suppress raw transport error messages in debug logging.
 - Keep provider availability limited to the test API and separately admitted production RC until live promotion.
+
+
+## [5.1.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v5.0.3...isecure-ts-client-v5.1.0) (2026-11-15)
+
+
+### Features
+
+* qualify concurrent Processing batches and configuration isolation ([b3131f5](https://github.com/isecurefi/isecure-ts-client/commit/b3131f5367a3bd9d2fb3e837c295ff5cbf32867d))
+
+- Processing profiles now support multiple saved configurations per tenant, including several for
+  the same account. `paymentExportProfiles.list()` lists those configurations, and `get()` requires
+  an explicit configuration ID. Browse formats with `paymentExportProfileCatalog.list()`.
+- Configuration replies include the exact capability to reuse for independent draft batches.
+  OP's unused initiating-party customer ID may be omitted. Examples bind batches at creation and
+  preserve that binding through generation. Upgrade from 5.0.3 to use the new configure/get operation contracts; the
+  matching Processing server release and data-preserving migration are required.
 
 
 ## [5.0.3](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v5.0.2...isecure-ts-client-v5.0.3) (2026-11-14)
