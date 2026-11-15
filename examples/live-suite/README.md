@@ -34,8 +34,8 @@ files/memory, outside Git.
 Production checks cover Gateway denials, real Processing session exchange, Nordea and OP
 unstructured payment preparation, profile readback, duplicate draft creation, repeated
 integrity-checked XML generation, stale revisions, unknown orders, preserved finalized
-state and cancellation of a separate draft. This is **one bank-profile journey**, not
-all 27 operations, all bank profiles, cross-tenant qualification or bank acceptance.
+state and cancellation of a separate draft, followed by the concurrent-batch checks below.
+This qualifies the exercised payment-generation paths, not all published operations or bank acceptance.
 The traffic boundary allows only these operations, refuses redirects and limits the
 run to 200 Processing requests. It never approves, releases, executes or uploads a
 payment. A failed request is not automatically retried.

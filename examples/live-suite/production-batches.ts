@@ -34,7 +34,7 @@ export async function checkConcurrentProductionBatches(
     debtor_account_identifier: "FI4516273000000856",
     initiating_party_name: "Synthetic Initiating Party Oy",
     debtor_name: "Synthetic Debtor Oy",
-    debtor_bank_agreement_id: "000123456789",
+    debtor_bank_agreement_id: "00012345678",
   };
   const profiles = [base.profile];
   await check("op-minimal-inputs-and-independent-configurations", async () => {
@@ -50,7 +50,7 @@ export async function checkConcurrentProductionBatches(
       assert.equal(p.debtor_agent_bic, "OKOYFIHH");
       assert.equal(p.debtor_account_scheme, "iban");
       assert.equal(p.debtor_account_currency, "EUR");
-      assert.equal(p.debtor_bank_agreement_id, "000123456789");
+      assert.equal(p.debtor_bank_agreement_id, "00012345678");
       profiles.push(p);
     }
     assert.equal(new Set(profiles.map((p) => p.payment_export_profile_id)).size, 3);
