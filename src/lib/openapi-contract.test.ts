@@ -48,6 +48,13 @@ const challenge = "challenge-bytes|1475429754114|4017bda8-0a15-4154-a8b7-88069b0
 
 const freshFactor = { AccessToken: "synthetic-action-token", MfaType: "SOFTWARE_TOKEN_MFA" as const, Code: "123456" };
 const contract = {
+  ConfigureBankPgpPolicy: {
+    sdkMethod: "configureBankPgpPolicy",
+    method: "PUT",
+    path: "/pgp/policy/banks/{Bank}",
+    setup: authenticate,
+    invoke: (client) => client.configureBankPgpPolicy("nordea", { RequiredSignatureCount: 1, ExpectedRevision: 0 }),
+  },
   ConfigurePgpPolicy: {
     sdkMethod: "configurePgpPolicy",
     method: "PUT",
@@ -697,7 +704,7 @@ function contractResponse(request: TransportRequest, transport: FakeTransport): 
     return response({ Accounts: [], ResponseCode: "00", ResponseText: "accounts" });
   }
   if (
-    (request.method === "PUT" && path === "/pgp/policy") ||
+    (request.method === "PUT" && (path === "/pgp/policy" || path === "/pgp/policy/banks/nordea")) ||
     (request.method === "POST" && path === "/pgp/policy/lock") ||
     (request.method === "DELETE" && path === "/pgp/keys") ||
     (request.method === "POST" && path === "/session/action-mfa")

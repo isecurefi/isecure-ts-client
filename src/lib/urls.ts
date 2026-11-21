@@ -122,6 +122,10 @@ export class UrlBuilder {
   pgpPolicy(): string {
     return this.url("pgp", "policy");
   }
+  pgpBankPolicy(bank: string): string {
+    return this.url("pgp", "policy", "banks", bank);
+  }
+
   pgpPolicyLock(): string {
     return this.url("pgp", "policy", "lock");
   }

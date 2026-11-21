@@ -92,6 +92,8 @@ export type VerifyPhoneRequest = JsonRequest<"VerifyPhone">;
 export type UploadKeyRequest = JsonRequest<"UploadKey">;
 /** Candidate API: submit the fresh factor with each protected operation; never cache a code. */
 export type FreshActionFactor = Pick<JsonRequest<"LockPgpPolicy">, "AccessToken" | "MfaType" | "Code">;
+export type ConfigureBankPgpPolicyRequest = JsonRequest<"ConfigureBankPgpPolicy">;
+export type ConfigureBankPgpPolicyResponse = JsonResponse<"ConfigureBankPgpPolicy", 200>;
 export type ConfigurePgpPolicyRequest = JsonRequest<"ConfigurePgpPolicy">;
 export type LockPgpPolicyRequest = JsonRequest<"LockPgpPolicy">;
 export type DeletePgpKeyRequest = JsonRequest<"DeletePgpKey">;
@@ -175,6 +177,7 @@ export const SUPPORTED_OPERATIONS = [
   "RetireCert",
   "UploadKey",
   "ConfigurePgpPolicy",
+  "ConfigureBankPgpPolicy",
   "LockPgpPolicy",
   "DeletePgpKey",
   "RequestActionMfa",

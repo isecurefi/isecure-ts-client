@@ -736,6 +736,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/pgp/policy/banks/{Bank}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * ConfigureBankPgpPolicy
+         * @description Admin operation: update only the selected bank signature count while unlocked. Preserve all other configured bank requirements and denials. On first configuration, snapshot one required signature for every currently supported bank; future banks remain denied. Accounts with legacy PGP verification disabled or certificates shared with other callers must use explicit full-policy replacement first. No certificate or bank entitlement is granted. ExpectedRevision must match the reviewed policy (zero when absent); distinct authorize keys must remain valid for at least 90 days. Refresh Account.PgpAuthorization after success.
+         */
+        put: operations["ConfigureBankPgpPolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1891,6 +1911,18 @@ export interface components {
             MaxRawUploadBytes: number;
             MaxRawDownloadBytes: number;
             MaxInlineRequestBytes: number;
+        };
+        /**
+         * @example {
+         *       "RequiredSignatureCount": 1,
+         *       "ExpectedRevision": 0
+         *     }
+         */
+        ConfigureBankPgpPolicyReq: {
+            /** @description Required distinct authorize signatures for this bank only. Must not exceed eligible registered keys. */
+            RequiredSignatureCount: number;
+            /** @description Exact reviewed revision; zero only for a previously absent policy. */
+            ExpectedRevision: number;
         };
     };
     responses: never;
@@ -4199,6 +4231,80 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["RequestActionMfaReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ConfigureBankPgpPolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path: {
+                /** @description Explicit supported bank route. Aliases are canonicalized; unknown or retired banks are rejected. */
+                Bank: string;
+            };
+            cookie?: never;
+        };
+        /** @description Pgp parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigureBankPgpPolicyReq"];
             };
         };
         responses: {

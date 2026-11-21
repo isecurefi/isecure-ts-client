@@ -2555,6 +2555,32 @@
           "maximum": 6225920
         }
       }
+    },
+    "ConfigureBankPgpPolicyReq": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "RequiredSignatureCount",
+        "ExpectedRevision"
+      ],
+      "properties": {
+        "RequiredSignatureCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64,
+          "description": "Required distinct authorize signatures for this bank only. Must not exceed eligible registered keys."
+        },
+        "ExpectedRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Exact reviewed revision; zero only for a previously absent policy."
+        }
+      },
+      "example": {
+        "RequiredSignatureCount": 1,
+        "ExpectedRevision": 0
+      }
     }
   },
   "host": "ws-api.isecure.fi",
@@ -6694,6 +6720,135 @@
             "schema": {
               "$ref": "#/definitions/RequestActionMfaReq"
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation successfully processed. See response.",
+            "schema": {
+              "$ref": "#/definitions/Response"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          },
+          "400": {
+            "description": "Request validation error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthenticated",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error occurred",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            },
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": [],
+            "Authorizer": []
+          }
+        ]
+      }
+    },
+    "/pgp/policy/banks/{Bank}": {
+      "put": {
+        "summary": "ConfigureBankPgpPolicy",
+        "x-code-samples": [
+          {
+            "lang": "cURL",
+            "source": ""
+          },
+          {
+            "lang": "PHP",
+            "source": ""
+          },
+          {
+            "lang": "C#",
+            "source": ""
+          },
+          {
+            "lang": "Javascript",
+            "source": ""
+          }
+        ],
+        "operationId": "ConfigureBankPgpPolicy",
+        "tags": [
+          "Pgp"
+        ],
+        "description": "Admin operation: update only the selected bank signature count while unlocked. Preserve all other configured bank requirements and denials. On first configuration, snapshot one required signature for every currently supported bank; future banks remain denied. Accounts with legacy PGP verification disabled or certificates shared with other callers must use explicit full-policy replacement first. No certificate or bank entitlement is granted. ExpectedRevision must match the reviewed policy (zero when absent); distinct authorize keys must remain valid for at least 90 days. Refresh Account.PgpAuthorization after success.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "description": "Use _IdToken_ from the Login response as the `Authorization` header",
+            "required": true,
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-api-key",
+            "description": "Use _ApiKey_ from the Login response as the `x-api-key` header",
+            "required": true,
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "ConfigureBankPgpPolicyReq",
+            "description": "Pgp parameters",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/ConfigureBankPgpPolicyReq"
+            }
+          },
+          {
+            "name": "Bank",
+            "description": "Explicit supported bank route. Aliases are canonicalized; unknown or retired banks are rejected.",
+            "type": "string",
+            "required": true,
+            "in": "path"
           }
         ],
         "responses": {

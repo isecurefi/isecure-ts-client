@@ -58,3 +58,62 @@ describe("policy-aware account administration", () => {
     expect(JSON.stringify(logs)).not.toContain(factor.Code);
   });
 });
+
+it("updates only the explicit bank without reading or replacing the whole policy", async () => {
+  const transport = new FakeTransport();
+  transport.respond(() => ({ status: 200, statusText: "OK", data: { ResponseCode: "00" } }));
+  const client = bankPolicyClient(transport);
+  client.tokens = { idToken: "synthetic-id", apiKey: "tenant" };
+  await client.configureBankPgpPolicy("osuuspankki", { RequiredSignatureCount: 2, ExpectedRevision: 3 });
+  expect(transport.requests).toHaveLength(1);
+  expect(transport.requests[0]).toMatchObject({
+    method: "PUT",
+    url: "https://example.invalid/v2/pgp/policy/banks/osuuspankki",
+    body: { RequiredSignatureCount: 2, ExpectedRevision: 3 },
+    retry: false,
+  });
+});
+
+function bankPolicyClient(transport: FakeTransport): WSChannel {
+  return new WSChannel(
+    {
+      Email: "synthetic@example.invalid",
+      Mode: "admin",
+      Bank: "nordea",
+      ApiKey: "tenant",
+      Company: "Synthetic",
+      Name: "Synthetic",
+      Password: "unused",
+      Phone: "+12025550100",
+      PublicKey: publicKey,
+      EncryptionProfile: "legacy",
+      BaseUrl: "https://example.invalid/v2",
+    },
+    { transport },
+  );
+}
+
+it("rejects missing or malformed bank selectors before any request", async () => {
+  const transport = new FakeTransport();
+  const client = bankPolicyClient(transport);
+  for (const bank of ["", " op", "op/../nordea", "op%2Fnordea", "x".repeat(65)]) {
+    await expect(
+      client.configureBankPgpPolicy(bank, { RequiredSignatureCount: 1, ExpectedRevision: 0 }),
+    ).rejects.toThrow("bank route");
+  }
+  expect(transport.requests).toHaveLength(0);
+});
+it("never falls back to whole-policy replacement or retries an uncertain bank update", async () => {
+  const transport = new FakeTransport();
+  transport.respond(() => {
+    throw new Error("connection lost after write");
+  });
+  const client = bankPolicyClient(transport);
+  client.tokens = { idToken: "synthetic-id", apiKey: "tenant" };
+  await expect(client.configureBankPgpPolicy("op", { RequiredSignatureCount: 1, ExpectedRevision: 3 })).rejects.toThrow(
+    "connection lost",
+  );
+  expect(transport.requests).toHaveLength(1);
+  expect(transport.requests[0]?.retry).toBe(false);
+  expect(new URL(transport.requests[0]?.url ?? "").pathname).toBe("/v2/pgp/policy/banks/op");
+});

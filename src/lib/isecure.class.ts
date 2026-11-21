@@ -95,6 +95,8 @@ import {
   type PgpKeyPurpose,
   type FreshActionFactor,
   type ConfigurePgpPolicyRequest,
+  type ConfigureBankPgpPolicyRequest,
+  type ConfigureBankPgpPolicyResponse,
   type ConfigurePgpPolicyResponse,
   type LockPgpPolicyRequest,
   type LockPgpPolicyResponse,
@@ -523,6 +525,15 @@ export class WSChannel {
   /** Candidate API: replace requirements at the exact revision reviewed by the caller. */
   async configurePgpPolicy(request: ConfigurePgpPolicyRequest): Promise<ConfigurePgpPolicyResponse> {
     return this.call("PUT", this.urls.pgpPolicy(), { body: request, auth: true, retry: false });
+  }
+
+  /** Update one bank at the reviewed revision, preserving other banks. Requires a supporting deployment. */
+  async configureBankPgpPolicy(
+    bank: string,
+    request: ConfigureBankPgpPolicyRequest,
+  ): Promise<ConfigureBankPgpPolicyResponse> {
+    if (!bank || !/^[a-z_]{1,64}$/.test(bank)) throw new TypeError("A bank route is required");
+    return this.call("PUT", this.urls.pgpBankPolicy(bank), { body: request, auth: true, retry: false });
   }
 
   /** Candidate API: irreversible lock; there is no unlock operation. */

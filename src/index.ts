@@ -105,6 +105,8 @@ export {
   type UploadKeyRequest,
   type FreshActionFactor,
   type ConfigurePgpPolicyRequest,
+  type ConfigureBankPgpPolicyRequest,
+  type ConfigureBankPgpPolicyResponse,
   type ConfigurePgpPolicyResponse,
   type LockPgpPolicyRequest,
   type LockPgpPolicyResponse,

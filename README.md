@@ -298,3 +298,27 @@ unchanged, including `0` to disable the client timer. Existing SDK installations
 can opt in without an API change using `new AxiosTransport({ timeoutMs: 70_000 })`
 and passing that transport to `WSChannel`. Client cancellation or timeout does not
 prove that the bank operation did not happen; it must not trigger payment resends.
+
+### Bank-specific signature requirements (not yet deployed)
+
+Use `configureBankPgpPolicy` to change one bank without replacing other banks:
+
+```ts
+await adminClient.configureBankPgpPolicy("osuuspankki", {
+  RequiredSignatureCount: 2,
+  ExpectedRevision: reviewedPolicy.Revision,
+});
+```
+
+Read `Account.PgpAuthorization` through `listAccounts()` first and use its exact
+revision (zero only when absent). Refresh it after success or an uncertain outcome;
+mutations never retry automatically. The request requires Admin access and an
+unlocked policy with enough eligible authorization keys.
+
+On first use, the server records the existing one-signature requirement for other
+currently supported banks. Accounts with legacy PGP verification disabled, or certificates shared with other
+callers, require explicit whole-policy activation instead. No bank credentials or subscription access
+are granted. `configurePgpPolicy` remains **whole-policy replacement**: omitted
+banks are blocked and an empty map is rejected. Use it only when deliberately
+replacing the complete policy, not for ordinary per-bank edits. This additive method
+requires the matching backend deployment; SDK availability alone does not enable it.
