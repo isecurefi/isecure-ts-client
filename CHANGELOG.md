@@ -50,6 +50,13 @@
 - Keep provider availability limited to the test API and separately admitted production RC until live promotion.
 
 
+## [6.1.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v6.0.0...isecure-ts-client-v6.1.0) (2026-11-22)
+
+
+### Features
+
+* expose required PGP signers in bank policy ([1a3035e](https://github.com/isecurefi/isecure-ts-client/commit/1a3035e6eb3cd88319f179651b190424da373814))
+
 ## [6.0.0](https://github.com/isecurefi/isecure-ts-client/compare/isecure-ts-client-v5.1.0...isecure-ts-client-v6.0.0) (2026-11-22)
 
 
