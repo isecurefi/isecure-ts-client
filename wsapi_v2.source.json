@@ -12,7 +12,7 @@
     "paths": ["ws-channel-api/config.json", "ws-channel-api/__wsapi.json.tmpl"],
     "stage": "gpgtest",
     "operations": ["BlockBankPgpPolicy", "LockPgpPolicy", "DeletePgpKey", "RequestActionMfa"],
-    "description": "Unpublished bank-specific policy contract; whole-policy replacement removed. Source checks pass; consumer release qualification and deployment are pending. Deployed versions are unchanged."
+    "description": "Bank-specific policy contract deployed on gpgtest and production RC; whole-policy replacement removed there. Normal V2 contract is unchanged. The required-signer SDK extension remains unpublished."
   },
   "transferOverlay": {
     "repository": "https://github.com/isecurefi/aws",
@@ -47,6 +47,18 @@
       "index": "700",
       "userdata_rust": "25",
       "register_rust": "24"
+    },
+    "productionRc": {
+      "stage": "rc",
+      "deployed": true,
+      "qualification": "16 focused hosted checks passed; synthetic tenant cleaned; full hosted suite not run; no real-bank sends",
+      "versions": {
+        "index_rust": "21",
+        "userdata_rust": "10",
+        "register_rust": "12"
+      },
+      "gatewayDeployment": "1en7pr",
+      "v2Unchanged": true
     }
   }
 }

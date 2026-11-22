@@ -333,13 +333,12 @@ supported banks, including linked callers. The SDK never adds this confirmation.
 It is rejected once configured. Future banks remain blocked until explicitly enabled.
 No certificate, subscription or bank access is granted by these methods.
 
-Availability at SDK 6.0.0 release: the new blocking and initialization-confirmation
-features require a matching backend rollout. The
-previous deployed gpgtest/RC contract supports per-bank PUT but not this new DELETE;
-normal production V2 does not yet expose policy administration. Do not infer
-availability from the presence of a method in the SDK.
+Deployment status (2026-11-22): bank-specific PUT/DELETE and initialization
+confirmation are available on gpgtest and production RC. Normal production V2
+retains its existing contract and does not expose policy administration. Do not
+infer availability from the presence of a method in the SDK.
 
-### Required signers (unreleased SDK addition; available on gpgtest)
+### Required signers (unreleased SDK addition; available on gpgtest and RC)
 
 ```ts
 await client.configureBankPgpPolicy("osuuspankki", {
@@ -349,8 +348,9 @@ await client.configureBankPgpPolicy("osuuspankki", {
 });
 ```
 
-The server feature passed focused gpgtest qualification on 2026-11-22; production
-is unchanged. These additive SDK types remain unpublished.
+The server feature passed focused qualification on gpgtest (19 checks) and
+production RC (16 checks) on 2026-11-22. V2 remains unchanged and refuses uploads
+controlled by these policies. These additive SDK types remain unpublished.
 
 This requires ERP plus another distinct registered authorize key. Required keys
 count towards the signature count. Use full primary fingerprints; signing subkeys
