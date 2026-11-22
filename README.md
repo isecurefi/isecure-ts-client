@@ -339,7 +339,7 @@ previous deployed gpgtest/RC contract supports per-bank PUT but not this new DEL
 normal production V2 does not yet expose policy administration. Do not infer
 availability from the presence of a method in the SDK.
 
-### Required signers (unreleased; requires matching server deployment)
+### Required signers (unreleased SDK addition; available on gpgtest)
 
 ```ts
 await client.configureBankPgpPolicy("osuuspankki", {
@@ -348,6 +348,9 @@ await client.configureBankPgpPolicy("osuuspankki", {
   ExpectedRevision: reviewedRevision,
 });
 ```
+
+The server feature passed focused gpgtest qualification on 2026-11-22; production
+is unchanged. These additive SDK types remain unpublished.
 
 This requires ERP plus another distinct registered authorize key. Required keys
 count towards the signature count. Use full primary fingerprints; signing subkeys
