@@ -26,7 +26,7 @@ describe("policy-aware account administration", () => {
     );
     client.tokens = { idToken: "synthetic-id", apiKey: "tenant" };
     const factor = { AccessToken: "synthetic-action-secret", MfaType: "SOFTWARE_TOKEN_MFA" as const, Code: "123456" };
-    await client.configurePgpPolicy({ RequiredSignatures: { simulator: 2 }, ExpectedRevision: 0 });
+    await client.configureBankPgpPolicy("simulator", { RequiredSignatureCount: 2, ExpectedRevision: 0 });
     await client.lockPgpPolicy({ ExpectedRevision: 1, ...factor });
     await client.deletePgpKey({ Fingerprint: "a".repeat(40), ExpectedRevision: 1 });
     await client.requestActionMfa("synthetic-action-secret");
@@ -34,7 +34,7 @@ describe("policy-aware account administration", () => {
     await client.retireCert({ Account: "customer@example.invalid" }, factor);
     await client.deleteAccount("customer@example.invalid", "customer@example.invalid", factor);
     expect(transport.requests.map((r) => [r.method, new URL(r.url).pathname])).toEqual([
-      ["PUT", "/gpgtest-rust/pgp/policy"],
+      ["PUT", "/gpgtest-rust/pgp/policy/banks/simulator"],
       ["POST", "/gpgtest-rust/pgp/policy/lock"],
       ["DELETE", "/gpgtest-rust/pgp/keys"],
       ["POST", "/gpgtest-rust/session/action-mfa"],
@@ -42,7 +42,7 @@ describe("policy-aware account administration", () => {
       ["DELETE", "/gpgtest-rust/certs/simulator"],
       ["DELETE", "/gpgtest-rust/account/customer%40example.invalid"],
     ]);
-    expect(transport.requests[0]?.body).toEqual({ RequiredSignatures: { simulator: 2 }, ExpectedRevision: 0 });
+    expect(transport.requests[0]?.body).toEqual({ RequiredSignatureCount: 2, ExpectedRevision: 0 });
     expect(transport.requests[1]?.body).toEqual({ ExpectedRevision: 1, ...factor });
     expect(transport.requests[3]?.body).toEqual({ AccessToken: factor.AccessToken, MfaType: "SMS_MFA" });
     expect(transport.requests[4]?.body).toEqual({
@@ -116,4 +116,39 @@ it("never falls back to whole-policy replacement or retries an uncertain bank up
   expect(transport.requests).toHaveLength(1);
   expect(transport.requests[0]?.retry).toBe(false);
   expect(new URL(transport.requests[0]?.url ?? "").pathname).toBe("/v2/pgp/policy/banks/op");
+});
+
+it("blocks one bank with an explicit DELETE, never a zero count or whole-map replacement", async () => {
+  const transport = new FakeTransport();
+  transport.respond(() => ({ status: 200, statusText: "OK", data: { ResponseCode: "00" } }));
+  const client = bankPolicyClient(transport);
+  client.tokens = { idToken: "synthetic-id", apiKey: "tenant" };
+  expect("configurePgpPolicy" in client).toBe(false);
+  await client.blockBankPgpPolicy("op", { ExpectedRevision: 4 });
+  expect(transport.requests).toHaveLength(1);
+  expect(transport.requests[0]).toMatchObject({
+    method: "DELETE",
+    url: "https://example.invalid/v2/pgp/policy/banks/op",
+    body: { ExpectedRevision: 4 },
+    retry: false,
+  });
+  await expect(client.blockBankPgpPolicy("", { ExpectedRevision: 4 })).rejects.toThrow("bank route");
+  expect(transport.requests).toHaveLength(1);
+});
+
+it("passes explicit first-policy confirmation without inferring it from a login or missing revision", async () => {
+  const transport = new FakeTransport();
+  transport.respond(() => ({ status: 200, statusText: "OK", data: { ResponseCode: "00" } }));
+  const client = bankPolicyClient(transport);
+  client.tokens = { idToken: "synthetic-id", apiKey: "tenant" };
+  await client.configureBankPgpPolicy("op", {
+    RequiredSignatureCount: 1,
+    ExpectedRevision: 0,
+    ConfirmPolicyInitialization: true,
+  });
+  expect(transport.requests[0]?.body).toEqual({
+    RequiredSignatureCount: 1,
+    ExpectedRevision: 0,
+    ConfirmPolicyInitialization: true,
+  });
 });

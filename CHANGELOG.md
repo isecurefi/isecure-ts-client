@@ -1,3 +1,9 @@
+## 6.0.0 — unreleased
+
+- Remove the candidate whole-policy `configurePgpPolicy` operation. Use bank-specific `configureBankPgpPolicy` and explicit `blockBankPgpPolicy` instead.
+- Add explicit first-policy confirmation for accounts with PGP exemptions or shared certificates. Preserve other banks, revision checks and irreversible locking.
+- Requires a matching API deployment; no normal production availability is implied.
+
 # Changelog
 
 ## Unreleased

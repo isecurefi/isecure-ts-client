@@ -55,12 +55,12 @@ const contract = {
     setup: authenticate,
     invoke: (client) => client.configureBankPgpPolicy("nordea", { RequiredSignatureCount: 1, ExpectedRevision: 0 }),
   },
-  ConfigurePgpPolicy: {
-    sdkMethod: "configurePgpPolicy",
-    method: "PUT",
-    path: "/pgp/policy",
+  BlockBankPgpPolicy: {
+    sdkMethod: "blockBankPgpPolicy",
+    method: "DELETE",
+    path: "/pgp/policy/banks/{Bank}",
     setup: authenticate,
-    invoke: (client) => client.configurePgpPolicy({ RequiredSignatures: { simulator: 2 }, ExpectedRevision: 0 }),
+    invoke: (client) => client.blockBankPgpPolicy("nordea", { ExpectedRevision: 0 }),
   },
   LockPgpPolicy: {
     sdkMethod: "lockPgpPolicy",
@@ -364,9 +364,9 @@ describe("OpenAPI contract honesty", () => {
     expect(source.upstreamSha256).toMatch(/^[a-f0-9]{64}$/);
     expect(source.candidateOverlay.repository).toBe("https://github.com/isecurefi/aws");
     expect(source.candidateOverlay.commit).toMatch(/^[a-f0-9]{40}$/);
-    expect(source.candidateOverlay.stage).toBe("gpgtest-rust");
+    expect(source.candidateOverlay.stage).toBe("gpgtest");
     expect(source.candidateOverlay.operations).toEqual([
-      "ConfigurePgpPolicy",
+      "BlockBankPgpPolicy",
       "LockPgpPolicy",
       "DeletePgpKey",
       "RequestActionMfa",
@@ -704,7 +704,7 @@ function contractResponse(request: TransportRequest, transport: FakeTransport): 
     return response({ Accounts: [], ResponseCode: "00", ResponseText: "accounts" });
   }
   if (
-    (request.method === "PUT" && (path === "/pgp/policy" || path === "/pgp/policy/banks/nordea")) ||
+    (["PUT", "DELETE"].includes(request.method) && path === "/pgp/policy/banks/nordea") ||
     (request.method === "POST" && path === "/pgp/policy/lock") ||
     (request.method === "DELETE" && path === "/pgp/keys") ||
     (request.method === "POST" && path === "/session/action-mfa")

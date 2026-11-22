@@ -220,7 +220,7 @@ this field; display an unknown date instead of inferring one from login or delet
 
 ### Rust candidate account administration (unpublished)
 
-The local candidate contract adds `configurePgpPolicy`, `lockPgpPolicy`,
+The local contract provides `configureBankPgpPolicy`, `blockBankPgpPolicy`, `lockPgpPolicy`,
 `deletePgpKey` (full primary fingerprint), and `requestActionMfa` (SMS dispatch).
 These operations require a supporting Test deployment; their
 presence in this SDK does not imply production availability. `uploadPgpKey` accepts
@@ -299,26 +299,41 @@ can opt in without an API change using `new AxiosTransport({ timeoutMs: 70_000 }
 and passing that transport to `WSChannel`. Client cancellation or timeout does not
 prove that the bank operation did not happen; it must not trigger payment resends.
 
-### Bank-specific signature requirements (not yet deployed)
+### Bank-specific signature requirements
 
-Use `configureBankPgpPolicy` to change one bank without replacing other banks:
+PGP keys belong to the account. Admin sets the required number of distinct authorize
+keys separately for each bank. Updating one bank never replaces another bank's settings.
 
 ```ts
 await adminClient.configureBankPgpPolicy("osuuspankki", {
   RequiredSignatureCount: 2,
   ExpectedRevision: reviewedPolicy.Revision,
 });
+// Refresh Account.PgpAuthorization before the next change.
+await adminClient.blockBankPgpPolicy("nordea", {
+  ExpectedRevision: refreshedPolicy.Revision,
+});
 ```
 
-Read `Account.PgpAuthorization` through `listAccounts()` first and use its exact
-revision (zero only when absent). Refresh it after success or an uncertain outcome;
-mutations never retry automatically. The request requires Admin access and an
-unlocked policy with enough eligible authorization keys.
+Blocking prevents uploads to that bank; it does not disable PGP verification, retire
+its certificate or prevent downloads. Use `configureBankPgpPolicy` to enable it again.
+Zero signatures is invalid. Blocking every bank leaves an explicit deny-all policy.
+The old `configurePgpPolicy` whole-map operation has been removed.
 
-On first use, the server records the existing one-signature requirement for other
-currently supported banks. Accounts with legacy PGP verification disabled, or certificates shared with other
-callers, require explicit whole-policy activation instead. No bank credentials or subscription access
-are granted. `configurePgpPolicy` remains **whole-policy replacement**: omitted
-banks are blocked and an empty map is rejected. Use it only when deliberately
-replacing the complete policy, not for ordinary per-bank edits. This additive method
-requires the matching backend deployment; SDK availability alone does not enable it.
+Read `Account.PgpAuthorization` via `listAccounts()` and use its exact revision (zero
+only when absent). Refresh after success or an uncertain outcome; writes never retry
+automatically. N requires N distinct eligible primary authorize keys, with no named
+mandatory signer. Deleting a key cannot leave an allowed bank below its requirement.
+`lockPgpPolicy` permanently freezes **all** account keys and bank settings.
+
+First configuration preserves one signature for all currently supported banks.
+For an account with PGP checks disabled or shared certificates, explicitly add
+`ConfirmPolicyInitialization: true` to acknowledge activating those checks for all
+supported banks, including linked callers. The SDK never adds this confirmation.
+It is rejected once configured. Future banks remain blocked until explicitly enabled.
+No certificate, subscription or bank access is granted by these methods.
+
+Availability: this source contract requires the matching backend rollout. The
+previous deployed gpgtest/RC contract supports per-bank PUT but not this new DELETE;
+normal production V2 does not yet expose policy administration. Do not infer
+availability from the presence of a method in the SDK.

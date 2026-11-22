@@ -464,6 +464,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/pgp/keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * DeletePgpKey
+         * @description Candidate-only Admin operation. Delete every duplicate row of one full primary PGP fingerprint from the authenticated account while unlocked. ExpectedRevision must exactly match the reviewed policy, or be zero if none exists. Cannot reduce distinct eligible keys below configured requirements. The legacy short-ID DeleteKey operation remains reserved. Not available until Rust registration deployment is qualified.
+         */
+        delete: operations["DeletePgpKey"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pgp/policy/banks/{Bank}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * ConfigureBankPgpPolicy
+         * @description Admin: set the selected bank signature count without changing other banks. First use snapshots one signature for every currently supported bank. For accounts with PGP verification disabled or shared certificates, ConfirmPolicyInitialization=true explicitly activates these account-wide requirements, including linked callers. Future banks and banks absent from an existing policy are blocked. ExpectedRevision is zero before first configuration, otherwise the reviewed Account.PgpAuthorization revision. Counts require distinct authorize keys valid for at least 90 days. Refresh account state after success; never automatically retry mutations.
+         */
+        put: operations["ConfigureBankPgpPolicy"];
+        post?: never;
+        /**
+         * BlockBankPgpPolicy
+         * @description Admin: block uploads to the selected bank while preserving every other bank setting. This never disables signature verification. Blocking the last allowed bank leaves an explicit deny-all policy; it does not reset to legacy behavior. Use ConfigureBankPgpPolicy to enable that bank again. Same initialization, revision and irreversible-lock rules as ConfigureBankPgpPolicy. Refresh account state after success; never automatically retry mutations.
+         */
+        delete: operations["BlockBankPgpPolicy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pgp/policy/lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * LockPgpPolicy
+         * @description Candidate-only Admin operation. Irreversibly freeze the authenticated account's configured bank signature requirements and all registered PGP keys, including export keys. Requires the exact reviewed policy revision and a fresh code from an established allowed factor. There is no API unlock or administrator override. Do not automatically replay an uncertain result; refresh Account.PgpAuthorization. Not available until Rust registration, audit-reader and candidate routing are qualified.
+         */
+        post: operations["LockPgpPolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/session/action-mfa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * RequestActionMfa
+         * @description Candidate-only Admin operation. Request an SMS code for a protected action using the opaque AccessToken returned by completed Rust Admin login. Requires an already established, enabled SMS factor. This does not verify a code, change a phone or authenticator, or authorize or perform a protected mutation. TOTP-only accounts cannot request SMS. An acknowledged request is not proof of SMS delivery; do not automatically replay an uncertain request.
+         */
+        post: operations["RequestActionMfa"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/session/{Email}/{Mode}": {
         parameters: {
             query?: never;
@@ -656,106 +740,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/pgp/policy": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * ConfigurePgpPolicy
-         * @description Candidate-only Admin operation. Replace the authenticated account's bank signature requirements while unlocked. ExpectedRevision must match the reviewed policy, or be zero for an absent policy. Counts use distinct registered authorization keys; missing banks deny uploads once configured. Refresh Account.PgpAuthorization after success. Not available until the Rust registration and audit-reader deployment is qualified.
-         */
-        put: operations["ConfigurePgpPolicy"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/pgp/policy/lock": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * LockPgpPolicy
-         * @description Candidate-only Admin operation. Irreversibly freeze the authenticated account's configured bank signature requirements and all registered PGP keys, including export keys. Requires the exact reviewed policy revision and a fresh code from an established allowed factor. There is no API unlock or administrator override. Do not automatically replay an uncertain result; refresh Account.PgpAuthorization. Not available until Rust registration, audit-reader and candidate routing are qualified.
-         */
-        post: operations["LockPgpPolicy"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/pgp/keys": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * DeletePgpKey
-         * @description Candidate-only Admin operation. Delete every duplicate row of one full primary PGP fingerprint from the authenticated account while unlocked. ExpectedRevision must exactly match the reviewed policy, or be zero if none exists. Cannot reduce distinct eligible keys below configured requirements. The legacy short-ID DeleteKey operation remains reserved. Not available until Rust registration deployment is qualified.
-         */
-        delete: operations["DeletePgpKey"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/session/action-mfa": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * RequestActionMfa
-         * @description Candidate-only Admin operation. Request an SMS code for a protected action using the opaque AccessToken returned by completed Rust Admin login. Requires an already established, enabled SMS factor. This does not verify a code, change a phone or authenticator, or authorize or perform a protected mutation. TOTP-only accounts cannot request SMS. An acknowledged request is not proof of SMS delivery; do not automatically replay an uncertain request.
-         */
-        post: operations["RequestActionMfa"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/pgp/policy/banks/{Bank}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * ConfigureBankPgpPolicy
-         * @description Admin operation: update only the selected bank signature count while unlocked. Preserve all other configured bank requirements and denials. On first configuration, snapshot one required signature for every currently supported bank; future banks remain denied. Accounts with legacy PGP verification disabled or certificates shared with other callers must use explicit full-policy replacement first. No certificate or bank entitlement is granted. ExpectedRevision must match the reviewed policy (zero when absent); distinct authorize keys must remain valid for at least 90 days. Refresh Account.PgpAuthorization after success.
-         */
-        put: operations["ConfigureBankPgpPolicy"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -826,6 +810,18 @@ export interface components {
             LinkedTo?: string;
             /** @description Full name of registrant */
             Name: string;
+            /** @description Candidate Rust API policy metadata. Absent means no stored policy; unavailable means malformed data and must never be displayed as unlocked. This descriptive view does not grant file exchange or count distinct cryptographic keys. Times are Unix seconds. */
+            PgpAuthorization?: {
+                Locked?: boolean;
+                LockedAt?: number;
+                RequiredSignatures?: {
+                    [key: string]: number;
+                };
+                Revision?: number;
+                /** @enum {string} */
+                State: "configured" | "unavailable";
+                UpdatedAt?: number;
+            };
             /** @description Read-only public keys directly owned by this account, in stored order, including duplicates. An empty array means no stored entries; an absent field means unavailable information or an older deployment. Introduced in 2.17.0 and available in production and the test API. Decode the returned public armor in the application. */
             PgpKeys?: components["schemas"]["AccountPgpKeyDescriptor"][];
             /** @description Phone number with country code and `+` in front */
@@ -837,18 +833,6 @@ export interface components {
             PurgeAfter?: string;
             /** @description Certificates retired with RetireCert or set aside by ISECure */
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
-            /** @description Candidate Rust API policy metadata. Absent means no stored policy; unavailable means malformed data and must never be displayed as unlocked. This descriptive view does not grant file exchange or count distinct cryptographic keys. Times are Unix seconds. */
-            PgpAuthorization?: {
-                /** @enum {string} */
-                State: "configured" | "unavailable";
-                Revision?: number;
-                Locked?: boolean;
-                UpdatedAt?: number;
-                LockedAt?: number;
-                RequiredSignatures?: {
-                    [key: string]: number;
-                };
-            };
         };
         /**
          * @description One stored account public-key entry. Decode OpenPGP packets locally to inspect identity, fingerprints, dates and subkeys; the API does not decode or establish trust. Duplicate entries remain separate. An unreadable entry remains present with unavailable fields omitted.
@@ -1000,6 +984,18 @@ export interface components {
         };
         /**
          * @example {
+         *       "ConfirmPolicyInitialization": true,
+         *       "ExpectedRevision": 0
+         *     }
+         */
+        BlockBankPgpPolicyReq: {
+            /** @description Only for first configuration. Explicitly confirm activating signature checks for all currently supported banks, including exempt accounts and linked callers. Rejected when a policy already exists. */
+            ConfirmPolicyInitialization?: boolean;
+            /** @description Exact reviewed revision; zero only for a previously absent policy. */
+            ExpectedRevision: number;
+        };
+        /**
+         * @example {
          *       "CertName": "osuuspankki_customer_signing_cert",
          *       "Expires": "Oct 28 06:30:08 2017 GMT",
          *       "Issuer": "CUSTOMER TEST OP-Pohjola WS CA",
@@ -1039,24 +1035,39 @@ export interface components {
         };
         /**
          * @example {
-         *       "ConfirmSoftDelete": "string",
+         *       "ConfirmPolicyInitialization": true,
+         *       "ExpectedRevision": 0,
+         *       "RequiredSignatureCount": 1
+         *     }
+         */
+        ConfigureBankPgpPolicyReq: {
+            /** @description Only for first configuration. Explicitly confirm activating signature checks for all currently supported banks, including exempt accounts and linked callers. Rejected when a policy already exists. */
+            ConfirmPolicyInitialization?: boolean;
+            /** @description Exact reviewed revision; zero only for a previously absent policy. */
+            ExpectedRevision: number;
+            /** @description Required distinct authorize signatures for this bank only. Must not exceed eligible registered keys. */
+            RequiredSignatureCount: number;
+        };
+        /**
+         * @example {
          *       "AccessToken": "string",
-         *       "MfaType": "string",
-         *       "Code": "string"
+         *       "Code": "string",
+         *       "ConfirmSoftDelete": "string",
+         *       "MfaType": "string"
          *     }
          */
         DeleteAccountReq: {
-            /** @description Must equal the decoded Email path value exactly. */
-            ConfirmSoftDelete: string;
             /** @description Opaque Admin action credential from completed login. */
             AccessToken: string;
+            /** @description Fresh verification code. Never log this request body. */
+            Code: string;
+            /** @description Must equal the decoded Email path value exactly. */
+            ConfirmSoftDelete: string;
             /**
              * @description Established allowed factor used for this action.
              * @enum {string}
              */
             MfaType: "SMS_MFA" | "SOFTWARE_TOKEN_MFA";
-            /** @description Fresh verification code. Never log this request body. */
-            Code: string;
         };
         /**
          * @example {
@@ -1099,6 +1110,18 @@ export interface components {
         DeleteKeyReq: {
             /** @description 8 chars hexadecimal PGP Key Id (see e.g. gpg --list-keys) */
             PgpKeyId: string;
+        };
+        /**
+         * @example {
+         *       "ExpectedRevision": 0,
+         *       "Fingerprint": "767eb41e692e5e38ee2a3cdfed07d4fd5aac69ce"
+         *     }
+         */
+        DeletePgpKeyReq: {
+            /** @description Exact reviewed revision; zero only for a previously absent policy. */
+            ExpectedRevision: number;
+            /** @description Full primary-key fingerprint (40 or 64 hexadecimal characters), never a short key ID or subkey fingerprint. */
+            Fingerprint: string;
         };
         /**
          * @example {
@@ -1176,6 +1199,18 @@ export interface components {
             Status: string;
             /** @description Bank specific target id */
             TargetId?: string;
+        };
+        /** @description Optional per-bank transfer advertisement. Omission from a successful ListCerts response means legacy inline support. Advertising is not authorization or evidence of deployment. Version 1 inline-v1 uses unchanged Files operations; transfer-v1 requires authenticated version-2 details before use. Test supports the simulator; Production remains on the existing Files contract. */
+        FileTransferCapability: {
+            Bank: string;
+            /** @enum {integer} */
+            ContractVersion: 1;
+            Delivery: ("inline" | "s3")[];
+            Encodings: ("identity" | "gzip")[];
+            MaxInlineRequestBytes: number;
+            MaxRawDownloadBytes: number;
+            MaxRawUploadBytes: number;
+            Protocols: ("inline-v1" | "transfer-v1")[];
         };
         /**
          * @example {
@@ -1282,10 +1317,10 @@ export interface components {
          * @example {
          *       "Certs": [],
          *       "Connections": [],
+         *       "FileTransferCapabilities": [],
          *       "ResponseCode": "..",
          *       "ResponseText": "..",
          *       "Retired": [],
-         *       "FileTransferCapabilities": [],
          *       "SftpKeys": []
          *     }
          */
@@ -1294,14 +1329,14 @@ export interface components {
             Certs: components["schemas"]["CertDescriptor"][];
             /** @description Effective bank connections, including same-API-key certificates shared by the linked owner */
             Connections?: components["schemas"]["BankConnectionDescriptor"][];
+            /** @description Optional per-bank versioned transfer support. Absent on legacy servers. Empty array advertises no supported transfers. Capability discovery does not contact a bank or grant authority. */
+            FileTransferCapabilities?: components["schemas"]["FileTransferCapability"][];
             /** @description Two digit response code in string format */
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
             /** @description Certificates retired with RetireCert (or set aside by ISECure); no longer usable and removed with the account */
             Retired?: components["schemas"]["RetiredCertDescriptor"][];
-            /** @description Optional per-bank versioned transfer support. Absent on legacy servers. Empty array advertises no supported transfers. Capability discovery does not contact a bank or grant authority. */
-            FileTransferCapabilities?: components["schemas"]["FileTransferCapability"][];
             /** @description Bank SFTP login keys visible to this account, listed beside the X.509 certificates. Absent when there are none. */
             SftpKeys?: components["schemas"]["SftpKeyDescriptor"][];
         };
@@ -1334,6 +1369,27 @@ export interface components {
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
+        };
+        /**
+         * @example {
+         *       "AccessToken": "string",
+         *       "Code": "string",
+         *       "ExpectedRevision": 1,
+         *       "MfaType": "string"
+         *     }
+         */
+        LockPgpPolicyReq: {
+            /** @description Opaque Admin action credential returned by completed Rust Admin login; never a raw provider token. */
+            AccessToken: string;
+            /** @description Fresh six-digit code from the selected factor. */
+            Code: string;
+            /** @description Exact reviewed revision of an existing configured policy. */
+            ExpectedRevision: number;
+            /**
+             * @description Established allowed factor to verify for this lock operation.
+             * @enum {string}
+             */
+            MfaType: "SMS_MFA" | "SOFTWARE_TOKEN_MFA";
         };
         /**
          * @example {
@@ -1531,11 +1587,44 @@ export interface components {
             /** @description Human readable response text */
             ResponseText: string;
         };
+        /**
+         * @example {
+         *       "AccessToken": "string",
+         *       "MfaType": "string"
+         *     }
+         */
+        RequestActionMfaReq: {
+            /** @description Opaque Admin action credential; never a raw provider access token. */
+            AccessToken: string;
+            /**
+             * @description SMS_MFA only. TOTP codes are generated by the existing authenticator.
+             * @enum {string}
+             */
+            MfaType: "SMS_MFA";
+        };
         Response: {
             /** @description Two digit response code in string format */
             ResponseCode: string;
             /** @description Human readable response text */
             ResponseText: string;
+        };
+        /**
+         * @example {
+         *       "AccessToken": "string",
+         *       "Code": "string",
+         *       "MfaType": "string"
+         *     }
+         */
+        RetireCertReq: {
+            /** @description Opaque Admin action credential from completed login. */
+            AccessToken: string;
+            /** @description Fresh verification code. Never log this request body. */
+            Code: string;
+            /**
+             * @description Established allowed factor used for this action.
+             * @enum {string}
+             */
+            MfaType: "SMS_MFA" | "SOFTWARE_TOKEN_MFA";
         };
         /**
          * @example {
@@ -1615,26 +1704,26 @@ export interface components {
         };
         /** @description A server-generated bank SSH login key. Only the public key is ever returned; SSH keys have no expiry and stay registered at the bank until revoked. */
         SftpKeyDescriptor: {
-            /** @description Public File Exchange API bank identifier */
-            Bank: string;
-            /** @enum {string} */
-            Type: "sftp-public-key";
             /**
              * @description Whether this account owns the connection or uses the one of its linked account
              * @enum {string}
              */
             Access: "direct" | "shared";
-            /** @description Login user name assigned by the bank */
-            SftpUser: string;
-            /** @description OpenSSH public key registered with the bank */
-            PublicKey: string;
-            /** @description OpenSSH SHA256 fingerprint of PublicKey */
-            Fingerprint?: string;
+            /** @description Public File Exchange API bank identifier */
+            Bank: string;
             /**
              * Format: date-time
              * @description UTC enrollment time
              */
             Created?: string;
+            /** @description OpenSSH SHA256 fingerprint of PublicKey */
+            Fingerprint?: string;
+            /** @description OpenSSH public key registered with the bank */
+            PublicKey: string;
+            /** @description Login user name assigned by the bank */
+            SftpUser: string;
+            /** @enum {string} */
+            Type: "sftp-public-key";
         };
         /**
          * @example {
@@ -1707,12 +1796,14 @@ export interface components {
         };
         /**
          * @example {
+         *       "ExpectedRevision": 0,
          *       "PgpKey": "...",
-         *       "PgpKeyPurpose": "authorize",
-         *       "ExpectedRevision": 0
+         *       "PgpKeyPurpose": "authorize"
          *     }
          */
         UploadKeyReq: {
+            /** @description Reviewed PGP authorization policy revision. Omit or use zero only for an account without a policy. Requires a deployment with policy-aware registration support. */
+            ExpectedRevision?: number;
             /** @description ASCII armored PGP Key */
             PgpKey: string;
             /**
@@ -1720,8 +1811,6 @@ export interface components {
              * @enum {string}
              */
             PgpKeyPurpose: "export" | "authorize";
-            /** @description Reviewed PGP authorization policy revision. Omit or use zero only for an account without a policy. Requires a deployment with policy-aware registration support. */
-            ExpectedRevision?: number;
         };
         /**
          * @example {
@@ -1817,112 +1906,6 @@ export interface components {
             legalEntityId: components["schemas"]["WorkspaceAuthorityUuid"];
             membershipRevision: components["schemas"]["WorkspaceAuthorityRevision"];
             platformTenantId: components["schemas"]["WorkspaceAuthorityUuid"];
-        };
-        /**
-         * @example {
-         *       "RequiredSignatures": {
-         *         "osuuspankki": 1
-         *       },
-         *       "ExpectedRevision": 0
-         *     }
-         */
-        ConfigurePgpPolicyReq: {
-            /** @description Bank route to required signature count. Aliases are canonicalized; repeated aliases and counts exceeding distinct eligible keys are rejected by the Lambda. */
-            RequiredSignatures: {
-                [key: string]: number;
-            };
-            /** @description Exact reviewed revision; zero only for a previously absent policy. */
-            ExpectedRevision: number;
-        };
-        /**
-         * @example {
-         *       "ExpectedRevision": 1,
-         *       "AccessToken": "string",
-         *       "MfaType": "string",
-         *       "Code": "string"
-         *     }
-         */
-        LockPgpPolicyReq: {
-            /** @description Exact reviewed revision of an existing configured policy. */
-            ExpectedRevision: number;
-            /** @description Opaque Admin action credential returned by completed Rust Admin login; never a raw provider token. */
-            AccessToken: string;
-            /**
-             * @description Established allowed factor to verify for this lock operation.
-             * @enum {string}
-             */
-            MfaType: "SMS_MFA" | "SOFTWARE_TOKEN_MFA";
-            /** @description Fresh six-digit code from the selected factor. */
-            Code: string;
-        };
-        /**
-         * @example {
-         *       "Fingerprint": "767eb41e692e5e38ee2a3cdfed07d4fd5aac69ce",
-         *       "ExpectedRevision": 0
-         *     }
-         */
-        DeletePgpKeyReq: {
-            /** @description Full primary-key fingerprint (40 or 64 hexadecimal characters), never a short key ID or subkey fingerprint. */
-            Fingerprint: string;
-            /** @description Exact reviewed revision; zero only for a previously absent policy. */
-            ExpectedRevision: number;
-        };
-        /**
-         * @example {
-         *       "AccessToken": "string",
-         *       "MfaType": "string"
-         *     }
-         */
-        RequestActionMfaReq: {
-            /** @description Opaque Admin action credential; never a raw provider access token. */
-            AccessToken: string;
-            /**
-             * @description SMS_MFA only. TOTP codes are generated by the existing authenticator.
-             * @enum {string}
-             */
-            MfaType: "SMS_MFA";
-        };
-        /**
-         * @example {
-         *       "AccessToken": "string",
-         *       "MfaType": "string",
-         *       "Code": "string"
-         *     }
-         */
-        RetireCertReq: {
-            /** @description Opaque Admin action credential from completed login. */
-            AccessToken: string;
-            /**
-             * @description Established allowed factor used for this action.
-             * @enum {string}
-             */
-            MfaType: "SMS_MFA" | "SOFTWARE_TOKEN_MFA";
-            /** @description Fresh verification code. Never log this request body. */
-            Code: string;
-        };
-        /** @description Optional per-bank transfer advertisement. Omission from a successful ListCerts response means legacy inline support. Advertising is not authorization or evidence of deployment. Version 1 inline-v1 uses unchanged Files operations; transfer-v1 requires authenticated version-2 details before use. Test supports the simulator; Production remains on the existing Files contract. */
-        FileTransferCapability: {
-            /** @enum {integer} */
-            ContractVersion: 1;
-            Bank: string;
-            Protocols: ("inline-v1" | "transfer-v1")[];
-            Encodings: ("identity" | "gzip")[];
-            Delivery: ("inline" | "s3")[];
-            MaxRawUploadBytes: number;
-            MaxRawDownloadBytes: number;
-            MaxInlineRequestBytes: number;
-        };
-        /**
-         * @example {
-         *       "RequiredSignatureCount": 1,
-         *       "ExpectedRevision": 0
-         *     }
-         */
-        ConfigureBankPgpPolicyReq: {
-            /** @description Required distinct authorize signatures for this bank only. Must not exceed eligible registered keys. */
-            RequiredSignatureCount: number;
-            /** @description Exact reviewed revision; zero only for a previously absent policy. */
-            ExpectedRevision: number;
         };
     };
     responses: never;
@@ -3608,6 +3591,367 @@ export interface operations {
             };
         };
     };
+    DeletePgpKey: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Pgp parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeletePgpKeyReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ConfigureBankPgpPolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path: {
+                /** @description Explicit supported bank route. Aliases are canonicalized; unknown or retired banks are rejected. */
+                Bank: string;
+            };
+            cookie?: never;
+        };
+        /** @description Pgp parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfigureBankPgpPolicyReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    BlockBankPgpPolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path: {
+                /** @description Explicit supported bank route. Aliases are canonicalized; unknown or retired banks are rejected. */
+                Bank: string;
+            };
+            cookie?: never;
+        };
+        /** @description Pgp parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlockBankPgpPolicyReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    LockPgpPolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Pgp parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LockPgpPolicyReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    RequestActionMfa: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
+                Authorization: string;
+                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
+                "x-api-key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Session parameters */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestActionMfaReq"];
+            };
+        };
+        responses: {
+            /** @description Operation successfully processed. See response. */
+            200: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Response"];
+                };
+            };
+            /** @description Request validation error */
+            400: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthenticated */
+            403: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected error occurred */
+            500: {
+                headers: {
+                    "Access-Control-Allow-Origin"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     InitLogin: {
         parameters: {
             query?: never;
@@ -3958,364 +4302,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListAccountUsageResp"];
-                };
-            };
-            /** @description Request validation error */
-            400: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthenticated */
-            403: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unexpected error occurred */
-            500: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    ConfigurePgpPolicy: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
-                Authorization: string;
-                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
-                "x-api-key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Pgp parameters */
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConfigurePgpPolicyReq"];
-            };
-        };
-        responses: {
-            /** @description Operation successfully processed. See response. */
-            200: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Response"];
-                };
-            };
-            /** @description Request validation error */
-            400: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthenticated */
-            403: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unexpected error occurred */
-            500: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    LockPgpPolicy: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
-                Authorization: string;
-                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
-                "x-api-key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Pgp parameters */
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LockPgpPolicyReq"];
-            };
-        };
-        responses: {
-            /** @description Operation successfully processed. See response. */
-            200: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Response"];
-                };
-            };
-            /** @description Request validation error */
-            400: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthenticated */
-            403: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unexpected error occurred */
-            500: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    DeletePgpKey: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
-                Authorization: string;
-                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
-                "x-api-key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Pgp parameters */
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DeletePgpKeyReq"];
-            };
-        };
-        responses: {
-            /** @description Operation successfully processed. See response. */
-            200: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Response"];
-                };
-            };
-            /** @description Request validation error */
-            400: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthenticated */
-            403: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unexpected error occurred */
-            500: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    RequestActionMfa: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
-                Authorization: string;
-                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
-                "x-api-key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Session parameters */
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RequestActionMfaReq"];
-            };
-        };
-        responses: {
-            /** @description Operation successfully processed. See response. */
-            200: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Response"];
-                };
-            };
-            /** @description Request validation error */
-            400: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthenticated */
-            403: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unexpected error occurred */
-            500: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    ConfigureBankPgpPolicy: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Use _IdToken_ from the Login response as the `Authorization` header */
-                Authorization: string;
-                /** @description Use _ApiKey_ from the Login response as the `x-api-key` header */
-                "x-api-key": string;
-            };
-            path: {
-                /** @description Explicit supported bank route. Aliases are canonicalized; unknown or retired banks are rejected. */
-                Bank: string;
-            };
-            cookie?: never;
-        };
-        /** @description Pgp parameters */
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ConfigureBankPgpPolicyReq"];
-            };
-        };
-        responses: {
-            /** @description Operation successfully processed. See response. */
-            200: {
-                headers: {
-                    "Access-Control-Allow-Origin"?: string;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Response"];
                 };
             };
             /** @description Request validation error */

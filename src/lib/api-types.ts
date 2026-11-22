@@ -94,11 +94,11 @@ export type UploadKeyRequest = JsonRequest<"UploadKey">;
 export type FreshActionFactor = Pick<JsonRequest<"LockPgpPolicy">, "AccessToken" | "MfaType" | "Code">;
 export type ConfigureBankPgpPolicyRequest = JsonRequest<"ConfigureBankPgpPolicy">;
 export type ConfigureBankPgpPolicyResponse = JsonResponse<"ConfigureBankPgpPolicy", 200>;
-export type ConfigurePgpPolicyRequest = JsonRequest<"ConfigurePgpPolicy">;
+export type BlockBankPgpPolicyRequest = JsonRequest<"BlockBankPgpPolicy">;
 export type LockPgpPolicyRequest = JsonRequest<"LockPgpPolicy">;
 export type DeletePgpKeyRequest = JsonRequest<"DeletePgpKey">;
 export type RequestActionMfaRequest = JsonRequest<"RequestActionMfa">;
-export type ConfigurePgpPolicyResponse = JsonResponse<"ConfigurePgpPolicy", 200>;
+export type BlockBankPgpPolicyResponse = JsonResponse<"BlockBankPgpPolicy", 200>;
 export type LockPgpPolicyResponse = JsonResponse<"LockPgpPolicy", 200>;
 export type DeletePgpKeyResponse = JsonResponse<"DeletePgpKey", 200>;
 export type RequestActionMfaResponse = JsonResponse<"RequestActionMfa", 200>;
@@ -176,7 +176,7 @@ export const SUPPORTED_OPERATIONS = [
   "EnrollCert",
   "RetireCert",
   "UploadKey",
-  "ConfigurePgpPolicy",
+  "BlockBankPgpPolicy",
   "ConfigureBankPgpPolicy",
   "LockPgpPolicy",
   "DeletePgpKey",

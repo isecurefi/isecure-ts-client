@@ -119,9 +119,6 @@ export class UrlBuilder {
     return this.url("account", email);
   }
 
-  pgpPolicy(): string {
-    return this.url("pgp", "policy");
-  }
   pgpBankPolicy(bank: string): string {
     return this.url("pgp", "policy", "banks", bank);
   }

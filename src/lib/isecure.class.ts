@@ -94,10 +94,10 @@ import {
   type PasswordResetResponse,
   type PgpKeyPurpose,
   type FreshActionFactor,
-  type ConfigurePgpPolicyRequest,
+  type BlockBankPgpPolicyRequest,
   type ConfigureBankPgpPolicyRequest,
   type ConfigureBankPgpPolicyResponse,
-  type ConfigurePgpPolicyResponse,
+  type BlockBankPgpPolicyResponse,
   type LockPgpPolicyRequest,
   type LockPgpPolicyResponse,
   type DeletePgpKeyRequest,
@@ -522,9 +522,10 @@ export class WSChannel {
     });
   }
 
-  /** Candidate API: replace requirements at the exact revision reviewed by the caller. */
-  async configurePgpPolicy(request: ConfigurePgpPolicyRequest): Promise<ConfigurePgpPolicyResponse> {
-    return this.call("PUT", this.urls.pgpPolicy(), { body: request, auth: true, retry: false });
+  /** Block this bank's uploads; preserves every other bank and never disables PGP checks. */
+  async blockBankPgpPolicy(bank: string, request: BlockBankPgpPolicyRequest): Promise<BlockBankPgpPolicyResponse> {
+    if (!bank || !/^[a-z_]{1,64}$/.test(bank)) throw new TypeError("A bank route is required");
+    return this.call("DELETE", this.urls.pgpBankPolicy(bank), { body: request, auth: true, retry: false });
   }
 
   /** Update one bank at the reviewed revision, preserving other banks. Requires a supporting deployment. */

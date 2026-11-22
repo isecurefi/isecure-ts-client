@@ -94,3 +94,15 @@ Before removal in a major release, an export is marked `@deprecated` in a minor 
 result shapes can change before publication without a major release. The server alone decides
 which analytics files a caller may read; method availability establishes neither deployment nor
 permission. The reader keeps its temporary storage access private and is not serializable.
+
+## 6.0.0 bank policy migration
+
+The whole-policy `configurePgpPolicy` method and `ConfigurePgpPolicyRequest` /
+`ConfigurePgpPolicyResponse` exports are removed. Although previously described as
+candidate operations, they were exported from the stable package root, so removal
+uses a major version. Use `configureBankPgpPolicy(bank, request)` to set one bank's
+count and `blockBankPgpPolicy(bank, request)` to explicitly block its uploads.
+Other banks are preserved. Read the current revision before every mutation and
+refresh afterward. Do not translate a former map into an automatic sequence of
+requests: each change must be deliberately reviewed against its current revision.
+The API rollout is separate from the package release; see README availability.
