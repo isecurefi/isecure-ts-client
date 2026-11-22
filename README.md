@@ -338,7 +338,7 @@ confirmation are available on gpgtest and production RC. Normal production V2
 retains its existing contract and does not expose policy administration. Do not
 infer availability from the presence of a method in the SDK.
 
-### Required signers (unreleased SDK addition; available on gpgtest and RC)
+### Required signers (SDK 6.1.0; available on gpgtest and RC)
 
 ```ts
 await client.configureBankPgpPolicy("osuuspankki", {
@@ -350,7 +350,8 @@ await client.configureBankPgpPolicy("osuuspankki", {
 
 The server feature passed focused qualification on gpgtest (19 checks) and
 production RC (16 checks) on 2026-11-22. V2 remains unchanged and refuses uploads
-controlled by these policies. These additive SDK types remain unpublished.
+controlled by these policies. The additive request and response types are included
+in SDK 6.1.0.
 
 This requires ERP plus another distinct registered authorize key. Required keys
 count towards the signature count. Use full primary fingerprints; signing subkeys

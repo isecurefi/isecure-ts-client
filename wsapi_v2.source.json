@@ -12,7 +12,7 @@
     "paths": ["ws-channel-api/config.json", "ws-channel-api/__wsapi.json.tmpl"],
     "stage": "gpgtest",
     "operations": ["BlockBankPgpPolicy", "LockPgpPolicy", "DeletePgpKey", "RequestActionMfa"],
-    "description": "Bank-specific policy contract deployed on gpgtest and production RC; whole-policy replacement removed there. Normal V2 contract is unchanged. The required-signer SDK extension remains unpublished."
+    "description": "Bank-specific policy contract deployed on gpgtest and production RC; whole-policy replacement removed there. Normal V2 contract is unchanged. The required-signer SDK extension is included in SDK 6.1.0."
   },
   "transferOverlay": {
     "repository": "https://github.com/isecurefi/aws",
@@ -38,7 +38,8 @@
     "repository": "https://github.com/isecurefi/aws",
     "branch": "codex/required-signers-20261122",
     "paths": ["ws-channel-api/config.json", "ws-channel-api/__wsapi.json.tmpl"],
-    "published": false,
+    "published": true,
+    "sdkVersion": "6.1.0",
     "deployed": true,
     "commit": "4548e35a31a55966d7077351cc1ec1d633568c2d",
     "stage": "gpgtest",
