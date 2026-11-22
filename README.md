@@ -218,9 +218,9 @@ for test/RC availability, certificate-free discovery and revision/retry rules.
 Adding Admin or Data sign-in preserves it. Legacy accounts without recorded creation time omit
 this field; display an unknown date instead of inferring one from login or deletion metadata.
 
-### Rust candidate account administration (unpublished)
+### Account administration: SDK support and API availability
 
-The local contract provides `configureBankPgpPolicy`, `blockBankPgpPolicy`, `lockPgpPolicy`,
+SDK 6 provides `configureBankPgpPolicy`, `blockBankPgpPolicy`, `lockPgpPolicy`,
 `deletePgpKey` (full primary fingerprint), and `requestActionMfa` (SMS dispatch).
 These operations require a supporting Test deployment; their
 presence in this SDK does not imply production availability. `uploadPgpKey` accepts
@@ -236,7 +236,7 @@ not a replacement for a fresh factor on the Rust candidate. Locking is irreversi
 through the API. `Account.PgpAuthorization` is descriptive server state, not client
 permission. Missing policy and malformed/unavailable policy are distinct.
 `wsapi_v2.source.json` records the public upstream and the unpublished candidate
-contract overlay; neither SDK nor API documentation has been published by this change.
+contract overlay. Package publication does not activate these API routes.
 
 ## Migrating to v5 authentication
 
@@ -245,7 +245,7 @@ bounded hosted registration/login tests on ordinary gpgtest, including Admin MFA
 and 283-byte UTF-8 passwords. RSA-3072 and RSA-4096 login were exercised.
 Version 5 defaults to `password-rsa-oaep-sha256-v1` for registration, login and
 password reset. The stronger profile is available on gpgtest and production V2.
-Stable v5 releases use npm's `latest` tag. Existing installations pinned to v4
+Version 6 retains these authentication defaults. Existing installations pinned to v4
 keep their legacy defaults.
 
 Omit `EncryptionProfile` for the v5 default, or explicitly supply
@@ -333,7 +333,8 @@ supported banks, including linked callers. The SDK never adds this confirmation.
 It is rejected once configured. Future banks remain blocked until explicitly enabled.
 No certificate, subscription or bank access is granted by these methods.
 
-Availability: this source contract requires the matching backend rollout. The
+Availability at SDK 6.0.0 release: the new blocking and initialization-confirmation
+features require a matching backend rollout. The
 previous deployed gpgtest/RC contract supports per-bank PUT but not this new DELETE;
 normal production V2 does not yet expose policy administration. Do not infer
 availability from the presence of a method in the SDK.
