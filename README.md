@@ -338,3 +338,22 @@ features require a matching backend rollout. The
 previous deployed gpgtest/RC contract supports per-bank PUT but not this new DELETE;
 normal production V2 does not yet expose policy administration. Do not infer
 availability from the presence of a method in the SDK.
+
+### Required signers (unreleased; requires matching server deployment)
+
+```ts
+await client.configureBankPgpPolicy("osuuspankki", {
+  RequiredSignatureCount: 2,
+  RequiredSignerFingerprints: [erpPrimaryFingerprint],
+  ExpectedRevision: reviewedRevision,
+});
+```
+
+This requires ERP plus another distinct registered authorize key. Required keys
+count towards the signature count. Use full primary fingerprints; signing subkeys
+count for their primary. Omit `RequiredSignerFingerprints` to preserve it, or pass
+`[]` to clear it explicitly. Other banks are unchanged. Required keys must meet the
+90-day minimum lifetime and cannot be deleted until removed from an unlocked policy.
+The irreversible lock freezes this setting too. Read the configured map from
+`Account.PgpAuthorization.RequiredSignerFingerprints`; refresh after mutations and
+never retry an uncertain write automatically. This is not duplicate-payment detection.

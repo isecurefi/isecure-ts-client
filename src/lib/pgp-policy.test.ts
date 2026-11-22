@@ -152,3 +152,22 @@ it("passes explicit first-policy confirmation without inferring it from a login 
     ConfirmPolicyInitialization: true,
   });
 });
+
+it("preserves omission versus explicit clearing and sends required signers without retry", async () => {
+  const transport = new FakeTransport();
+  transport.respond(() => ({ status: 200, statusText: "OK", data: { ResponseCode: "00" } }));
+  const client = bankPolicyClient(transport);
+  client.tokens = { idToken: "synthetic-id", apiKey: "tenant" };
+  for (const signers of [undefined, [], ["a".repeat(40)]]) {
+    const request = {
+      RequiredSignatureCount: 2,
+      ExpectedRevision: 3,
+      ...(signers === undefined ? {} : { RequiredSignerFingerprints: signers }),
+    };
+    await client.configureBankPgpPolicy("op", request);
+    expect(transport.requests.at(-1)).toMatchObject({ method: "PUT", body: request, retry: false });
+    expect(Object.hasOwn(transport.requests.at(-1)?.body ?? {}, "RequiredSignerFingerprints")).toBe(
+      signers !== undefined,
+    );
+  }
+});

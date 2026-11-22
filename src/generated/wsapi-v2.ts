@@ -821,6 +821,10 @@ export interface components {
                 /** @enum {string} */
                 State: "configured" | "unavailable";
                 UpdatedAt?: number;
+                /** @description Mandatory primary fingerprints per bank, in addition to RequiredSignatures. Empty map means no named signers. Requires a supporting deployment. */
+                RequiredSignerFingerprints?: {
+                    [key: string]: string[];
+                };
             };
             /** @description Read-only public keys directly owned by this account, in stored order, including duplicates. An empty array means no stored entries; an absent field means unavailable information or an older deployment. Introduced in 2.17.0 and available in production and the test API. Decode the returned public armor in the application. */
             PgpKeys?: components["schemas"]["AccountPgpKeyDescriptor"][];
@@ -1047,6 +1051,8 @@ export interface components {
             ExpectedRevision: number;
             /** @description Required distinct authorize signatures for this bank only. Must not exceed eligible registered keys. */
             RequiredSignatureCount: number;
+            /** @description Mandatory registered authorize primary fingerprints for this bank, in addition to the distinct signature count. Omit to preserve; [] explicitly clears. Must fit within RequiredSignatureCount and be valid for at least 90 days. Signing subkeys count for their primary identity. */
+            RequiredSignerFingerprints?: string[];
         };
         /**
          * @example {

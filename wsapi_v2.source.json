@@ -4,7 +4,7 @@
   "source": "https://raw.githubusercontent.com/isecurefi/wsapi-v2/3278f9820dc1258f7fa01e110094757c9a0a2095/wsapi_v2.json",
   "ref": "3278f982",
   "commit": "3278f9820dc1258f7fa01e110094757c9a0a2095",
-  "sha256": "cc340f2d83c269aa238f24d42683cf1ebdcdb235598ffd8492cd873e94f5c6a4",
+  "sha256": "f8025178d0b4b696a731451cc54d56067d38e5ef9086f1b102da749a2a881cfa",
   "upstreamSha256": "f35191c43c45f12342c9a1e20b433fa0f0147e211ae7916b1fe9eadbd273b180",
   "candidateOverlay": {
     "repository": "https://github.com/isecurefi/aws",
@@ -33,5 +33,13 @@
     "sourceSha256": "d3bc2befbd4e1f3aa7b2b3f40861ba25b46619906be005b91f0b01a92fb2b2b0",
     "published": false,
     "commit": "bb42e475a141af0d40b0abc3b5f0be57aaadf3bb"
+  },
+  "requiredSignersOverlay": {
+    "repository": "https://github.com/isecurefi/aws",
+    "branch": "codex/required-signers-20261122",
+    "paths": ["ws-channel-api/config.json", "ws-channel-api/__wsapi.json.tmpl"],
+    "published": false,
+    "deployed": false,
+    "commit": "4548e35a31a55966d7077351cc1ec1d633568c2d"
   }
 }

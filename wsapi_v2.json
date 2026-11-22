@@ -144,6 +144,19 @@
               "maximum": 9007199254740991,
               "minimum": 1,
               "type": "integer"
+            },
+            "RequiredSignerFingerprints": {
+              "type": "object",
+              "description": "Mandatory primary fingerprints per bank, in addition to RequiredSignatures. Empty map means no named signers. Requires a supporting deployment.",
+              "additionalProperties": {
+                "type": "array",
+                "maxItems": 64,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+                }
+              }
             }
           },
           "required": [
@@ -684,6 +697,16 @@
           "maximum": 64,
           "minimum": 1,
           "type": "integer"
+        },
+        "RequiredSignerFingerprints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$"
+          },
+          "maxItems": 64,
+          "uniqueItems": true,
+          "description": "Mandatory registered authorize primary fingerprints for this bank, in addition to the distinct signature count. Omit to preserve; [] explicitly clears. Must fit within RequiredSignatureCount and be valid for at least 90 days. Signing subkeys count for their primary identity."
         }
       },
       "required": [
