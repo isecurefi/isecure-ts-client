@@ -528,7 +528,7 @@ export class WSChannel {
     return this.call("DELETE", this.urls.pgpBankPolicy(bank), { body: request, auth: true, retry: false });
   }
 
-  /** Update one bank at the reviewed revision, preserving other banks. Requires a supporting deployment. */
+  /** Update one bank at the reviewed revision, preserving other banks. Available on test and production V2. */
   async configureBankPgpPolicy(
     bank: string,
     request: ConfigureBankPgpPolicyRequest,
@@ -537,17 +537,17 @@ export class WSChannel {
     return this.call("PUT", this.urls.pgpBankPolicy(bank), { body: request, auth: true, retry: false });
   }
 
-  /** Candidate API: irreversible lock; there is no unlock operation. */
+  /** Irreversibly lock account keys and bank policies with a fresh factor; there is no unlock operation. */
   async lockPgpPolicy(request: LockPgpPolicyRequest): Promise<LockPgpPolicyResponse> {
     return this.call("POST", this.urls.pgpPolicyLock(), { body: request, auth: true, retry: false });
   }
 
-  /** Candidate API: full primary fingerprint deletion, distinct from legacy short-ID deleteKey. */
+  /** Delete by full primary fingerprint at the reviewed revision, distinct from legacy short-ID deleteKey. */
   async deletePgpKey(request: DeletePgpKeyRequest): Promise<DeletePgpKeyResponse> {
     return this.call("DELETE", this.urls.pgpKeys(), { body: request, auth: true, retry: false });
   }
 
-  /** Candidate API: request SMS for an established factor; this grants no mutation authority. */
+  /** Request SMS for an established factor; this grants no mutation authority. */
   async requestActionMfa(accessToken: string): Promise<RequestActionMfaResponse> {
     const request: RequestActionMfaRequest = { AccessToken: accessToken, MfaType: "SMS_MFA" };
     return this.call("POST", this.urls.actionMfa(), { body: request, auth: true, retry: false });
@@ -944,7 +944,7 @@ export class WSChannel {
   }
 
   /**
-   * Candidate deployments require an explicit fresh factor for this action.
+   * Current test and production deployments require an explicit fresh factor for this action.
    * Retires the active certificate of the configured `Bank` so a fresh enrollment
    * or import becomes possible; the record stays on the account, unusable, until
    * the account is deleted. Admin mode only. The integrator API key owner may pass
@@ -1031,8 +1031,8 @@ export class WSChannel {
    * Soft-deletes one customer account under the caller's API key, revokes both
    * sign-ins and excludes the account from customer licenses. The account remains
    * visible until automatic removal after 30 days; audit history is retained.
-   * Requires the integrator owner in Admin mode. Candidate deployments require
-   * a fresh factor submission; older deployments retain their login-based MFA contract.
+   * Requires the integrator owner in Admin mode and a fresh factor submission on
+   * current test and production deployments; the optional argument retains older-server compatibility.
    * `Confirm` must equal `Email` exactly. This method never prompts for MFA.
    */
   async deleteAccount(Email: string, Confirm: string, factor?: FreshActionFactor): Promise<DeleteAccountResponse> {

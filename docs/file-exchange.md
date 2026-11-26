@@ -13,22 +13,45 @@ It contributes no customer licenses. Automatic removal becomes eligible after 30
 physical removal may take additional days. Audit history is retained separately for ten years.
 Integrator-owner accounts cannot be deleted.
 
-Complete a fresh Admin MFA login before every deletion or certificate retirement. The backend
-accepts an authentication at most ten minutes old for only one lifecycle action. The SDK does
-not prompt for MFA or bypass authorization; applications must run the normal login/MFA flow.
-This lifecycle update is unreleased and requires the matching backend deployment.
-The method sends only `ConfirmSoftDelete` on the wire. An older immediate-deletion backend
-rejects it before mutation; never add the legacy `Confirm` field as a fallback.
+Current test and production V2 require an explicit fresh factor for each deletion or
+certificate retirement. Complete Admin login, then use the opaque action credential
+from `client.session.accessToken` with a fresh code from the established authenticator.
+Normal login alone does not authorize these operations. For an established SMS factor,
+call `requestActionMfa(actionCredential)` first and submit the received code with
+`MfaType: "SMS_MFA"`. The SDK does not prompt for a code or retry these mutations.
 
 ```ts
-await client.retireCert({ Account: "customer@example.com" });
+await client.retireCert(
+  { Account: "customer@example.com" },
+  {
+    AccessToken: actionCredential,
+    MfaType: "SOFTWARE_TOKEN_MFA",
+    Code: freshTotpCode,
+  },
+);
 ```
 
-After completing another fresh Admin MFA login, deletion is a separate action:
+Deletion is a separate action requiring a new fresh code; do not reuse the previous code:
 
 ```ts
-await client.deleteAccount("customer@example.com", "customer@example.com");
+await client.deleteAccount("customer@example.com", "customer@example.com", {
+  AccessToken: actionCredential,
+  MfaType: "SOFTWARE_TOKEN_MFA",
+  Code: nextFreshTotpCode,
+});
 ```
+
+Deletion sends `ConfirmSoftDelete` together with the factor. An older immediate-deletion
+backend rejects it before mutation; never add the legacy `Confirm` field as a fallback.
+After an uncertain result, read back state before taking further action.
+
+## PGP policy availability
+
+Per-bank signature requirements, required primary signers, fingerprint key deletion and
+irreversible locking are available on test, production RC and normal production V2 as of
+25 November 2026. SDK 6.1.0 already supports this rollout; no separate ISECure activation
+is required. See the [PGP policy guide](../README.md#bank-specific-signature-requirements)
+for Admin setup, exact revisions, required keys and the lock boundary.
 
 ## Read-only account public keys
 
@@ -49,6 +72,8 @@ This read does not alter key storage, register keys or enable deletion.
 
 `listKeys()` remains the signed-in account's short-ID/purpose listing and does not return armor.
 `deleteKey()` remains a reserved operation that the backend rejects as unsupported.
+Use `deletePgpKey({ Fingerprint, ExpectedRevision })` for full-primary-fingerprint deletion;
+required-key, signature-count and lock checks still apply.
 
 `listCerts().Connections` also discovers enabled Maventa and MobilePay enrollments owned by
 the signed-in account. They have `Access: "direct"` and `Certificates: []` because they use

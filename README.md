@@ -222,8 +222,14 @@ this field; display an unknown date instead of inferring one from login or delet
 
 SDK 6 provides `configureBankPgpPolicy`, `blockBankPgpPolicy`, `lockPgpPolicy`,
 `deletePgpKey` (full primary fingerprint), and `requestActionMfa` (SMS dispatch).
-These operations require a supporting Test deployment; their
-presence in this SDK does not imply production availability. `uploadPgpKey` accepts
+PGP policy administration, required signers, fingerprint key deletion and locking
+are available on the test API, production RC and normal production V2 as of
+25 November 2026. Use `BaseUrl: "https://ws-api.isecure.fi/v2"` for production.
+SDK 6.1.0 already supports required signers: no newer SDK, RC URL, feature flag or
+separate ISECure activation is needed. Configure the policy yourself in an
+authenticated Admin session. Existing account policies are not changed automatically.
+
+`uploadPgpKey` accepts
 an optional reviewed policy revision. `retireCert(query, factor)` and
 `deleteAccount(email, confirmation, factor)` accept an explicit fresh factor with
 `AccessToken`, `MfaType` and `Code`. Use the opaque action credential returned by
@@ -232,11 +238,12 @@ requires `requestActionMfa` first. These mutations explicitly disable transport
 retries, including opt-in retries. Read back state after an uncertain outcome.
 
 Older method signatures remain available for older deployments. A normal login is
-not a replacement for a fresh factor on the Rust candidate. Locking is irreversible
+not a replacement for a fresh factor on a protected operation. Locking is irreversible
 through the API. `Account.PgpAuthorization` is descriptive server state, not client
 permission. Missing policy and malformed/unavailable policy are distinct.
-`wsapi_v2.source.json` records the public upstream and the unpublished candidate
-contract overlay. Package publication does not activate these API routes.
+`wsapi_v2.source.json` records the public upstream, contract overlays and dated
+deployment evidence. This availability statement covers account/PGP operations;
+provider and large-file-transfer availability is documented separately.
 
 ## Migrating to v5 authentication
 
@@ -320,10 +327,11 @@ its certificate or prevent downloads. Use `configureBankPgpPolicy` to enable it 
 Zero signatures is invalid. Blocking every bank leaves an explicit deny-all policy.
 The old `configurePgpPolicy` whole-map operation has been removed.
 
-Read `Account.PgpAuthorization` via `listAccounts()` and use its exact revision (zero
+Read the selected account’s `PgpAuthorization` in `listAccounts().Accounts[]` and use its exact revision (zero
 only when absent). Refresh after success or an uncertain outcome; writes never retry
-automatically. N requires N distinct eligible primary authorize keys, with no named
-mandatory signer. Deleting a key cannot leave an allowed bank below its requirement.
+automatically. Without named required signers, any N distinct eligible primary
+authorize keys satisfy the count. To require a particular key as well, use
+`RequiredSignerFingerprints` as shown below. Deleting a key cannot leave an allowed bank below its requirement.
 `lockPgpPolicy` permanently freezes **all** account keys and bank settings.
 
 First configuration preserves one signature for all currently supported banks.
@@ -333,31 +341,37 @@ supported banks, including linked callers. The SDK never adds this confirmation.
 It is rejected once configured. Future banks remain blocked until explicitly enabled.
 No certificate, subscription or bank access is granted by these methods.
 
-Deployment status (2026-11-22): bank-specific PUT/DELETE and initialization
-confirmation are available on gpgtest and production RC. Normal production V2
-retains its existing contract and does not expose policy administration. Do not
-infer availability from the presence of a method in the SDK.
+Production V2 supports these operations as of 25 November 2026, including
+per-bank blocking and initialization confirmation. This supersedes the test/RC-only
+restriction printed in the original SDK 6.1.0 README. The released SDK itself
+works unchanged with the production rollout.
 
-### Required signers (SDK 6.1.0; available on gpgtest and RC)
+### Required signers (SDK 6.1.0; test and production)
 
 ```ts
-await client.configureBankPgpPolicy("osuuspankki", {
+await adminClient.configureBankPgpPolicy("osuuspankki", {
   RequiredSignatureCount: 2,
   RequiredSignerFingerprints: [erpPrimaryFingerprint],
   ExpectedRevision: reviewedRevision,
 });
 ```
 
-The server feature passed focused qualification on gpgtest (19 checks) and
-production RC (16 checks) on 2026-11-22. V2 remains unchanged and refuses uploads
-controlled by these policies. The additive request and response types are included
-in SDK 6.1.0.
+Normal production V2 supports both policy administration and enforcement on file
+uploads. Its 25 November rollout passed 17 focused hosted checks, including SDK
+6.0.0 compatibility and SDK 6.1.0 policy controls. Earlier gpgtest qualification
+covered accepted and rejected signer combinations; no real bank payment was sent
+during the production checks.
 
-This requires ERP plus another distinct registered authorize key. Required keys
+Register the ERP and person public keys with `uploadPgpKey(publicKey, "authorize")`
+before configuring the policy. The example requires the ERP key plus another
+distinct registered authorize key; two person keys without the ERP key do not suffice. Required keys
 count towards the signature count. Use full primary fingerprints; signing subkeys
 count for their primary. Omit `RequiredSignerFingerprints` to preserve it, or pass
 `[]` to clear it explicitly. Other banks are unchanged. Required keys must meet the
-90-day minimum lifetime and cannot be deleted until removed from an unlocked policy.
+90-day remaining-lifetime minimum when configuring or locking the policy; keys
+without expiry are also accepted. Uploads require valid keys and signatures, not
+90 days of remaining key lifetime. A required key cannot be deleted until removed
+from an unlocked policy.
 The irreversible lock freezes this setting too. Read the configured map from
-`Account.PgpAuthorization.RequiredSignerFingerprints`; refresh after mutations and
+`Accounts[].PgpAuthorization.RequiredSignerFingerprints`; refresh after mutations and
 never retry an uncertain write automatically. This is not duplicate-payment detection.
