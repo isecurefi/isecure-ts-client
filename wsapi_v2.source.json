@@ -12,7 +12,7 @@
     "paths": ["ws-channel-api/config.json", "ws-channel-api/__wsapi.json.tmpl"],
     "stage": "gpgtest",
     "operations": ["BlockBankPgpPolicy", "LockPgpPolicy", "DeletePgpKey", "RequestActionMfa"],
-    "description": "Bank-specific policy contract deployed on gpgtest and production RC; whole-policy replacement removed there. Normal V2 contract is unchanged. The required-signer SDK extension is included in SDK 6.1.0."
+    "description": "Bank-specific policy contract available on gpgtest, production RC and normal production V2. V2 promotion was qualified on 2026-11-25; required-signer SDK support is included in 6.1.0. Source revision and stage above identify the original contract overlay."
   },
   "transferOverlay": {
     "repository": "https://github.com/isecurefi/aws",
@@ -59,7 +59,22 @@
         "register_rust": "12"
       },
       "gatewayDeployment": "1en7pr",
-      "v2Unchanged": true
+      "qualifiedAt": "2026-11-22",
+      "v2UnchangedAtQualification": true
+    },
+    "productionV2": {
+      "stage": "v2",
+      "deployed": true,
+      "qualifiedAt": "2026-11-25",
+      "endpoint": "https://ws-api.isecure.fi/v2",
+      "qualification": "17 focused hosted checks passed, including SDK 6.0.0 compatibility and SDK 6.1.0 policy controls; synthetic accounts cleaned; audit retained; no real-bank payments sent; full hosted suite not run",
+      "versions": {
+        "index_rust": "23",
+        "userdata_rust": "10",
+        "register_rust": "12"
+      },
+      "gatewayDeployment": "i7hvpf",
+      "requiresSeparateActivation": false
     }
   }
 }
